@@ -10,6 +10,8 @@ component extends="taffy.core.api" {
 		setDebugKey("debug");
 		setReloadKey("reload");
 		setReloadPassword("true");
+
+		defaultMime("json");//not necessary because the framework default is json, but this is how you would change it to something else.
 	}
 
 	//this gets called by setupFramework in the framework core, allowing the api implementation to
