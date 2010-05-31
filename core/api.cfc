@@ -34,7 +34,7 @@
 		<cfset var _taffyRequest = {} />
 		<cfset var tmp = 0 />
 
-		<cfif not structKeyExists(url, "debug")>
+		<cfif not structKeyExists(url, application._taffy.settings.debugKey)>
 			<cfsetting showdebugoutput="false" />
 		</cfif>
 
@@ -49,8 +49,7 @@
 
 		<!--- uri doesn't map to any known resources --->
 		<cfif not len(_taffyRequest.matchingRegex)>
-			<h3>Not Implemented</h3>
-			<p>TODO: Return some value that explains that the requested URI isn't defined.</p>
+			<cfinclude template="404.cfm" />
 			<cfabort>
 		</cfif>
 
@@ -106,8 +105,16 @@
 			returnvariable="_taffyRequest.resultSerialized"
 		/>
 
+		<!--- get status code --->
+		<cfinvoke
+			component="#_taffyRequest.result#"
+			method="getStatus"
+			returnvariable="_taffyRequest.resultStatus"
+		/>
+
 		<cfsetting enablecfoutputonly="true" />
 		<cfcontent reset="true" />
+		<cfheader statuscode="#_taffyRequest.resultStatus#"/>
 		<cfoutput>#_taffyRequest.resultSerialized#</cfoutput>
 
 		<cfreturn true />

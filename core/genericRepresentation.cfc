@@ -19,4 +19,8 @@
 		<cfreturn this />
 	</cffunction>
 
+	<cffunction name="getStatus" access="public" output="false" returnType="numeric">
+		<cfreturn variables.statusCode />
+	</cffunction>
+
 </cfcomponent>
