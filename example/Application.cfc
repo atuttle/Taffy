@@ -16,15 +16,15 @@ component extends="taffy.core.api" {
 
 	}
 
-	//this gets called by setupFramework in the framework core, allowing the api implementation to
-	//notify the framework what endpoints to implement
-	void function createEndpoints(){
+	//this gets called by setupFramework in the framework core, allowing the api implementation
+	//to notify the framework what URIs to implement
+	void function registerURIs(){
 
-		//let taffy know about the cfcs in your api so that it can map urls to them
-		addEndpoint("taffy.example.api.artCollection");
-		addEndpoint("taffy.example.api.artMember");
-		addEndpoint("taffy.example.api.artistCollection");
-		addEndpoint("taffy.example.api.artistMember");
+		//let taffy know about the cfcs in your api so that it can map URIs to them
+		addURI("taffy.example.api.artCollection");
+		addURI("taffy.example.api.artMember");
+		addURI("taffy.example.api.artistCollection");
+		addURI("taffy.example.api.artistMember");
 
 	}
 
