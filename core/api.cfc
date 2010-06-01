@@ -4,12 +4,11 @@
 	<cfscript>
 		function applicationHook(){}	//override this function to run your own code inside onApplicationStart()
 		function requestHook(){}		//override this function to run your own code inside onRequestStart()
-		function createEndpoints(){}	//override this function to define your endpoints
+		function registerURIs(){}		//override this function to define your endpoints
 
 		/* DO NOT OVERRIDE THIS FUNCTION - SEE applicationHook ABOVE */
 		function onApplicationStart(){
 			setupFramework();
-			defaultMime("json");
 			applicationHook();
 			return true;
 		}
@@ -141,7 +140,8 @@
 			reloadKey = "reload",
 			reloadPassword = "true"
 		} />
-		<cfset createEndpoints() />
+		<cfset registerMimeType("json", "text/json") />
+		<cfset registerURIs() />
 	</cffunction>
 	<cffunction name="defaultMime" access="public" output="false" returntype="void">
 		<cfargument name="mime" type="string" required="true" hint="mime time to set as default for this api" />
@@ -159,7 +159,7 @@
 		<cfargument name="password" type="string" required="true" hint="value required for the reload key to initiate a reload. if it doesn't match, then the framework will not reload." />
 		<cfset application._taffy.settings.reloadPassword = arguments.password />
 	</cffunction>
-	<cffunction name="addEndpoint" access="public" output="false" returntype="taffy.core.api">
+	<cffunction name="addURI" access="public" output="false" returntype="taffy.core.api">
 		<cfargument name="cfcpath" type="string" required="true" hint="dot.path.to.api" />
 
 		<!--- get the cfc metadata that defines the uri for that cfc --->
@@ -184,9 +184,9 @@
 		</cfloop>
 
 		<!--- require the uri to terminate after specified content --->
-		<cfset uriRegex =
-				uriRegex & "(\.[^\.\?]+)?"		<!--- anything other than these characters will be considered a mime-type request: / \ ? . --->
-						 & "$" />				<!--- terminate the uri (query string not included in cgi.path_info, does not need to be accounted for here) --->
+		<cfset uriRegex &=
+						"(\.[^\.\?]+)?"		<!--- anything other than these characters will be considered a mime-type request: / \ ? . --->
+						& "$" />			<!--- terminate the uri (query string not included in cgi.path_info, does not need to be accounted for here) --->
 
 		<cfset returnData.uriRegex = uriRegex />
 
@@ -253,7 +253,12 @@
 			<cfset application._taffy.endpointCache[arguments.cfcPath].methods[t.name] = true />
 		</cfloop>
 	</cffunction>
-
+	<cffunction name="registerMimeType" access="public" output="false" returntype="void">
+		<cfargument name="extension" type="string" required="true" hint="ex: json" />
+		<cfargument name="mime" type="string" required="true" hint="ex: text/json" />
+		<cfset application._taffy.settings.mimeExtensions[arguments.extension] = arguments.mime />
+		<cfset application._taffy.settings.mimeTypes[arguments.mime] = arguments.extension />
+	</cffunction>
 	<cffunction name="throwError" access="private" output="false" returntype="void">
 		<cfargument name="statusCode" type="numeric" default="500" />
 		<cfargument name="msg" type="string" required="true" hint="message to return to api consumer" />
