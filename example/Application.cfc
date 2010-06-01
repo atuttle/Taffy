@@ -1,6 +1,6 @@
 component extends="taffy.core.api" {
-	this.name = hash(getCurrentTemplatePath());
 
+	this.name = hash(getCurrentTemplatePath());
 	this.mappings = {};
 	this.mappings["/taffy"] = expandPath('.');
 
@@ -12,7 +12,9 @@ component extends="taffy.core.api" {
 		setReloadKey("reload");
 		setReloadPassword("true");
 
-		defaultMime("json");//not necessary because the framework default is json, but this is how you would change it to something else.
+		//TODO: allow setDefaultRepresentationClass("path.to.representationcfc")
+
+		registerMimeType("json", "text/json");
 
 	}
 
