@@ -15,7 +15,7 @@
 		}
 		/* DO NOT OVERRIDE THIS FUNCTION - SEE requestHook ABOVE */
 		function onRequestStart(){
-			if ((structKeyExists(url, application._taffy.settings.reloadKey) and url[application._taffy.settings.reloadKey] eq application._taffy.settings.reloadPassword)){
+			if (structKeyExists(url, application._taffy.settings.reloadKey) and url[application._taffy.settings.reloadKey] eq application._taffy.settings.reloadPassword){
 				setupFramework();
 			}
 			requestHook();
@@ -49,17 +49,16 @@
 
 		<!--- uri doesn't map to any known resources --->
 		<cfif not len(_taffyRequest.matchingRegex)>
-			<cfinclude template="404.cfm" />
-			<cfabort>
+			<cfset throwError(404, "Not Found") />
 		</cfif>
 
 		<!--- get the cfc name and token array for the matching regex --->
 		<cfset _taffyRequest.matchDetails = application._taffy.endpoints[_taffyRequest.matchingRegex] />
 
 		<!--- which verb is requested? --->
-		<cfset _taffyRequest.verb = cgi.REQUEST_METHOD />
+		<cfset _taffyRequest.verb = cgi.request_method />
 
-		<!--- uri maps to {cfcPath} --->
+		<!--- build the argumentCollection to pass to the cfc --->
 		<cfset _taffyRequest.requestArguments = buildRequestArguments(
 			_taffyRequest.matchingRegex,
 			_taffyRequest.matchDetails.tokens,
@@ -68,6 +67,7 @@
 		) />
 
 		<!--- use requested mime type or the default --->
+		<cfset _taffyRequest.returnMime = "" />
 		<cfif structKeyExists(_taffyRequest.requestArguments, "_taffy_mime")>
 			<cfset _taffyRequest.returnMime = _taffyRequest.requestArguments["_taffy_mime"] />
 			<cfset structDelete(_taffyRequest.requestArguments, "_taffy_mime") />
@@ -86,9 +86,7 @@
 
 		<!--- if the verb is not implemented, refuse the request --->
 		<cfif not structKeyExists(application._taffy.endpointCache[_taffyRequest.matchDetails.cfc].methods, _taffyRequest.verb)>
-			<h3>Prohibited</h3>
-			<p>TODO: Return some value that explains that the URI exists but the verb used is not allowed.</p>
-			<cfabort>
+			<cfset throwError(405, "Method Not Allowed") />
 		</cfif>
 
 		<!--- returns a representation-object --->
@@ -239,12 +237,20 @@
 		<cfargument name="cfcPath" type="string" required="true" hint="dot.notation.cfc.path" />
 		<cfset var t = "" />
 		<cfset application._taffy.endpointCache[arguments.cfcPath] = {} />
-		<cfset application._taffy.endpointCache[arguments.cfcPath].cfc = createObject("component", _taffyRequest.matchDetails.cfc) />
+		<cfset application._taffy.endpointCache[arguments.cfcPath].cfc = createObject("component", arguments.cfcPath) />
 		<cfset application._taffy.endpointCache[arguments.cfcPath].methods = {} />
 		<cfset var tmp = getMetadata(application._taffy.endpointCache[arguments.cfcPath].cfc).functions />
 		<cfloop array="#tmp#" index="t">
 			<cfset application._taffy.endpointCache[arguments.cfcPath].methods[t.name] = true />
 		</cfloop>
+	</cffunction>
+
+	<cffunction name="throwError" access="private" output="false" returntype="void">
+		<cfargument name="statusCode" type="numeric" default="500" />
+		<cfargument name="msg" type="string" required="true" hint="message to return to api consumer" />
+		<cfcontent reset="true" />
+		<cfheader statuscode="#arguments.statusCode#" statustext="#arguments.msg#" />
+		<cfabort />
 	</cffunction>
 
 	<cfscript>
