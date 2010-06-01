@@ -72,7 +72,16 @@
 			<cfset _taffyRequest.returnMime = _taffyRequest.requestArguments["_taffy_mime"] />
 			<cfset structDelete(_taffyRequest.requestArguments, "_taffy_mime") />
 		<cfelse>
-			<cfset _taffyRequest.returnMime = application._taffy.settings.defaultMime />
+			<cfif structKeyExists(cgi, "http_accept")>
+				<cfif cgi.http_accept eq "text/json">
+					<cfset _taffyRequest.returnMime = "json" />
+				<cfelseif cgi.http_accept eq "text/xml">
+					<cfset _taffyRequest.returnMime = "xml" />
+				</cfif>
+			</cfif>
+			<cfif _taffyRequest.returnMime eq "">
+				<cfset _taffyRequest.returnMime = application._taffy.settings.defaultMime />
+			</cfif>
 		</cfif>
 
 		<!---
