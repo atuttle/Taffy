@@ -114,7 +114,7 @@
 		/>
 
 		<cfsetting enablecfoutputonly="true" />
-		<cfcontent reset="true" />
+		<cfcontent reset="true" type="#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#" />
 		<cfheader statuscode="#_taffyRequest.resultStatus#"/>
 		<cfoutput>#_taffyRequest.resultSerialized#</cfoutput>
 
@@ -135,7 +135,7 @@
 			reloadKey = "reload",
 			reloadPassword = "true"
 		} />
-		<cfset registerMimeType("json", "text/json") />
+		<cfset registerMimeType("json", "application/json") />
 		<cfset registerURIs() />
 	</cffunction>
 	<cffunction name="convertURItoRegex" access="private" output="false">
