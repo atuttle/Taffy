@@ -1,4 +1,4 @@
-<cfcomponent hint="base class for taffy REST components">
+<cfcomponent hint="Base class for taffy REST application's Application.cfc">
 
 	<!--- you can override these methods in your application.cfc to  --->
 	<cfscript>
@@ -66,20 +66,15 @@
 		) />
 
 		<!--- use requested mime type or the default --->
-		<cfset _taffyRequest.returnMime = "" />
+		<cfset _taffyRequest.returnMimeExt = "" />
 		<cfif structKeyExists(_taffyRequest.requestArguments, "_taffy_mime")>
-			<cfset _taffyRequest.returnMime = _taffyRequest.requestArguments["_taffy_mime"] />
+			<cfset _taffyRequest.returnMimeExt = _taffyRequest.requestArguments["_taffy_mime"] />
 			<cfset structDelete(_taffyRequest.requestArguments, "_taffy_mime") />
 		<cfelse>
-			<cfif structKeyExists(cgi, "http_accept")>
-				<cfif cgi.http_accept eq "text/json">
-					<cfset _taffyRequest.returnMime = "json" />
-				<cfelseif cgi.http_accept eq "text/xml">
-					<cfset _taffyRequest.returnMime = "xml" />
-				</cfif>
-			</cfif>
-			<cfif _taffyRequest.returnMime eq "">
-				<cfset _taffyRequest.returnMime = application._taffy.settings.defaultMime />
+			<cfif structKeyExists(cgi, "http_accept") and structKeyExists(application._taffy.settings.mimeTypes, cgi.http_accept)>
+				<cfset _taffyRequest.returnMimeExt = application._taffy.settings.mimeTypes[cgi.http_accept] />
+			<cfelse>
+				<cfset _taffyRequest.returnMimeExt = application._taffy.settings.defaultMime />
 			</cfif>
 		</cfif>
 
@@ -107,7 +102,7 @@
 		<!--- serialize the representation into the requested mime type --->
 		<cfinvoke
 			component="#_taffyRequest.result#"
-			method="getAs#_taffyRequest.returnMime#"
+			method="getAs#_taffyRequest.returnMimeExt#"
 			returnvariable="_taffyRequest.resultSerialized"
 		/>
 
@@ -129,7 +124,7 @@
 	<!--- :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: --->
 	<!--- :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: --->
 
-	<!--- helper methods --->
+	<!--- internal methods --->
 	<cffunction name="setupFramework" access="private" output="false" returntype="void">
 		<cfset application._taffy = structNew()/>
 		<cfset application._taffy.endpoints = {} />
