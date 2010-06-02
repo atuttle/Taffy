@@ -2,18 +2,21 @@
 <head>
 	<title>Example REST Consumer Application</title>
 	<style>
-		a.delete {
+		a.delete, a.update {
 			color: blue;
 			text-decoration: underline;
 			cursor: pointer;
 		}
-		#addForm { display: none; }
+		#addForm, #update { display: none; }
 	</style>
 </head>
 <body id="top">
 	<a href="#new" id="new">Add New Artist</a><br/>
 	<form action="/taffy/api/index.cfm/artists" method="post" id="addForm">
 		add form here
+	</form>
+	<form action="/taffy/api/index.cfm/artist" method="put" id="update">
+		update form here
 	</form>
 	<table id="artists">
 		<tr>
@@ -31,7 +34,7 @@
 			<th> </th>
 		</tr>
 	</table>
-	<script type="text/javascript" src="jquery.1.4.2.min.js"></script>
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
 	<cfoutput>
     	<script type="text/javascript">
 			$(document).ready(function(){
@@ -39,6 +42,10 @@
 				//delete-link handler
 				$("##artists .delete").live('click', function(){
 					deleteRow($(this).parent().parent().attr('id'));
+				});
+				//update-link handler
+				$("##artists .update").live('click', function(){
+					updateRow($(this).parent().parent().attr('id'));
 				});
 
 				//new-record-link handler
@@ -109,9 +116,26 @@
 							+ "<td>" + i + "</td>"
 							+ "<td>" + j + "</td>"
 							+ "<td>" + k + "</td>"
-							+ "<td><a class='delete' href='##delete'>delete</a></td>"
+							+ "<td><a class='delete' href='##delete'>del</a> - <a href='##update' class='update'>upd</a></td>"
 							+ "</tr>");
 				$(tableId).append(row);
+			}
+			function updateRow(recordId){
+				$.ajax({
+					url: "#application.wsLoc#/artist/" + recordId,
+					type: "get",
+
+					//if we can get the current status of the record then show the update form
+					success: function(data, textStatus, xhr){
+						console.log(data.DATA);
+						$("##update").show("slow");
+					},
+
+					//otherwise, show an error
+					error: function(){
+						alert('unable to get current status of record, sorry!');
+					}
+				});
 			}
 		</script>
     </cfoutput>
