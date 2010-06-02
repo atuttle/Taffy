@@ -138,32 +138,6 @@
 		<cfset registerMimeType("json", "text/json") />
 		<cfset registerURIs() />
 	</cffunction>
-	<cffunction name="defaultMime" access="public" output="false" returntype="void">
-		<cfargument name="mime" type="string" required="true" hint="mime time to set as default for this api" />
-		<cfset application._taffy.settings.defaultMime = arguments.mime />
-	</cffunction>
-	<cffunction name="setDebugKey" access="private" output="false" returnType="void">
-		<cfargument name="keyName" type="string" required="true" hint="url parameter you want to use to enable ColdFusion debug output" />
-		<cfset application._taffy.settings.debugKey = arguments.keyName />
-	</cffunction>
-	<cffunction name="setReloadKey" access="private" output="false" returnType="void">
-		<cfargument name="keyName" type="string" required="true" hint="url parameter you want to use to reload Taffy (clear cache, reset settings)" />
-		<cfset application._taffy.settings.reloadKey = arguments.keyName />
-	</cffunction>
-	<cffunction name="setReloadPassword" access="private" output="false" returnType="void">
-		<cfargument name="password" type="string" required="true" hint="value required for the reload key to initiate a reload. if it doesn't match, then the framework will not reload." />
-		<cfset application._taffy.settings.reloadPassword = arguments.password />
-	</cffunction>
-	<cffunction name="addURI" access="public" output="false" returntype="taffy.core.api">
-		<cfargument name="cfcpath" type="string" required="true" hint="dot.path.to.api" />
-
-		<!--- get the cfc metadata that defines the uri for that cfc --->
-		<cfset var uri = getMetaData(createObject("component", arguments.cfcpath)).taffy_uri />
-		<cfset var meta = convertURItoRegex(uri) />
-		<cfset application._taffy.endpoints[meta.uriRegex] = { cfc = arguments.cfcpath , tokens = meta.tokens } />
-
-		<cfreturn this />
-	</cffunction>
 	<cffunction name="convertURItoRegex" access="private" output="false">
 		<cfargument name="uri" type="string" required="true" hint="wants the uri mapping defined by the cfc endpoint" />
 
@@ -237,23 +211,6 @@
 		<cfreturn returnData />
 
 	</cffunction>
-	<cffunction name="cacheEndpoint" access="private" output="false" returnType="void">
-		<cfargument name="cfcPath" type="string" required="true" hint="dot.notation.cfc.path" />
-		<cfset var t = "" />
-		<cfset application._taffy.endpointCache[arguments.cfcPath] = {} />
-		<cfset application._taffy.endpointCache[arguments.cfcPath].cfc = createObject("component", arguments.cfcPath) />
-		<cfset application._taffy.endpointCache[arguments.cfcPath].methods = {} />
-		<cfset var tmp = getMetadata(application._taffy.endpointCache[arguments.cfcPath].cfc).functions />
-		<cfloop array="#tmp#" index="t">
-			<cfset application._taffy.endpointCache[arguments.cfcPath].methods[t.name] = true />
-		</cfloop>
-	</cffunction>
-	<cffunction name="registerMimeType" access="public" output="false" returntype="void">
-		<cfargument name="extension" type="string" required="true" hint="ex: json" />
-		<cfargument name="mime" type="string" required="true" hint="ex: text/json" />
-		<cfset application._taffy.settings.mimeExtensions[arguments.extension] = arguments.mime />
-		<cfset application._taffy.settings.mimeTypes[arguments.mime] = arguments.extension />
-	</cffunction>
 	<cffunction name="throwError" access="private" output="false" returntype="void">
 		<cfargument name="statusCode" type="numeric" default="500" />
 		<cfargument name="msg" type="string" required="true" hint="message to return to api consumer" />
@@ -261,7 +218,6 @@
 		<cfheader statuscode="#arguments.statusCode#" statustext="#arguments.msg#" />
 		<cfabort />
 	</cffunction>
-
 	<cfscript>
 	function reFindNoSuck(string pattern, string data, numeric startPos = 1){
 		var sucky = refindNoCase(pattern, data, startPos, true);
@@ -281,7 +237,52 @@
 		}
 		return awesome;
 	}
-</cfscript>
+	</cfscript>
 
+
+	<!--- helper methods --->
+	<cffunction name="defaultMime" access="private" output="false" returntype="void">
+		<cfargument name="mime" type="string" required="true" hint="mime time to set as default for this api" />
+		<cfset application._taffy.settings.defaultMime = arguments.mime />
+	</cffunction>
+	<cffunction name="setDebugKey" access="private" output="false" returnType="void">
+		<cfargument name="keyName" type="string" required="true" hint="url parameter you want to use to enable ColdFusion debug output" />
+		<cfset application._taffy.settings.debugKey = arguments.keyName />
+	</cffunction>
+	<cffunction name="setReloadKey" access="private" output="false" returnType="void">
+		<cfargument name="keyName" type="string" required="true" hint="url parameter you want to use to reload Taffy (clear cache, reset settings)" />
+		<cfset application._taffy.settings.reloadKey = arguments.keyName />
+	</cffunction>
+	<cffunction name="setReloadPassword" access="private" output="false" returnType="void">
+		<cfargument name="password" type="string" required="true" hint="value required for the reload key to initiate a reload. if it doesn't match, then the framework will not reload." />
+		<cfset application._taffy.settings.reloadPassword = arguments.password />
+	</cffunction>
+	<cffunction name="addURI" access="public" output="false" returntype="taffy.core.api">
+		<cfargument name="cfcpath" type="string" required="true" hint="dot.path.to.api" />
+
+		<!--- get the cfc metadata that defines the uri for that cfc --->
+		<cfset var uri = getMetaData(createObject("component", arguments.cfcpath)).taffy_uri />
+		<cfset var meta = convertURItoRegex(uri) />
+		<cfset application._taffy.endpoints[meta.uriRegex] = { cfc = arguments.cfcpath , tokens = meta.tokens } />
+
+		<cfreturn this />
+	</cffunction>
+	<cffunction name="cacheEndpoint" access="private" output="false" returnType="void">
+		<cfargument name="cfcPath" type="string" required="true" hint="dot.notation.cfc.path" />
+		<cfset var t = "" />
+		<cfset application._taffy.endpointCache[arguments.cfcPath] = {} />
+		<cfset application._taffy.endpointCache[arguments.cfcPath].cfc = createObject("component", arguments.cfcPath) />
+		<cfset application._taffy.endpointCache[arguments.cfcPath].methods = {} />
+		<cfset var tmp = getMetadata(application._taffy.endpointCache[arguments.cfcPath].cfc).functions />
+		<cfloop array="#tmp#" index="t">
+			<cfset application._taffy.endpointCache[arguments.cfcPath].methods[t.name] = true />
+		</cfloop>
+	</cffunction>
+	<cffunction name="registerMimeType" access="private" output="false" returntype="void">
+		<cfargument name="extension" type="string" required="true" hint="ex: json" />
+		<cfargument name="mime" type="string" required="true" hint="ex: text/json" />
+		<cfset application._taffy.settings.mimeExtensions[arguments.extension] = arguments.mime />
+		<cfset application._taffy.settings.mimeTypes[arguments.mime] = arguments.extension />
+	</cffunction>
 
 </cfcomponent>
