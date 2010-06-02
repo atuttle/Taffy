@@ -1,7 +1,5 @@
 <cfcomponent hint="base class for taffy REST components">
 
-	<cfparam name="variables.maps" default="#arrayNew(1)#" />
-
 	<!--- helper functions --->
 	<cffunction name="representationOf" access="private" output="false" hint="returns an object capable of serializing the data in a variety of formats">
 		<cfargument name="data" required="true" hint="any simple or complex data that should be returned for the request" />
