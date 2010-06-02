@@ -4,4 +4,14 @@ component {
 	//essentially, it might as well be running on another server.
 	this.name = hash(getCurrentTemplatePath());
 
+	function onApplicationStart(){
+		application.wsLoc = "http://localhost/taffy/example/api/index.cfm";
+	}
+
+	function onRequestStart(){
+		if (structKeyExists(url, "reload") && url.reload == true){
+			onApplicationStart();
+		}
+	}
+
 }
