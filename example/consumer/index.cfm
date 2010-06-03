@@ -66,14 +66,34 @@
 					$("##addForm").show("slow");
 				});
 
-				//add-form
+				//add-form handler
+				submitFrmViaAjax(
+					$("##addForm"),
+					function (data, textStatus, xhr){
+						console.log(data);
+					},
+					function (xhr, textStatus, err){
+						console.log(textStatus);
+						console.log(err);
+					}
+				);
 
-				//update-form
-				submitFrmViaAjax($("##update"));
+
+				//update-form handler
+				submitFrmViaAjax(
+					$("##update"),
+					function (data, textStatus, xhr){
+						console.log(data);
+					},
+					function (xhr, textStatus, err){
+						console.log(textStatus);
+						console.log(err);
+					}
+				);
 
 				//load table data
 				$.ajax({
-					url: "#application.wsLoc#/artists",
+					url: apiBaseURI + "/artists",
 					type: "get",
 					dataType: "json",
 					success: function(data, textStatus, xhr){
@@ -105,7 +125,7 @@
 				$("##" + rowId).hide();
 				//try to delete the record
 				$.ajax({
-					url: "#application.wsLoc#/artist/" + rowId,
+					url: apiBaseURI + "/artist/" + rowId,
 					type: "delete",
 
 					//if delete successful, remove the row
@@ -140,7 +160,7 @@
 			}
 			function updateRow(recordId){
 				$.ajax({
-					url: "#application.wsLoc#/artist/" + recordId,
+					url: apiBaseURI + "/artist/" + recordId,
 					type: "get",
 
 					//if we can get the current status of the record then show the update form
@@ -156,7 +176,7 @@
 					}
 				});
 			}
-			function submitFrmViaAjax(frm){
+			function submitFrmViaAjax(frm, successCallback, errorCallback){
 				frm.submit(function(e){
 					e.preventDefault();
 					var frm = $(this);
@@ -165,13 +185,8 @@
 						type: frm.attr('method'),
 						dataType: "json",
 						data: frm.serialize(),
-						success: function(data, textStatus, xhr){
-							console.log(data);
-						},
-						error: function(xhr, textStatus, err){
-							console.log(err);
-							alert("error: " + textStatus);
-						}
+						success: successCallback,
+						error: errorCallback
 					});
 				});
 			}
