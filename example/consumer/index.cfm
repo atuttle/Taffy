@@ -13,7 +13,17 @@
 <body id="top">
 	<a href="#new" id="new">Add New Artist</a><br/>
 	<form action="/taffy/example/api/index.cfm/artists" method="post" id="addForm">
-		add form here
+		First Name: <input type="text" name="firstname" /><br/>
+		Last Name: <input type="text" name="lastname" /><br/>
+		Address: <input type="text" name="address" /><br/>
+		City: <input type="text" name="city" /><br/>
+		State: <input type="text" name="state" /><br/>
+		Postal Code: <input type="text" name="postalcode" /><br/>
+		Email: <input type="text" name="email" /><br/>
+		Phone: <input type="text" name="phone" /><br/>
+		Fax: <input type="text" name="fax" /><br/>
+		Password: <input type="text" name="thepassword" /><br/>
+		<input type="submit" value="Add Artist" /><input type="reset" value="Cancel" id="addCancel" />
 	</form>
 	<form action="/taffy/example/api/index.cfm/artist" method="put" id="update">
 		First Name: <input type="text" name="firstname" /><br/>
@@ -26,7 +36,7 @@
 		Phone: <input type="text" name="phone" /><br/>
 		Fax: <input type="text" name="fax" /><br/>
 		Password: <input type="text" name="thepassword" /><br/>
-		<input type="submit" value="Update" />
+		<input type="submit" value="Update Artist" /><input type="reset" value="Cancel" id="updateCancel" />
 	</form>
 	<table id="artists">
 		<tr>
@@ -69,6 +79,14 @@
 				//new-record-link handler
 				$("##new").click(function(){
 					$("##addForm").show("slow");
+				});
+
+				$("##updateCancel").click(function(){
+					$("##update").hide("slow");
+				});
+
+				$("##addCancel").click(function(){
+					$("##addForm").hide("slow");
 				});
 
 				/* ************* */
