@@ -14,7 +14,7 @@ component extends="taffy.core.api" {
 
 		//TODO: allow setDefaultRepresentationClass("path.to.representationcfc")
 
-		registerMimeType("json", "text/json");
+		registerMimeType("json", "application/json");
 
 	}
 
