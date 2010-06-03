@@ -12,11 +12,21 @@
 </head>
 <body id="top">
 	<a href="#new" id="new">Add New Artist</a><br/>
-	<form action="/taffy/api/index.cfm/artists" method="post" id="addForm">
+	<form action="/taffy/example/api/index.cfm/artists" method="post" id="addForm">
 		add form here
 	</form>
-	<form action="/taffy/api/index.cfm/artist" method="put" id="update">
-		update form here
+	<form action="/taffy/example/api/index.cfm/artist" method="put" id="update">
+		First Name: <input type="text" name="firstname" /><br/>
+		Last Name: <input type="text" name="lastname" /><br/>
+		Address: <input type="text" name="address" /><br/>
+		City: <input type="text" name="city" /><br/>
+		State: <input type="text" name="state" /><br/>
+		Postal Code: <input type="text" name="postalcode" /><br/>
+		Email: <input type="text" name="email" /><br/>
+		Phone: <input type="text" name="phone" /><br/>
+		Fax: <input type="text" name="fax" /><br/>
+		Password: <input type="text" name="thepassword" /><br/>
+		<input type="submit" value="Update" />
 	</form>
 	<table id="artists">
 		<tr>
@@ -51,6 +61,27 @@
 				//new-record-link handler
 				$("##new").click(function(){
 					$("##addForm").show("slow");
+				});
+
+				//add-form
+
+				//update-form
+				$("##update").submit(function(e){
+					e.preventDefault();
+					var frm = $(this);
+					$.ajax({
+						url: frm.attr('action'),
+						type: frm.attr('action'),
+						dataType: "json",
+						data: frm.serialize(),
+						success: function(data, textStatus, xhr){
+							console.log(data);
+						},
+						error: function(xhr, textStatus, err){
+							console.log(err);
+							alert("error: " + textStatus);
+						}
+					});
 				});
 
 				//load table data
