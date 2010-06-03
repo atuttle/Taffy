@@ -184,6 +184,16 @@
 					success: function(data, textStatus, xhr){
 						console.log(data.DATA);
 						$("##update").attr('action', apiBaseURI + "/artist/" + recordId);
+						$("##update input[name='firstname']").val(data.DATA[0][1]);
+						$("##update input[name='lastname']").val(data.DATA[0][2]);
+						$("##update input[name='address']").val(data.DATA[0][3]);
+						$("##update input[name='city']").val(data.DATA[0][4]);
+						$("##update input[name='state']").val(data.DATA[0][5]);
+						$("##update input[name='postalcode']").val(data.DATA[0][6]);
+						$("##update input[name='email']").val(data.DATA[0][7]);
+						$("##update input[name='phone']").val(data.DATA[0][8]);
+						$("##update input[name='fax']").val(data.DATA[0][9]);
+						$("##update input[name='thepassword']").val(data.DATA[0][10]);
 						$("##update").show("slow");
 					},
 
