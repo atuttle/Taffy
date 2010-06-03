@@ -47,6 +47,9 @@
 	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
 	<cfoutput>
     	<script type="text/javascript">
+
+			var apiBaseURI = "#application.wsLoc#";
+
 			$(document).ready(function(){
 
 				//delete-link handler
@@ -66,23 +69,7 @@
 				//add-form
 
 				//update-form
-				$("##update").submit(function(e){
-					e.preventDefault();
-					var frm = $(this);
-					$.ajax({
-						url: frm.attr('action'),
-						type: frm.attr('action'),
-						dataType: "json",
-						data: frm.serialize(),
-						success: function(data, textStatus, xhr){
-							console.log(data);
-						},
-						error: function(xhr, textStatus, err){
-							console.log(err);
-							alert("error: " + textStatus);
-						}
-					});
-				});
+				submitFrmViaAjax($("##update"));
 
 				//load table data
 				$.ajax({
@@ -159,6 +146,7 @@
 					//if we can get the current status of the record then show the update form
 					success: function(data, textStatus, xhr){
 						console.log(data.DATA);
+						$("##update").attr('action', apiBaseURI + "/artist/" + recordId);
 						$("##update").show("slow");
 					},
 
@@ -166,6 +154,25 @@
 					error: function(){
 						alert('unable to get current status of record, sorry!');
 					}
+				});
+			}
+			function submitFrmViaAjax(frm){
+				frm.submit(function(e){
+					e.preventDefault();
+					var frm = $(this);
+					$.ajax({
+						url: frm.attr('action'),
+						type: frm.attr('method'),
+						dataType: "json",
+						data: frm.serialize(),
+						success: function(data, textStatus, xhr){
+							console.log(data);
+						},
+						error: function(xhr, textStatus, err){
+							console.log(err);
+							alert("error: " + textStatus);
+						}
+					});
 				});
 			}
 		</script>
