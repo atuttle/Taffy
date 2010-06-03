@@ -52,6 +52,11 @@
 
 			$(document).ready(function(){
 
+
+				/* ************* */
+				/* LINK HANDLERS */
+				/* ************* */
+
 				//delete-link handler
 				$("##artists .delete").live('click', function(){
 					deleteRow($(this).parent().parent().attr('id'));
@@ -66,6 +71,10 @@
 					$("##addForm").show("slow");
 				});
 
+				/* ************* */
+				/* FORM HANDLERS */
+				/* ************* */
+
 				//add-form handler
 				submitFrmViaAjax(
 					$("##addForm"),
@@ -78,7 +87,6 @@
 					}
 				);
 
-
 				//update-form handler
 				submitFrmViaAjax(
 					$("##update"),
@@ -90,6 +98,10 @@
 						console.log(err);
 					}
 				);
+
+				/* ********* */
+				/* LOAD DATA */
+				/* ********* */
 
 				//load table data
 				$.ajax({
@@ -120,6 +132,11 @@
 					}
 				});
 			});
+
+			/* ************** */
+			/* INTERNAL FUNCS */
+			/* ************** */
+
 			function deleteRow(rowId){
 				//hide the row
 				$("##" + rowId).hide();
