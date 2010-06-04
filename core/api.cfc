@@ -1,10 +1,10 @@
 <cfcomponent hint="Base class for taffy REST application's Application.cfc">
 
-	<!--- you can override these methods in your application.cfc to  --->
 	<cfscript>
+		//you can override these methods in your application.cfc
 		function applicationHook(){}	//override this function to run your own code inside onApplicationStart()
 		function requestHook(){}		//override this function to run your own code inside onRequestStart()
-		function registerURIs(){}		//override this function to define your endpoints
+		function registerURIs(){}		//override this function to register your APIs URIs
 
 		/* DO NOT OVERRIDE THIS FUNCTION - SEE applicationHook ABOVE */
 		function onApplicationStart(){
