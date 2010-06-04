@@ -9,6 +9,10 @@
 		<cfreturn this />
 	</cffunction>
 
+	<cffunction name="noData" access="public" output="false" returntype="taffy.core.genericRepresentation" hint="returns empty representation instance">
+		<cfreturn this />
+	</cffunction>
+
 	<cffunction name="getAsJson" access="public" output="false" returntype="String" hint="serializes data as JSON">
 		<cfreturn serializeJSON(variables.data) />
 	</cffunction>

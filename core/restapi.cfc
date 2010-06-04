@@ -13,4 +13,8 @@
 
 	</cffunction>
 
+	<cffunction name="noData" access="private" output="false" hint="use this function to return only headers to the consumer, no data">
+		<cfreturn createObject("component", "taffy.core.genericRepresentation").noData() />
+	</cffunction>
+
 </cfcomponent>
