@@ -116,7 +116,9 @@
 		<cfsetting enablecfoutputonly="true" />
 		<cfcontent reset="true" type="#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#" />
 		<cfheader statuscode="#_taffyRequest.resultStatus#"/>
-		<cfoutput>#_taffyRequest.resultSerialized#</cfoutput>
+		<cfif _taffyRequest.resultSerialized neq """""">
+			<cfoutput>#_taffyRequest.resultSerialized#</cfoutput>
+		</cfif>
 
 		<cfreturn true />
 	</cffunction>
