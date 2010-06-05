@@ -11,6 +11,12 @@
 	</style>
 </head>
 <body id="top">
+
+	<h2>Artists</h2>
+
+	<p>This is <em><strong>not</strong></em> a shining example of how to write an ajax-based web application;
+	it is strictly intended to demonstrate the use of each of the 4 http verbs with a Taffy API.</p>
+
 	<a href="#new" id="new">Add New Artist</a><br/>
 	<form action="/taffy/example/api/index.cfm/artists" method="post" id="addForm">
 		First Name: <input type="text" name="firstname" /><br/>
@@ -36,6 +42,7 @@
 		Phone: <input type="text" name="phone" /><br/>
 		Fax: <input type="text" name="fax" /><br/>
 		Password: <input type="text" name="thepassword" /><br/>
+		<input type="hidden" name="debug" value="true" />
 		<input type="submit" value="Update Artist" /><input type="reset" value="Cancel" id="updateCancel" />
 	</form>
 	<table id="artists">
