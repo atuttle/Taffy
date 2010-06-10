@@ -55,6 +55,7 @@
 				<cfif len(arguments.thepassword)>
 					,thepassword = <cfqueryparam cfsqltype="cf_sql_varchar" value="#arguments.thepassword#" />
 				</cfif>
+				where artistid = <cfqueryparam cfsqltype="cf_sql_numeric" value="#arguments.id#" />
 		</cfquery>
 		<cfreturn noData().withStatus(200) />
 	</cffunction>
