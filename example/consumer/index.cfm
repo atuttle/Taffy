@@ -7,7 +7,10 @@
 			text-decoration: underline;
 			cursor: pointer;
 		}
-		#addForm, #update { display: none; }
+		#add, #update { display: none; }
+		#artists td {
+			padding: 4px;
+		}
 	</style>
 </head>
 <body id="top">
@@ -18,7 +21,7 @@
 	it is strictly intended to demonstrate the use of each of the 4 http verbs with a Taffy API.</p>
 
 	<a href="#new" id="new">Add New Artist</a><br/>
-	<form action="/taffy/example/api/index.cfm/artists" method="post" id="addForm">
+	<form action="/taffy/example/api/index.cfm/artists" method="post" id="add">
 		First Name: <input type="text" name="firstname" /><br/>
 		Last Name: <input type="text" name="lastname" /><br/>
 		Address: <input type="text" name="address" /><br/>
@@ -29,7 +32,8 @@
 		Phone: <input type="text" name="phone" /><br/>
 		Fax: <input type="text" name="fax" /><br/>
 		Password: <input type="text" name="thepassword" /><br/>
-		<input type="submit" value="Add Artist" /><input type="reset" value="Cancel" id="addCancel" />
+		<input type="submit" value="Add Artist" />
+		<input type="reset" value="Cancel" id="addCancel" />
 	</form>
 	<form action="/taffy/example/api/index.cfm/artist" method="put" id="update">
 		First Name: <input type="text" name="firstname" /><br/>
@@ -43,7 +47,8 @@
 		Fax: <input type="text" name="fax" /><br/>
 		Password: <input type="text" name="thepassword" /><br/>
 		<input type="hidden" name="debug" value="true" />
-		<input type="submit" value="Update Artist" /><input type="reset" value="Cancel" id="updateCancel" />
+		<input type="submit" value="Update Artist" />
+		<input type="reset" value="Cancel" id="updateCancel" />
 	</form>
 	<table id="artists">
 		<tr>
@@ -85,7 +90,7 @@
 
 				//new-record-link handler
 				$("##new").click(function(){
-					$("##addForm").show("slow");
+					$("##add").show("slow");
 				});
 
 				$("##updateCancel").click(function(){
@@ -93,7 +98,7 @@
 				});
 
 				$("##addCancel").click(function(){
-					$("##addForm").hide("slow");
+					$("##add").hide("slow");
 				});
 
 				/* ************* */
@@ -102,32 +107,109 @@
 
 				//add-form handler
 				submitFrmViaAjax(
-					$("##addForm"),
+					$("##add"),
 					function (data, textStatus, xhr){
 						console.log(data);
+						$("##add").hide();
+						reloadData();
 					},
 					function (xhr, textStatus, err){
 						console.log(textStatus);
 						console.log(err);
 					}
 				);
+				/*
+				$("##add").submit(function(e){
+					e.preventDefault();
+					var frm = $(this);
+					$.ajax({
+						url: frm.attr('action'),
+						data:{
+							firstname: $("##add input[name=firstname]").val(),
+							lastname: $("##add input[name=lastname]").val(),
+							address: $("##add input[name=address]").val(),
+							city: $("##add input[name=city]").val(),
+							state: $("##add input[name=state]").val(),
+							postalcode: $("##add input[name=postalcode]").val(),
+							email: $("##add input[name=email]").val(),
+							phone: $("##add input[name=phone]").val(),
+							fax: $("##add input[name=fax]").val(),
+							thepassword: $("##add input[name=thepassword]").val()
+						},
+						type: frm.attr('method'),
+						dataType: "json",
+						contentType: "application/json",
+						success: function (data, textStatus, xhr){
+							console.log(data);
+						},
+						error: function (xhr, textStatus, err){
+							console.log(textStatus);
+							console.log(err);
+						}
+					});
+				});
+				*/
 
 				//update-form handler
 				submitFrmViaAjax(
 					$("##update"),
 					function (data, textStatus, xhr){
 						console.log(data);
+						$("##update").hide();
+						reloadData();
 					},
 					function (xhr, textStatus, err){
 						console.log(textStatus);
 						console.log(err);
 					}
-				);
+				);				
+				/*
+				$("##update").submit(function(e){
+					e.preventDefault();
+					var frm = $(this);
+					$.ajax({
+						url: frm.attr('action'),
+						data: {
+							firstname: $("##update input[name=firstname]").val(),
+				            lastname: $("##update input[name=lastname]").val(),
+				            address: $("##update input[name=address]").val(),
+				            city: $("##update input[name=city]").val(),
+				            state: $("##update input[name=state]").val(),
+				            postalcode: $("##update input[name=postalcode]").val(),
+				            email: $("##update input[name=email]").val(),
+				            phone: $("##update input[name=phone]").val(),
+				            fax: $("##update input[name=fax]").val(),
+				            thepassword: $("##update input[name=thepassword]").val()
+						},
+						type: frm.attr('method'),
+						dataType: "json",
+						success: function (data, textStatus, xhr){
+							console.log(data);
+							$("##update").hide();
+							reloadData();
+						},
+						error: function (xhr, textStatus, err){
+							console.log(textStatus);
+							console.log(err);
+						}
+					});
+				});
+				*/
 
 				/* ********* */
 				/* LOAD DATA */
 				/* ********* */
+				reloadData();
 
+			});
+
+			/* ************** */
+			/* INTERNAL FUNCS */
+			/* ************** */
+
+			function reloadData(){
+				//remove existing data
+				$("##artists .dyn").remove();
 				//load table data
 				$.ajax({
 					url: apiBaseURI + "/artists",
@@ -156,11 +238,7 @@
 						alert(err & "\n\n" & textStatus);
 					}
 				});
-			});
-
-			/* ************** */
-			/* INTERNAL FUNCS */
-			/* ************** */
+			}
 
 			function deleteRow(rowId){
 				//hide the row
@@ -184,7 +262,7 @@
 				});
 			}
 			function addRow(tableId, a, b, c, d, e, f, g, h, i, j, k){
-				var row = $("<tr id='" + a + "'>"
+				var row = $("<tr class='dyn' id='" + a + "'>"
 							+ "<td>" + a + "</td>"
 							+ "<td>" + b + "</td>"
 							+ "<td>" + c + "</td>"
@@ -234,9 +312,8 @@
 					var frm = $(this);
 					$.ajax({
 						url: frm.attr('action'),
-						type: frm.attr('method'),
-						dataType: "json",
 						data: frm.serialize(),
+						type: frm.attr('method'),
 						success: successCallback,
 						error: errorCallback
 					});
