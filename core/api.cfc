@@ -95,12 +95,10 @@
 		<cfif not structKeyExists(application._taffy.endpointCache, _taffyRequest.matchDetails.cfc)>
 			<cfset cacheEndpoint(_taffyRequest.matchDetails.cfc) />
 		</cfif>
-
 		<!--- if the verb is not implemented, refuse the request --->
 		<cfif not structKeyExists(application._taffy.endpointCache[_taffyRequest.matchDetails.cfc].methods, _taffyRequest.verb)>
 			<cfset throwError(405, "Method Not Allowed") />
 		</cfif>
-
 		<!--- returns a representation-object --->
 		<cfinvoke
 			component="#application._taffy.endpointCache[_taffyRequest.matchDetails.cfc].cfc#"
@@ -114,7 +112,6 @@
 			method="getAs#_taffyRequest.returnMimeExt#"
 			returnvariable="_taffyRequest.resultSerialized"
 		/>
-
 		<!--- get status code --->
 		<cfinvoke
 			component="#_taffyRequest.result#"
@@ -175,7 +172,6 @@
 	<cffunction name="matchURI" access="private" output="false" returnType="string">
 		<cfargument name="requestedURI" type="string" required="true" hint="probably just pass in cgi.path_info" />
 		<cfset var endpoint = '' />
-
 		<cfloop collection="#application._taffy.endpoints#" item="endpoint">
 			<cfset attempt = reMatchNoCase(endpoint, arguments.requestedURI) />
 			<cfif arrayLen(attempt) gt 0>
@@ -183,21 +179,17 @@
 				<cfreturn endpoint />
 			</cfif>
 		</cfloop>
-
 		<!--- nothing found --->
 		<cfreturn "" />
-
 	</cffunction>
 	<cffunction name="buildRequestArguments" access="private" output="false" returnType="struct">
 		<cfargument name="regex" type="string" required="true" hint="regex that describes the request (including uri and query string parameters)" />
 		<cfargument name="tokenNamesArray" type="array" required="true" hint="array of token names associated with the matched uri" />
 		<cfargument name="uri" type="string" required="true" hint="the requested uri" />
 		<cfargument name="queryString" type="string" required="true" hint="any query string parameters included in the request" />
-
 		<cfset var returnData = {} /><!--- this will be used as an argumentCollection for the method that ultimately gets called --->
 		<cfset var t = '' />
 		<cfset var i = '' />
-
 		<!--- parse path_info data into key-value pairs --->
 		<cfset var tokenValues = reFindNoSuck(arguments.regex, arguments.uri) />
 		<cfset var numTokenValues = arrayLen(tokenValues) />
@@ -207,22 +199,18 @@
 				<cfset returnData[arguments.tokenNamesArray[t]] = tokenValues[t] />
 			</cfloop>
 		</cfif>
-
 		<!--- also parse query string parameters into key-value pairs --->
 		<cfloop list="#arguments.queryString#" delimiters="&" index="t">
 			<cfset returnData[listFirst(t,'=')] = listLast(t,'=') />
 		</cfloop>
-
 		<!--- if a mime type is requested as part of the url ("whatever.json"), then extract that so taffy can use it --->
 		<cfif numTokenValues gt numTokenNames>
 			<cfset var mime = tokenValues[numTokenValues] /><!--- the last token represents ".json"/etc --->
 			<cfset var mimeLen = len(mime) />
 			<cfset returnData["_taffy_mime"] = right(mime, mimeLen - 1) />
 		</cfif>
-
 		<!--- return --->
 		<cfreturn returnData />
-
 	</cffunction>
 	<cffunction name="throwError" access="private" output="false" returntype="void">
 		<cfargument name="statusCode" type="numeric" default="500" />
