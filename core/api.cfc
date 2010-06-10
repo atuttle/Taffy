@@ -70,6 +70,8 @@
 			cgi.path_info,
 			_taffyRequest.queryString
 		) />
+		<!--- also capture form POST data (higher priority that url variables of same name) --->
+		<cfset structAppend(_taffyRequest.requestArguments, form) />
 
 		<!--- use requested mime type or the default --->
 		<cfset _taffyRequest.returnMimeExt = "" />
