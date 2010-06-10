@@ -58,9 +58,9 @@
 		<cfset _taffyRequest.verb = cgi.request_method />
 		
 		<cfif ucase(_taffyRequest.verb) eq "PUT">
-			<cfset _taffyRequest.putScope = getPutParameters() />
+			<cfset _taffyRequest.queryString = getPutParameters() />
 		<cfelse>
-			<cfset _taffyRequest.putScope = StructNew() />
+			<cfset _taffyRequest.queryString = cgi.query_string />
 		</cfif>
 
 		<!--- build the argumentCollection to pass to the cfc --->
@@ -68,8 +68,7 @@
 			_taffyRequest.matchingRegex,
 			_taffyRequest.matchDetails.tokens,
 			cgi.path_info,
-			cgi.query_string,
-			_taffyRequest.putScope
+			_taffyRequest.queryString
 		) />
 
 		<!--- use requested mime type or the default --->
@@ -189,25 +188,15 @@
 		<!--- nothing found --->
 		<cfreturn "" />
 	</cffunction>
-	<cffunction name="getPutParameters" access="private" output="false" returntype="Struct" hint="Gets PUT data into a structure, which CF doesn't do automatically">
-		<!--- Special thanks to Jason Dean (@JasonPDean) who helped me figure out how to do this --->
-		<cfset var rtn = {} />
-		<cfset var httpRequest = getPageContext().getRequest().getHTTPRequest() />
-		<cfset var names = httpRequest.getParameterNames() />
-		<cfset var current = "" />
-		<cfloop condition="#names.hasMoreElements()#">
-			<cfset current = names.nextElement() />
-			<cfset rtn[current] = httpRequest.getParameterValues(current) />
-			<cfset rtn[current] = urlDecode(rtn[current][1]) /><!--- extract the value from the array and urldecode() it --->
-		</cfloop>
-		<cfreturn rtn />
+	<cffunction name="getPutParameters" access="private" output="false" returntype="String" hint="Gets PUT data into a string similar to cgi.query_string, which CF doesn't do automatically">
+		<!--- Special thanks to Jason Dean (@JasonPDean) and Ray Camden (@ColdFusionJedi) who helped me figure out how to do this --->
+		<cfreturn getHTTPRequestData().content />
 	</cffunction>
 	<cffunction name="buildRequestArguments" access="private" output="false" returnType="struct">
 		<cfargument name="regex" type="string" required="true" hint="regex that describes the request (including uri and query string parameters)" />
 		<cfargument name="tokenNamesArray" type="array" required="true" hint="array of token names associated with the matched uri" />
 		<cfargument name="uri" type="string" required="true" hint="the requested uri" />
 		<cfargument name="queryString" type="string" required="true" hint="any query string parameters included in the request" />
-		<cfargument name="putScope" type="struct" required="false" default="#structNew()#" hint="parameters passed in a PUT reqeust" />
 		<cfset var returnData = {} /><!--- this will be used as an argumentCollection for the method that ultimately gets called --->
 		<cfset var t = '' />
 		<cfset var i = '' />
@@ -224,8 +213,6 @@
 		<cfloop list="#arguments.queryString#" delimiters="&" index="t">
 			<cfset returnData[listFirst(t,'=')] = urlDecode(listLast(t,'=')) />
 		</cfloop>
-		<!--- if this is a PUT request, copy the data over to the arguments to be passed to the function --->
-		<cfset structAppend(returnData, arguments.putScope, true) />
 		<!--- if a mime type is requested as part of the url ("whatever.json"), then extract that so taffy can use it --->
 		<cfif numTokenValues gt numTokenNames>
 			<cfset var mime = tokenValues[numTokenValues] /><!--- the last token represents ".json"/etc --->
