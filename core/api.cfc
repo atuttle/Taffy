@@ -71,10 +71,19 @@
 			<cfset _taffyRequest.returnMimeExt = _taffyRequest.requestArguments["_taffy_mime"] />
 			<cfset structDelete(_taffyRequest.requestArguments, "_taffy_mime") />
 		<cfelse>
-			<cfif structKeyExists(cgi, "http_accept") and structKeyExists(application._taffy.settings.mimeTypes, cgi.http_accept)>
-				<cfset _taffyRequest.returnMimeExt = application._taffy.settings.mimeTypes[cgi.http_accept] />
-			<cfelse>
-				<cfset _taffyRequest.returnMimeExt = application._taffy.settings.defaultMime />
+			<cfif structKeyExists(cgi, "http_accept") and len(cgi.http_accept)>
+				<cfloop list="#cgi.HTTP_ACCEPT#" index="_taffyRequest.tmpHeader">
+					<!--- deal with that q=0 stuff (just ignore it) --->
+					<cfif listLen(_taffyRequest.tmpHeader, ";") gt 1>
+						<cfset _taffyRequest.tmpHeader = listFirst(_taffyRequest.tmpHeader, ";") />
+					</cfif>
+					<cfif structKeyExists(application._taffy.settings.mimeTypes, _taffyRequest.tmpHeader)>
+						<cfset _taffyRequest.returnMimeExt = application._taffy.settings.mimeTypes[_taffyRequest.tmpHeader] />
+					<cfelse>
+						<cfset _taffyRequest.returnMimeExt = application._taffy.settings.defaultMime />
+					</cfif>
+				</cfloop>
+				<cfset structDelete(_taffyRequest, "tmpHeader")/>
 			</cfif>
 		</cfif>
 
@@ -204,12 +213,14 @@
 			<cfset returnData[listFirst(t,'=')] = listLast(t,'=') />
 		</cfloop>
 
+		<!--- if a mime type is requested as part of the url ("whatever.json"), then extract that so taffy can use it --->
 		<cfif numTokenValues gt numTokenNames>
-			<cfset var mime = tokenValues[numTokenValues] />
+			<cfset var mime = tokenValues[numTokenValues] /><!--- the last token represents ".json"/etc --->
 			<cfset var mimeLen = len(mime) />
 			<cfset returnData["_taffy_mime"] = right(mime, mimeLen - 1) />
 		</cfif>
 
+		<!--- return --->
 		<cfreturn returnData />
 
 	</cffunction>
