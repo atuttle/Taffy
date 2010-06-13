@@ -231,6 +231,17 @@
 		<cfheader statuscode="#arguments.statusCode#" statustext="#arguments.msg#" />
 		<cfabort />
 	</cffunction>
+	<cffunction name="cacheEndpoint" access="private" output="false" returnType="void">
+		<cfargument name="cfcPath" type="string" required="true" hint="dot.notation.cfc.path" />
+		<cfset var t = "" />
+		<cfset application._taffy.endpointCache[arguments.cfcPath] = {} />
+		<cfset application._taffy.endpointCache[arguments.cfcPath].cfc = createObject("component", arguments.cfcPath) />
+		<cfset application._taffy.endpointCache[arguments.cfcPath].methods = {} />
+		<cfset var tmp = getMetadata(application._taffy.endpointCache[arguments.cfcPath].cfc).functions />
+		<cfloop array="#tmp#" index="t">
+			<cfset application._taffy.endpointCache[arguments.cfcPath].methods[t.name] = true />
+		</cfloop>
+	</cffunction>
 	<cfscript>
 	function reFindNoSuck(string pattern, string data, numeric startPos = 1){
 		var sucky = refindNoCase(pattern, data, startPos, true);
@@ -255,8 +266,8 @@
 
 	<!--- helper methods --->
 	<cffunction name="defaultMime" access="private" output="false" returntype="void">
-		<cfargument name="mime" type="string" required="true" hint="mime time to set as default for this api" />
-		<cfset application._taffy.settings.defaultMime = arguments.mime />
+		<cfargument name="DefaultMimeType" type="string" required="true" hint="mime time to set as default for this api" />
+		<cfset application._taffy.settings.defaultMime = arguments.DefaultMimeType />
 	</cffunction>
 	<cffunction name="setDebugKey" access="private" output="false" returnType="void">
 		<cfargument name="keyName" type="string" required="true" hint="url parameter you want to use to enable ColdFusion debug output" />
@@ -280,22 +291,11 @@
 
 		<cfreturn this />
 	</cffunction>
-	<cffunction name="cacheEndpoint" access="private" output="false" returnType="void">
-		<cfargument name="cfcPath" type="string" required="true" hint="dot.notation.cfc.path" />
-		<cfset var t = "" />
-		<cfset application._taffy.endpointCache[arguments.cfcPath] = {} />
-		<cfset application._taffy.endpointCache[arguments.cfcPath].cfc = createObject("component", arguments.cfcPath) />
-		<cfset application._taffy.endpointCache[arguments.cfcPath].methods = {} />
-		<cfset var tmp = getMetadata(application._taffy.endpointCache[arguments.cfcPath].cfc).functions />
-		<cfloop array="#tmp#" index="t">
-			<cfset application._taffy.endpointCache[arguments.cfcPath].methods[t.name] = true />
-		</cfloop>
-	</cffunction>
 	<cffunction name="registerMimeType" access="private" output="false" returntype="void">
 		<cfargument name="extension" type="string" required="true" hint="ex: json" />
-		<cfargument name="mime" type="string" required="true" hint="ex: text/json" />
-		<cfset application._taffy.settings.mimeExtensions[arguments.extension] = arguments.mime />
-		<cfset application._taffy.settings.mimeTypes[arguments.mime] = arguments.extension />
+		<cfargument name="mimeType" type="string" required="true" hint="ex: text/json" />
+		<cfset application._taffy.settings.mimeExtensions[arguments.extension] = arguments.mimeType />
+		<cfset application._taffy.settings.mimeTypes[arguments.mimeType] = arguments.extension />
 	</cffunction>
 
 </cfcomponent>
