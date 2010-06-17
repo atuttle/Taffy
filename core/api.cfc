@@ -149,7 +149,8 @@
 			defaultMime = "json",
 			debugKey = "debug",
 			reloadKey = "reload",
-			reloadPassword = "true"
+			reloadPassword = "true",
+			defaultRepresentationClass = "taffy.core.genericRepresentation"
 		} />
 		<cfset registerMimeType("json", "application/json") />
 		<cfset registerURIs() />
@@ -296,6 +297,10 @@
 		<cfargument name="mimeType" type="string" required="true" hint="ex: text/json" />
 		<cfset application._taffy.settings.mimeExtensions[arguments.extension] = arguments.mimeType />
 		<cfset application._taffy.settings.mimeTypes[arguments.mimeType] = arguments.extension />
+	</cffunction>
+	<cffunction name="setDefaultRepresentationClass" access="public" output="false" returnType="void" hint="Override the global default representation object with a custom class">
+		<cfargument name="customClassDotPath" type="string" required="true" hint="Dot-notation path to your custom class to use as the default" />
+		<cfset application._taffy.settings.defaultRepresentationClass = arguments.customClassDotPath />
 	</cffunction>
 
 </cfcomponent>

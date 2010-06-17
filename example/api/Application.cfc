@@ -12,7 +12,8 @@ component extends="taffy.core.api" {
 		setReloadKey("reload");
 		setReloadPassword("true");
 
-		//TODO: allow setDefaultRepresentationClass("path.to.representationcfc")
+		//you could change this to a custom class to change the default instead of specifying it for each response
+		setDefaultRepresentationClass("taffy.core.genericRepresentation");
 
 		registerMimeType("json", "application/json");
 
