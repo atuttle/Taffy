@@ -2,22 +2,27 @@
 
 	<cfscript>
 		//you can override these methods in your application.cfc
-		function applicationHook(){}	//override this function to run your own code inside onApplicationStart()
-		function requestHook(){}		//override this function to run your own code inside onRequestStart()
-		function registerURIs(){}		//override this function to register your APIs URIs
+		function applicationStartEvent(){}	//override this function to run your own code inside onApplicationStart()
+		function requestStartEvent(){}		//override this function to run your own code inside onRequestStart()
+		function configureTaffy(){}			//override this function to set Taffy config settings
+		
+		/** onTaffyRequest gives you the opportunity to inspect the request before it is marshalled to the service.
+		  * If you override this function, you MUST either return TRUE or a response object (same class as services).
+		  */
+		function onTaffyRequest(string verb, string cfc, struct requestArguments, string mimeExt){return true;}
 
-		/* DO NOT OVERRIDE THIS FUNCTION - SEE applicationHook ABOVE */
+		/* DO NOT OVERRIDE THIS FUNCTION - SEE applicationStartEvent ABOVE */
 		function onApplicationStart(){
+			applicationStartEvent();
 			setupFramework();
-			applicationHook();
 			return true;
 		}
-		/* DO NOT OVERRIDE THIS FUNCTION - SEE requestHook ABOVE */
+		/* DO NOT OVERRIDE THIS FUNCTION - SEE requestStartEvent ABOVE */
 		function onRequestStart(){
 			if (structKeyExists(url, application._taffy.settings.reloadKey) and url[application._taffy.settings.reloadKey] eq application._taffy.settings.reloadPassword){
 				setupFramework();
 			}
-			requestHook();
+			requestStartEvent();
 			return true;
 		}
     </cfscript>
@@ -153,7 +158,7 @@
 			defaultRepresentationClass = "taffy.core.genericRepresentation"
 		} />
 		<cfset registerMimeType("json", "application/json") />
-		<cfset registerURIs() />
+		<cfset configureTaffy()/>
 	</cffunction>
 	<cffunction name="convertURItoRegex" access="private" output="false">
 		<cfargument name="uri" type="string" required="true" hint="wants the uri mapping defined by the cfc endpoint" />
