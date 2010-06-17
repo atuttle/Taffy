@@ -46,78 +46,55 @@
 			<cfinclude template="dashboard.cfm" />
 			<cfabort>
 		</cfif>
-
-		<!--- attempt to find the cfc for the requested uri --->
-		<cfset _taffyRequest.matchingRegex = matchURI(cgi.path_info) />
-
-		<!--- uri doesn't map to any known resources --->
-		<cfif not len(_taffyRequest.matchingRegex)>
-			<cfset throwError(404, "Not Found") />
-		</cfif>
-
-		<!--- get the cfc name and token array for the matching regex --->
-		<cfset _taffyRequest.matchDetails = application._taffy.endpoints[_taffyRequest.matchingRegex] />
-
-		<!--- which verb is requested? --->
-		<cfset _taffyRequest.verb = cgi.request_method />
 		
-		<cfif ucase(_taffyRequest.verb) eq "PUT">
-			<cfset _taffyRequest.queryString = getPutParameters() />
-		<cfelse>
-			<cfset _taffyRequest.queryString = cgi.query_string />
-		</cfif>
-
-		<!--- build the argumentCollection to pass to the cfc --->
-		<cfset _taffyRequest.requestArguments = buildRequestArguments(
-			_taffyRequest.matchingRegex,
-			_taffyRequest.matchDetails.tokens,
-			cgi.path_info,
-			_taffyRequest.queryString
-		) />
-		<!--- also capture form POST data (higher priority that url variables of same name) --->
-		<cfset structAppend(_taffyRequest.requestArguments, form) />
-
-		<!--- use requested mime type or the default --->
-		<cfset _taffyRequest.returnMimeExt = "" />
-		<cfif structKeyExists(_taffyRequest.requestArguments, "_taffy_mime")>
-			<cfset _taffyRequest.returnMimeExt = _taffyRequest.requestArguments["_taffy_mime"] />
-			<cfset structDelete(_taffyRequest.requestArguments, "_taffy_mime") />
-		<cfelse>
-			<cfif structKeyExists(cgi, "http_accept") and len(cgi.http_accept)>
-				<cfloop list="#cgi.HTTP_ACCEPT#" index="_taffyRequest.tmpHeader">
-					<!--- deal with that q=0 stuff (just ignore it) --->
-					<cfif listLen(_taffyRequest.tmpHeader, ";") gt 1>
-						<cfset _taffyRequest.tmpHeader = listFirst(_taffyRequest.tmpHeader, ";") />
-					</cfif>
-					<cfif structKeyExists(application._taffy.settings.mimeTypes, _taffyRequest.tmpHeader)>
-						<cfset _taffyRequest.returnMimeExt = application._taffy.settings.mimeTypes[_taffyRequest.tmpHeader] />
-					<cfelse>
-						<cfset _taffyRequest.returnMimeExt = application._taffy.settings.defaultMime />
-					</cfif>
-				</cfloop>
-				<cfset structDelete(_taffyRequest, "tmpHeader")/>
-			</cfif>
-		</cfif>
+		<!--- get request details --->
+		<cfset _taffyRequest = parseRequest() />
 
 		<!---
 			Now we know everything we need to know to service the request. let's service it!
 		--->
+		
+		<!--- ...after we let the api developer know all of the request details first... --->
+		<cfset _taffyRequest.continue = onTaffyRequest(
+			_taffyRequest.verb,
+			_taffyRequest.matchDetails.cfc,
+			_taffyRequest.requestArguments,
+			_taffyRequest.returnMimeExt
+		) />
+		
+		<cfif not structKeyExists(_taffyRequest, "continue")>
+			<!--- developer forgot to return true --->
+			<cfthrow 
+				message="Error in your onTaffyRequest method" 
+				detail="Your onTaffyRequest method returned no value. Expected: TRUE or a Response Object." 
+				errorcode="400"
+			/>
+		</cfif>
+		
+		<cfif isObject(_taffyRequest.continue)>
+			<!--- inspection complete but request has been aborted by developer; return custom response --->
+			<cfset _taffyRequest.result = _taffyRequest.continue />
+			<cfset structDelete(_taffyRequest, "continue")/>
+		<cfelse>
+			<!--- inspection complete and request allowed by developer; marshall request to service --->
 
-		<!--- make sure the cfc is cached, if not, load it and get some meta-data about it --->
-		<cfif not structKeyExists(application._taffy.endpointCache, _taffyRequest.matchDetails.cfc)>
-			<cfset cacheEndpoint(_taffyRequest.matchDetails.cfc) />
+			<!--- make sure the cfc is cached, if not, load it and get some meta-data about it --->
+			<cfif not structKeyExists(application._taffy.endpointCache, _taffyRequest.matchDetails.cfc)>
+				<cfset cacheEndpoint(_taffyRequest.matchDetails.cfc) />
+			</cfif>
+			<!--- if the verb is not implemented, refuse the request --->
+			<cfif not structKeyExists(application._taffy.endpointCache[_taffyRequest.matchDetails.cfc].methods, _taffyRequest.verb)>
+				<cfset throwError(405, "Method Not Allowed") />
+			</cfif>
+			<!--- returns a representation-object --->
+			<cfinvoke
+				component="#application._taffy.endpointCache[_taffyRequest.matchDetails.cfc].cfc#"
+				method="#_taffyRequest.verb#"
+				argumentcollection="#_taffyRequest.requestArguments#"
+				returnvariable="_taffyRequest.result"
+			/>
 		</cfif>
-		<!--- if the verb is not implemented, refuse the request --->
-		<cfif not structKeyExists(application._taffy.endpointCache[_taffyRequest.matchDetails.cfc].methods, _taffyRequest.verb)>
-			<cfset throwError(405, "Method Not Allowed") />
-		</cfif>
-		<!--- returns a representation-object --->
-		<cfinvoke
-			component="#application._taffy.endpointCache[_taffyRequest.matchDetails.cfc].cfc#"
-			method="#_taffyRequest.verb#"
-			argumentcollection="#_taffyRequest.requestArguments#"
-			returnvariable="_taffyRequest.result"
-		/>
+
 		<!--- serialize the representation into the requested mime type --->
 		<cfinvoke
 			component="#_taffyRequest.result#"
@@ -158,6 +135,62 @@
 		} />
 		<cfset registerMimeType("json", "application/json") />
 		<cfset configureTaffy()/>
+	</cffunction>
+	<cffunction name="parseRequest" access="private" output="false" returnType="struct">
+		<cfset var requestObj = {} />
+		<cfset var tmp = 0 />
+		
+		<!--- attempt to find the cfc for the requested uri --->
+		<cfset requestObj.matchingRegex = matchURI(cgi.path_info) />
+
+		<!--- uri doesn't map to any known resources --->
+		<cfif not len(requestObj.matchingRegex)>
+			<cfset throwError(404, "Not Found") />
+		</cfif>
+
+		<!--- get the cfc name and token array for the matching regex --->
+		<cfset requestObj.matchDetails = application._taffy.endpoints[requestObj.matchingRegex] />
+
+		<!--- which verb is requested? --->
+		<cfset requestObj.verb = cgi.request_method />
+		
+		<cfif ucase(requestObj.verb) eq "PUT">
+			<cfset requestObj.queryString = getPutParameters() />
+		<cfelse>
+			<cfset requestObj.queryString = cgi.query_string />
+		</cfif>
+
+		<!--- build the argumentCollection to pass to the cfc --->
+		<cfset requestObj.requestArguments = buildRequestArguments(
+			requestObj.matchingRegex,
+			requestObj.matchDetails.tokens,
+			cgi.path_info,
+			requestObj.queryString
+		) />
+		<!--- also capture form POST data (higher priority that url variables of same name) --->
+		<cfset structAppend(requestObj.requestArguments, form) />
+
+		<!--- use requested mime type or the default --->
+		<cfset requestObj.returnMimeExt = "" />
+		<cfif structKeyExists(requestObj.requestArguments, "_taffy_mime")>
+			<cfset requestObj.returnMimeExt = requestObj.requestArguments["_taffy_mime"] />
+			<cfset structDelete(requestObj.requestArguments, "_taffy_mime") />
+		<cfelse>
+			<cfif structKeyExists(cgi, "http_accept") and len(cgi.http_accept)>
+				<cfloop list="#cgi.HTTP_ACCEPT#" index="tmp">
+					<!--- deal with that q=0 stuff (just ignore it) --->
+					<cfif listLen(tmp, ";") gt 1>
+						<cfset tmp = listFirst(tmp, ";") />
+					</cfif>
+					<cfif structKeyExists(application._taffy.settings.mimeTypes, tmp)>
+						<cfset requestObj.returnMimeExt = application._taffy.settings.mimeTypes[tmp] />
+					<cfelse>
+						<cfset requestObj.returnMimeExt = application._taffy.settings.defaultMime />
+					</cfif>
+				</cfloop>
+			</cfif>
+		</cfif>
+		<cfreturn requestObj />
 	</cffunction>
 	<cffunction name="convertURItoRegex" access="private" output="false">
 		<cfargument name="uri" type="string" required="true" hint="wants the uri mapping defined by the cfc endpoint" />
