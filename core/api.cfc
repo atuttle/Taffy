@@ -115,6 +115,10 @@
 			<cfoutput>#_taffyRequest.resultSerialized#</cfoutput>
 		</cfif>
 
+		<cfif structKeyExists(url, application._taffy.settings.debugKey)>
+			<cfoutput><h3>Request Details:</h3><cfdump var="#_taffyRequest#"></cfoutput>
+		</cfif>
+
 		<cfreturn true />
 	</cffunction>
 
