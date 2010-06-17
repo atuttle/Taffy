@@ -36,7 +36,6 @@
 		<cfargument name="targetPage" type="string" required="true" />
 
 		<cfset var _taffyRequest = {} />
-		<cfset var tmp = 0 />
 
 		<cfif not structKeyExists(url, application._taffy.settings.debugKey)>
 			<cfsetting showdebugoutput="false" />
