@@ -29,10 +29,10 @@ component extends="taffy.core.api" {
 		registerMimeType("json", "application/json");
 
 		//let taffy know about the cfcs in your api so that it can map URIs to them
-		addURI("taffy.example.api.artCollection");
-		addURI("taffy.example.api.artMember");
-		addURI("taffy.example.api.artistCollection");
-		addURI("taffy.example.api.artistMember");
+		addURI("taffy.example.api.artCollection", true);
+		addURI("taffy.example.api.artMember", true);
+		addURI("taffy.example.api.artistCollection", true);
+		addURI("taffy.example.api.artistMember", true);
 	}
 
 }

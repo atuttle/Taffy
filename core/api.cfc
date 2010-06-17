@@ -323,9 +323,17 @@
 	</cffunction>
 	<cffunction name="addURI" access="public" output="false" returntype="taffy.core.api">
 		<cfargument name="cfcpath" type="string" required="true" hint="dot.path.to.api" />
+		<cfargument name="lazyLoad" type="boolean" required="false" default="false" hint="if set to false, object will not be cached until the first time it is used" />
 		<!--- get the cfc metadata that defines the uri for that cfc --->
-		<cfset var uri = getMetaData(createObject("component", arguments.cfcpath)).taffy_uri />
-		<cfset var meta = convertURItoRegex(uri) />
+		<cfset var uri = '' />
+		<cfset var meta = '' />
+		<cfif arguments.lazyLoad>
+			<cfset uri = getMetaData(createObject("component", arguments.cfcpath)).taffy_uri />
+		<cfelse>
+			<cfset application._taffy.endpointCache[arguments.cfcPath] = createObject("component", arguments.cfcpath) />
+			<cfset uri = getMetaData(application._taffy.endpointCache[arguments.cfcPath]).taffy_uri />
+		</cfif>
+		<cfset meta = convertURItoRegex(uri) />
 		<cfset application._taffy.endpoints[meta.uriRegex] = { cfc = arguments.cfcpath , tokens = meta.tokens } />
 		<cfreturn this />
 	</cffunction>
