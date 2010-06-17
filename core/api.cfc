@@ -248,7 +248,6 @@
 		var sucky = refindNoCase(pattern, data, startPos, true);
 		var i = 0;
 		var awesome = [];
-
 		if (not isArray(sucky.len) or arrayLen(sucky.len) eq 0){return [];} //handle no match at all
 		for (i=1; i<= arrayLen(sucky.len); i++){
 			//if there's a match with pos 0 & length 0, that means the mime type was not specified
@@ -263,7 +262,6 @@
 		return awesome;
 	}
 	</cfscript>
-
 
 	<!--- helper methods --->
 	<cffunction name="defaultMime" access="private" output="false" returntype="void">
@@ -284,12 +282,10 @@
 	</cffunction>
 	<cffunction name="addURI" access="public" output="false" returntype="taffy.core.api">
 		<cfargument name="cfcpath" type="string" required="true" hint="dot.path.to.api" />
-
 		<!--- get the cfc metadata that defines the uri for that cfc --->
 		<cfset var uri = getMetaData(createObject("component", arguments.cfcpath)).taffy_uri />
 		<cfset var meta = convertURItoRegex(uri) />
 		<cfset application._taffy.endpoints[meta.uriRegex] = { cfc = arguments.cfcpath , tokens = meta.tokens } />
-
 		<cfreturn this />
 	</cffunction>
 	<cffunction name="registerMimeType" access="private" output="false" returntype="void">
