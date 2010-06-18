@@ -26,7 +26,9 @@ component extends="taffy.core.api" {
 		//you could change this to a custom class to change the default instead of specifying an override for each response
 		setDefaultRepresentationClass("taffy.core.genericRepresentation");
 
+		//these are both the default settings, but the functions are used here to illustrate how and where you should use them
 		registerMimeType("json", "application/json");
+		setDefaultMime("json");
 
 		//let taffy know about the cfcs in your api so that it can map URIs to them
 		addURI("taffy.example.api.artCollection", true);

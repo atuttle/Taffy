@@ -305,7 +305,7 @@
 	</cfscript>
 
 	<!--- helper methods --->
-	<cffunction name="defaultMime" access="private" output="false" returntype="void">
+	<cffunction name="setDefaultMime" access="private" output="false" returntype="void">
 		<cfargument name="DefaultMimeType" type="string" required="true" hint="mime time to set as default for this api" />
 		<cfset application._taffy.settings.defaultMime = arguments.DefaultMimeType />
 	</cffunction>
