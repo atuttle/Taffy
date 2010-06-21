@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans>
+	
+	<bean id="configBean" class="coldspring.examples.quickstart.components.ConfigBean" />
+	
+	<bean id="artfartCollection" class="taffy.example.api_coldspring.stuff.artfartCollection">
+		<property name="configBean">
+			<ref bean="configBean" />
+		</property>
+	</bean>
+	
+</beans>
