@@ -6,7 +6,7 @@ component extends="taffy.core.api" {
 
 	//do your onApplicationStart stuff here
 	function applicationStartEvent(){}
-	
+
 	//do your onRequestStart stuff here
 	function requestStartEvent(){}
 
@@ -30,11 +30,6 @@ component extends="taffy.core.api" {
 		registerMimeType("json", "application/json");
 		setDefaultMime("json");
 
-		//let taffy know about the cfcs in your api so that it can map URIs to them
-		addURI("taffy.example.api.artCollection", true);
-		addURI("taffy.example.api.artMember", true);
-		addURI("taffy.example.api.artistCollection", true);
-		addURI("taffy.example.api.artistMember", true);
 	}
 
 }

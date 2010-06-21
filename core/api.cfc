@@ -5,7 +5,7 @@
 		function applicationStartEvent(){}	//override this function to run your own code inside onApplicationStart()
 		function requestStartEvent(){}		//override this function to run your own code inside onRequestStart()
 		function configureTaffy(){}			//override this function to set Taffy config settings
-		
+
 		/** onTaffyRequest gives you the opportunity to inspect the request before it is marshalled to the service.
 		  * If you override this function, you MUST either return TRUE or a response object (same class as services).
 		  */
@@ -27,7 +27,6 @@
 		}
     </cfscript>
 
-
 	<!--- :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: --->
 	<!--- :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: --->
 
@@ -46,31 +45,31 @@
 			<cfinclude template="dashboard.cfm" />
 			<cfabort>
 		</cfif>
-		
+
 		<!--- get request details --->
 		<cfset _taffyRequest = parseRequest() />
 
 		<!---
 			Now we know everything we need to know to service the request. let's service it!
 		--->
-		
+
 		<!--- ...after we let the api developer know all of the request details first... --->
 		<cfset _taffyRequest.continue = onTaffyRequest(
 			_taffyRequest.verb,
-			_taffyRequest.matchDetails.cfc,
+			_taffyRequest.matchDetails.beanName,
 			_taffyRequest.requestArguments,
 			_taffyRequest.returnMimeExt
 		) />
-		
+
 		<cfif not structKeyExists(_taffyRequest, "continue")>
 			<!--- developer forgot to return true --->
-			<cfthrow 
-				message="Error in your onTaffyRequest method" 
-				detail="Your onTaffyRequest method returned no value. Expected: TRUE or a Response Object." 
+			<cfthrow
+				message="Error in your onTaffyRequest method"
+				detail="Your onTaffyRequest method returned no value. Expected: TRUE or a Response Object."
 				errorcode="400"
 			/>
 		</cfif>
-		
+
 		<cfif isObject(_taffyRequest.continue)>
 			<!--- inspection complete but request has been aborted by developer; return custom response --->
 			<cfset _taffyRequest.result = _taffyRequest.continue />
@@ -78,17 +77,13 @@
 		<cfelse>
 			<!--- inspection complete and request allowed by developer; marshall request to service --->
 
-			<!--- make sure the cfc is cached, if not, load it and get some meta-data about it --->
-			<cfif not structKeyExists(application._taffy.endpointCache, _taffyRequest.matchDetails.cfc)>
-				<cfset cacheEndpoint(_taffyRequest.matchDetails.cfc) />
-			</cfif>
 			<!--- if the verb is not implemented, refuse the request --->
-			<cfif not structKeyExists(application._taffy.endpointCache[_taffyRequest.matchDetails.cfc].methods, _taffyRequest.verb)>
+			<cfif not structKeyExists(_taffyRequest.matchDetails.methods, _taffyRequest.verb)>
 				<cfset throwError(405, "Method Not Allowed") />
 			</cfif>
 			<!--- returns a representation-object --->
 			<cfinvoke
-				component="#application._taffy.endpointCache[_taffyRequest.matchDetails.cfc].cfc#"
+				component="#application._taffy.factory.getBean(_taffyRequest.matchDetails.beanName)#"
 				method="#_taffyRequest.verb#"
 				argumentcollection="#_taffyRequest.requestArguments#"
 				returnvariable="_taffyRequest.result"
@@ -111,7 +106,7 @@
 		<cfsetting enablecfoutputonly="true" />
 		<cfcontent reset="true" type="#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#" />
 		<cfheader statuscode="#_taffyRequest.resultStatus#"/>
-		<cfif _taffyRequest.resultSerialized neq """""">
+		<cfif _taffyRequest.resultSerialized neq '""""'>
 			<cfoutput>#_taffyRequest.resultSerialized#</cfoutput>
 		</cfif>
 
@@ -127,9 +122,8 @@
 
 	<!--- internal methods --->
 	<cffunction name="setupFramework" access="private" output="false" returntype="void">
-		<cfset application._taffy = structNew()/>
+		<cfset application._taffy = structNew() />
 		<cfset application._taffy.endpoints = {} />
-		<cfset application._taffy.endpointCache = {} />
 		<cfset application._taffy.settings = {
 			defaultMime = "json",
 			debugKey = "debug",
@@ -137,13 +131,32 @@
 			reloadPassword = "true",
 			defaultRepresentationClass = "taffy.core.genericRepresentation"
 		} />
+		<!--- setup default mime type --->
 		<cfset registerMimeType("json", "application/json") />
 		<cfset configureTaffy()/>
+		<!--- if resources folder exists, use internal bean factory --->
+		<cfif directoryExists(expandPath('./resources'))>
+			<!--- setup internal bean factory --->
+			<cfset application._taffy.factory = createObject("component", "taffy.core.factory").init() />
+			<cfset application._taffy.factory.loadBeansFromPath(expandPath('./resources')) />
+			<cfset application._taffy.beanList = application._taffy.factory.getBeanList() />
+			<cfset cacheBeanMetaData(application._taffy.factory, application._taffy.beanList) />
+			<!---
+				if both an external bean factory and the internal factory are in use (because of /resources folder),
+				resolve dependencies for each bean of internal factory with the external factory's resources
+			--->
+			<cfif structKeyExists(application._taffy, "externalBeanFactory")>
+				<cfset resolveDependencies() />
+			</cfif>
+		<cfelseif structKeyExists(application._taffy, "externalBeanFactory")>
+			<!--- only using external factory, so create a pointer to it --->
+			<cfset application._taffy.factory = application._taffy.externalBeanFactory />
+		</cfif>
 	</cffunction>
 	<cffunction name="parseRequest" access="private" output="false" returnType="struct">
 		<cfset var requestObj = {} />
 		<cfset var tmp = 0 />
-		
+
 		<!--- attempt to find the cfc for the requested uri --->
 		<cfset requestObj.matchingRegex = matchURI(cgi.path_info) />
 
@@ -157,7 +170,7 @@
 
 		<!--- which verb is requested? --->
 		<cfset requestObj.verb = cgi.request_method />
-		
+
 		<cfif ucase(requestObj.verb) eq "PUT">
 			<cfset requestObj.queryString = getPutParameters() />
 		<cfelse>
@@ -273,15 +286,41 @@
 		<cfheader statuscode="#arguments.statusCode#" statustext="#arguments.msg#" />
 		<cfabort />
 	</cffunction>
-	<cffunction name="cacheEndpoint" access="private" output="false" returnType="void">
-		<cfargument name="cfcPath" type="string" required="true" hint="dot.notation.cfc.path" />
-		<cfset var t = "" />
-		<cfset application._taffy.endpointCache[arguments.cfcPath] = {} />
-		<cfset application._taffy.endpointCache[arguments.cfcPath].cfc = createObject("component", arguments.cfcPath) />
-		<cfset application._taffy.endpointCache[arguments.cfcPath].methods = {} />
-		<cfset var tmp = getMetadata(application._taffy.endpointCache[arguments.cfcPath].cfc).functions />
-		<cfloop array="#tmp#" index="t">
-			<cfset application._taffy.endpointCache[arguments.cfcPath].methods[t.name] = true />
+	<cffunction name="cacheBeanMetaData" access="private" output="false" returnType="void">
+		<cfargument name="factory" required="true" />
+		<cfargument name="beanList" type="string" required="true" />
+		<cfset var beanName = '' />
+		<cfset var metaInfo = '' />
+		<cfset var cfcMetadata = '' />
+		<cfset var f = '' />
+		<cfloop list="#arguments.beanList#" index="beanName">
+			<!--- get the cfc metadata that defines the uri for that cfc --->
+			<cfset cfcMetadata = getMetaData(arguments.factory.getBean(beanName)) />
+			<cfset metaInfo = convertURItoRegex(cfcMetadata.taffy_uri) />
+			<cfset application._taffy.endpoints[metaInfo.uriRegex] = { beanName = beanName, tokens = metaInfo.tokens, methods = structNew() } />
+			<cfloop array="#cfcMetadata.functions#" index="f">
+				<cfset application._taffy.endpoints[metaInfo.uriRegex].methods[f.name] = true />
+			</cfloop>
+		</cfloop>
+	</cffunction>
+	<cffunction name="resolveDependencies" access="private" output="false" returnType="void">
+		<cfset var endpoint = '' />
+		<cfset var method = '' />
+		<cfset var beanName = '' />
+		<cfset var bean = '' />
+		<cfset var dependency = '' />
+		<cfloop list="#structKeyList(application._taffy.endpoints)#" index="endpoint">
+			<cfloop list="#structKeyList(application._taffy.endpoints[endpoint].methods)#" index="method">
+				<cfif left(method, 3) eq "set">
+					<!--- we've found a dependency, try to resolve it --->
+					<cfset beanName = right(method, len(method) - 3) />
+					<cfif application._taffy.externalBeanFactory.containsBean(beanName)>
+						<cfset bean = application._taffy.factory.getBean(application._taffy.endpoints[endpoint].beanName) />
+						<cfset dependency = application._taffy.externalBeanFactory.getBean(beanName) />
+						<cfset evaluate("bean.#method#(dependency)") />
+					</cfif>
+				</cfif>
+			</cfloop>
 		</cfloop>
 	</cffunction>
 	<cfscript>
@@ -305,39 +344,30 @@
 	</cfscript>
 
 	<!--- helper methods --->
-	<cffunction name="setDefaultMime" access="private" output="false" returntype="void">
+	<cffunction name="setBeanFactory" access="public" output="false" returntype="void">
+		<cfargument name="beanFactory" required="true" hint="Instance of bean factory object" />
+		<cfargument name="beanList" type="string" required="true" default="" hint="string; list of bean id's corresponding to taffy resource cfcs as defined in your bean factory" />
+		<cfset application._taffy.externalBeanFactory = arguments.beanFactory />
+		<cfset application._taffy.beanList = arguments.beanList />
+		<cfset cacheBeanMetaData(application._taffy.externalBeanFactory,arguments.beanList) />
+	</cffunction>
+	<cffunction name="setDefaultMime" access="public" output="false" returntype="void">
 		<cfargument name="DefaultMimeType" type="string" required="true" hint="mime time to set as default for this api" />
 		<cfset application._taffy.settings.defaultMime = arguments.DefaultMimeType />
 	</cffunction>
-	<cffunction name="setDebugKey" access="private" output="false" returnType="void">
+	<cffunction name="setDebugKey" access="public" output="false" returnType="void">
 		<cfargument name="keyName" type="string" required="true" hint="url parameter you want to use to enable ColdFusion debug output" />
 		<cfset application._taffy.settings.debugKey = arguments.keyName />
 	</cffunction>
-	<cffunction name="setReloadKey" access="private" output="false" returnType="void">
+	<cffunction name="setReloadKey" access="public" output="false" returnType="void">
 		<cfargument name="keyName" type="string" required="true" hint="url parameter you want to use to reload Taffy (clear cache, reset settings)" />
 		<cfset application._taffy.settings.reloadKey = arguments.keyName />
 	</cffunction>
-	<cffunction name="setReloadPassword" access="private" output="false" returnType="void">
+	<cffunction name="setReloadPassword" access="public" output="false" returnType="void">
 		<cfargument name="password" type="string" required="true" hint="value required for the reload key to initiate a reload. if it doesn't match, then the framework will not reload." />
 		<cfset application._taffy.settings.reloadPassword = arguments.password />
 	</cffunction>
-	<cffunction name="addURI" access="public" output="false" returntype="taffy.core.api">
-		<cfargument name="cfcpath" type="string" required="true" hint="dot.path.to.api" />
-		<cfargument name="lazyLoad" type="boolean" required="false" default="false" hint="if set to false, object will not be cached until the first time it is used" />
-		<!--- get the cfc metadata that defines the uri for that cfc --->
-		<cfset var uri = '' />
-		<cfset var meta = '' />
-		<cfif arguments.lazyLoad>
-			<cfset uri = getMetaData(createObject("component", arguments.cfcpath)).taffy_uri />
-		<cfelse>
-			<cfset application._taffy.endpointCache[arguments.cfcPath] = createObject("component", arguments.cfcpath) />
-			<cfset uri = getMetaData(application._taffy.endpointCache[arguments.cfcPath]).taffy_uri />
-		</cfif>
-		<cfset meta = convertURItoRegex(uri) />
-		<cfset application._taffy.endpoints[meta.uriRegex] = { cfc = arguments.cfcpath , tokens = meta.tokens } />
-		<cfreturn this />
-	</cffunction>
-	<cffunction name="registerMimeType" access="private" output="false" returntype="void">
+	<cffunction name="registerMimeType" access="public" output="false" returntype="void">
 		<cfargument name="extension" type="string" required="true" hint="ex: json" />
 		<cfargument name="mimeType" type="string" required="true" hint="ex: text/json" />
 		<cfset application._taffy.settings.mimeExtensions[arguments.extension] = arguments.mimeType />
