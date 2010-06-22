@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans>
+	
+	<bean id="configBean" class="coldspring.examples.quickstart.components.ConfigBean" />
+	
+</beans>
