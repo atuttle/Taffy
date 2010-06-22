@@ -21,7 +21,7 @@
 	it is strictly intended to demonstrate the use of each of the 4 http verbs with a Taffy API.</p>
 
 	<a href="#new" id="new">Add New Artist</a><br/>
-	<form action="/taffy/example/api/index.cfm/artists" method="post" id="add">
+	<form action="/taffy/examples/api/index.cfm/artists" method="post" id="add">
 		First Name: <input type="text" name="firstname" /><br/>
 		Last Name: <input type="text" name="lastname" /><br/>
 		Address: <input type="text" name="address" /><br/>
@@ -35,7 +35,7 @@
 		<input type="submit" value="Add Artist" />
 		<input type="reset" value="Cancel" id="addCancel" />
 	</form>
-	<form action="/taffy/example/api/index.cfm/artist" method="put" id="update">
+	<form action="/taffy/examples/api/index.cfm/artist" method="put" id="update">
 		First Name: <input type="text" name="firstname" /><br/>
 		Last Name: <input type="text" name="lastname" /><br/>
 		Address: <input type="text" name="address" /><br/>
@@ -162,7 +162,7 @@
 						console.log(textStatus);
 						console.log(err);
 					}
-				);				
+				);
 				/*
 				$("##update").submit(function(e){
 					e.preventDefault();

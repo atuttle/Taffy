@@ -3,7 +3,7 @@
 	
 	<bean id="configBean" class="coldspring.examples.quickstart.components.ConfigBean" />
 	
-	<bean id="artfartCollection" class="taffy.example.api_coldspring.stuff.artfartCollection">
+	<bean id="artfartCollection" class="taffy.examples.api_coldspring.stuff.artfartCollection">
 		<property name="configBean">
 			<ref bean="configBean" />
 		</property>
