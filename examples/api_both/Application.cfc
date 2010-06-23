@@ -7,7 +7,7 @@ component extends="taffy.core.api" {
 	//do your onApplicationStart stuff here
 	function applicationStartEvent(){
 		application.beanFactory = createObject("component", "coldspring.beans.DefaultXMLBeanFactory");
-		application.beanFactory.loadBeans('/taffy/examples/api_coldspring/config/coldspring.xml');
+		application.beanFactory.loadBeans('/taffy/examples/api_both/config/coldspring.xml');
 	}
 
 	//do your onRequestStart stuff here
@@ -22,7 +22,7 @@ component extends="taffy.core.api" {
 	//called when taffy is initializing or when a reload is requested
 	void function configureTaffy(){
 
-		setBeanFactory(application.beanfactory, "artfartCollection");
+		setBeanFactory(application.beanfactory);
 		setDebugKey("debug");
 		setReloadKey("reload");
 		setReloadPassword("true");

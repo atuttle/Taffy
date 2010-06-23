@@ -22,7 +22,7 @@ component extends="taffy.core.api" {
 	//called when taffy is initializing or when a reload is requested
 	void function configureTaffy(){
 
-		setBeanFactory(application.beanfactory, "artfartCollection");
+		setBeanFactory(application.beanfactory);
 		setDebugKey("debug");
 		setReloadKey("reload");
 		setReloadPassword("true");

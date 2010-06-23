@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans>
 	
-	<bean id="configBean" class="coldspring.examples.quickstart.components.ConfigBean" />
+	<bean id="fakeData" class="taffy.examples.shared.fakeData" />
 	
 	<bean id="artfartCollection" class="taffy.examples.api_coldspring.stuff.artfartCollection">
-		<property name="configBean">
-			<ref bean="configBean" />
+		<property name="fakeData">
+			<ref bean="fakeData" />
 		</property>
 	</bean>
 	
