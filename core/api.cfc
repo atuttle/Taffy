@@ -299,7 +299,9 @@
 			<cfset metaInfo = convertURItoRegex(cfcMetadata.taffy_uri) />
 			<cfset application._taffy.endpoints[metaInfo.uriRegex] = { beanName = beanName, tokens = metaInfo.tokens, methods = structNew() } />
 			<cfloop array="#cfcMetadata.functions#" index="f">
-				<cfset application._taffy.endpoints[metaInfo.uriRegex].methods[f.name] = true />
+				<cfif f.name eq "get" or f.name eq "post" or f.name eq "put" or f.name eq "delete">
+					<cfset application._taffy.endpoints[metaInfo.uriRegex].methods[f.name] = true />
+				</cfif>
 			</cfloop>
 		</cfloop>
 	</cffunction>
@@ -322,6 +324,28 @@
 				</cfif>
 			</cfloop>
 		</cfloop>
+	</cffunction>
+	<cffunction name="getBeanListFromExternalFactory" output="false" access="private" returntype="String">
+		<cfset var beanFactoryMeta = getMetadata(application._taffy.externalBeanFactory) />
+		<cfif lcase(left(beanFactoryMeta.name, 10)) eq "coldspring">
+			<cfreturn getBeanListFromColdSpring() />
+		<!---
+			What other popular bean factories should be supported?
+			They would be added here, if they don't support getBeanList out of the box.
+		 --->
+		</cfif>
+		<cfreturn "" />
+	</cffunction>
+	<cffunction name="getBeanListFromColdSpring" access="private" output="false" returntype="string">
+		<cfset var beans = application._taffy.externalBeanFactory.getBeanDefinitionList() />
+		<cfset var beanList = "" />
+		<cfset var beanName = "" />
+		<cfloop collection="#beans#" item="beanName">
+			<cfif beans[beanName].instanceOf('taffy.core.restapi')>
+				<cfset beanList = listAppend(beanList, beanName) />
+			</cfif>
+		</cfloop>
+		<cfreturn beanList />
 	</cffunction>
 	<cfscript>
 	function reFindNoSuck(string pattern, string data, numeric startPos = 1){
@@ -346,10 +370,12 @@
 	<!--- helper methods --->
 	<cffunction name="setBeanFactory" access="public" output="false" returntype="void">
 		<cfargument name="beanFactory" required="true" hint="Instance of bean factory object" />
-		<cfargument name="beanList" type="string" required="true" default="" hint="string; list of bean id's corresponding to taffy resource cfcs as defined in your bean factory" />
+		<cfargument name="beanList" required="false" default="" />
 		<cfset application._taffy.externalBeanFactory = arguments.beanFactory />
-		<cfset application._taffy.beanList = arguments.beanList />
-		<cfset cacheBeanMetaData(application._taffy.externalBeanFactory,arguments.beanList) />
+		<cfif len(arguments.beanList) eq 0>
+			<cfset arguments.beanList = getBeanListFromExternalFactory() />
+		</cfif>
+		<cfset cacheBeanMetaData(application._taffy.externalBeanFactory, arguments.beanList) />
 	</cffunction>
 	<cffunction name="setDefaultMime" access="public" output="false" returntype="void">
 		<cfargument name="DefaultMimeType" type="string" required="true" hint="mime time to set as default for this api" />
