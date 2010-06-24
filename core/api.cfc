@@ -19,6 +19,11 @@
 		}
 		/* DO NOT OVERRIDE THIS FUNCTION - SEE requestStartEvent ABOVE */
 		function onRequestStart(){
+			//this will probably happen if taffy is sharing an app name with an existing application so that you can use its bean factory
+			if (not structKeyExists(application, "_taffy")){
+				onApplicationStart();
+			}
+			//allow reloading
 			if (structKeyExists(url, application._taffy.settings.reloadKey) and url[application._taffy.settings.reloadKey] eq application._taffy.settings.reloadPassword){
 				setupFramework();
 			}

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans>
+	
+	<bean id="fakeData" class="taffy.examples.shared.fakeData" />
+	
+	<bean id="artfartCollection" class="taffy.examples.ParentApplication.model.artfartCollection">
+		<property name="fakeData">
+			<ref bean="fakeData" />
+		</property>
+	</bean>
+	
+</beans>
