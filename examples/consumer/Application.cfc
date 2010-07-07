@@ -5,7 +5,7 @@ component {
 	this.name = hash(getCurrentTemplatePath());
 
 	function onApplicationStart(){
-		application.wsLoc = "http://localhost/taffy/examples/api/index.cfm";
+		application.wsLoc = "http://#cgi.server_name#/taffy/examples/api/index.cfm";
 	}
 
 	function onRequestStart(){
