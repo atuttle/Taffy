@@ -348,7 +348,7 @@
 		<cfset var beanList = "" />
 		<cfset var beanName = "" />
 		<cfloop collection="#beans#" item="beanName">
-			<cfif beans[beanName].instanceOf('taffy.core.restapi')>
+			<cfif beans[beanName].instanceOf('taffy.core.resource')>
 				<cfset beanList = listAppend(beanList, beanName) />
 			</cfif>
 		</cfloop>

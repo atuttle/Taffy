@@ -1,4 +1,4 @@
-<cfcomponent extends="taffy.core.restapi" taffy_uri="/artist/{id}">
+<cfcomponent extends="taffy.core.resource" taffy_uri="/artist/{id}">
 
 	<cffunction name="get" access="public" output="false">
 		<cfargument name="id" type="numeric" required="true" />
