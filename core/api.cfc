@@ -9,7 +9,7 @@
 		/** onTaffyRequest gives you the opportunity to inspect the request before it is marshalled to the service.
 		  * If you override this function, you MUST either return TRUE or a response object (same class as services).
 		  */
-		function onTaffyRequest(string verb, string cfc, struct requestArguments, string mimeExt){return true;}
+		function onTaffyRequest(verb, cfc, requestArguments, mimeExt){return true;}
 
 		/* DO NOT OVERRIDE THIS FUNCTION - SEE applicationStartEvent ABOVE */
 		function onApplicationStart(){
@@ -142,7 +142,7 @@
 		<!--- if resources folder exists, use internal bean factory --->
 		<cfif directoryExists(expandPath('./resources'))>
 			<!--- setup internal bean factory --->
-			<cfset application._taffy.factory = createObject("component", "taffy.core.factory").init() />
+			<cfset application._taffy.factory = createObject("component", "factory").init() />
 			<cfset application._taffy.factory.loadBeansFromPath(expandPath('./resources')) />
 			<cfset application._taffy.beanList = application._taffy.factory.getBeanList() />
 			<cfset cacheBeanMetaData(application._taffy.factory, application._taffy.beanList) />
@@ -262,6 +262,8 @@
 		<cfset var returnData = {} /><!--- this will be used as an argumentCollection for the method that ultimately gets called --->
 		<cfset var t = '' />
 		<cfset var i = '' />
+		<cfset var mime = '' />
+		<cfset var mimeLen = '' />
 		<!--- parse path_info data into key-value pairs --->
 		<cfset var tokenValues = reFindNoSuck(arguments.regex, arguments.uri) />
 		<cfset var numTokenValues = arrayLen(tokenValues) />
@@ -277,8 +279,8 @@
 		</cfloop>
 		<!--- if a mime type is requested as part of the url ("whatever.json"), then extract that so taffy can use it --->
 		<cfif numTokenValues gt numTokenNames>
-			<cfset var mime = tokenValues[numTokenValues] /><!--- the last token represents ".json"/etc --->
-			<cfset var mimeLen = len(mime) />
+			<cfset mime = tokenValues[numTokenValues] /><!--- the last token represents ".json"/etc --->
+			<cfset mimeLen = len(mime) />
 			<cfset returnData["_taffy_mime"] = right(mime, mimeLen - 1) />
 		</cfif>
 		<!--- return --->
@@ -353,16 +355,17 @@
 		<cfreturn beanList />
 	</cffunction>
 	<cfscript>
-	function reFindNoSuck(string pattern, string data, numeric startPos = 1){
+	function reFindNoSuck(pattern, data, startPos){
 		var sucky = refindNoCase(pattern, data, startPos, true);
 		var i = 0;
 		var awesome = [];
-		if (not isArray(sucky.len) or arrayLen(sucky.len) eq 0){return [];} //handle no match at all
+		var matchBody = '';
+		if (not isArray(sucky.len) or arrayLen(sucky.len) eq 0){return arrayNew(1);} //handle no match at all
 		for (i=1; i<= arrayLen(sucky.len); i++){
 			//if there's a match with pos 0 & length 0, that means the mime type was not specified
 			if (sucky.len[i] gt 0 && sucky.pos[i] gt 0){
 				//don't include the group that matches the entire pattern
-				var matchBody = mid( data, sucky.pos[i], sucky.len[i]);
+				matchBody = mid( data, sucky.pos[i], sucky.len[i]);
 				if (matchBody neq arguments.data){
 					arrayAppend( awesome, matchBody );
 				}

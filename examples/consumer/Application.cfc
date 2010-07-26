@@ -1,17 +1,19 @@
-component {
+<cfcomponent>
 
-	//this application is entirely separate from the api;
-	//essentially, it might as well be running on another server.
-	this.name = hash(getCurrentTemplatePath());
+	<cfscript>
+		//this application is entirely separate from the api;
+		//essentially, it might as well be running on another server.
+		this.name = hash(getCurrentTemplatePath());
 
-	function onApplicationStart(){
-		application.wsLoc = "http://#cgi.server_name#/taffy/examples/api/index.cfm";
-	}
-
-	function onRequestStart(){
-		if (structKeyExists(url, "reload") && url.reload == true){
-			onApplicationStart();
+		function onApplicationStart(){
+			application.wsLoc = "http://#cgi.server_name#/taffy/examples/api/index.cfm";
 		}
-	}
 
-}
+		function onRequestStart(){
+			if (structKeyExists(url, "reload") && url.reload == true){
+				onApplicationStart();
+			}
+		}
+	</cfscript>
+
+</cfcomponent>
