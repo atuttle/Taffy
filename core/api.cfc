@@ -356,10 +356,12 @@
 	</cffunction>
 	<cfscript>
 	function reFindNoSuck(pattern, data, startPos){
-		var sucky = refindNoCase(pattern, data, startPos, true);
+		var sucky = '';
 		var i = 0;
 		var awesome = [];
 		var matchBody = '';
+		if (not structKeyExists(arguments, 'startPos')){ arguments.startPos = 1; }
+		sucky = refindNoCase(pattern, data, startPos, true);
 		if (not isArray(sucky.len) or arrayLen(sucky.len) eq 0){return arrayNew(1);} //handle no match at all
 		for (i=1; i<= arrayLen(sucky.len); i++){
 			//if there's a match with pos 0 & length 0, that means the mime type was not specified
