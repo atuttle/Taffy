@@ -94,6 +94,20 @@
 				returnvariable="_taffyRequest.result"
 			/>
 		</cfif>
+		<!--- make sure the requested mime type is available --->
+		<cfset _taffyRequest.responseMetaData = getMetaData(_taffyRequest.result) />
+		<cfset _taffyRequest.mimeFound = false />
+		<cfloop from="1" to="#arrayLen(_taffyRequest.responseMetaData.functions)#" index="_taffyRequest.fnI">
+			<cfif lcase(_taffyRequest.responseMetaData.functions[_taffyRequest.fnI].name) eq "getas#_taffyRequest.returnMimeExt#">
+				<cfset _taffyRequest.mimeFound = true />
+				<cfbreak />
+			</cfif>
+		</cfloop>
+		<cfset structDelete(_taffyRequest, "responseMetaData") />
+		<cfset structDelete(_taffyRequest, "fnI") />
+		<cfif not _taffyRequest.mimeFound>
+			<cfset throwError(400, "Requested MIME type not available") />
+		</cfif>
 
 		<!--- serialize the representation into the requested mime type --->
 		<cfinvoke
