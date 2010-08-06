@@ -2,11 +2,6 @@
 <beans>
 	
 	<bean id="fakeData" class="taffy.examples.shared.fakeData" />
-	
-	<bean id="artfartCollection" class="taffy.examples.api_coldspring.stuff.artfartCollection">
-		<property name="fakeData">
-			<ref bean="fakeData" />
-		</property>
-	</bean>
+	<bean id="artfartCollection" class="taffy.examples.api_coldspring.stuff.artfartCollection" autowire="byname" />
 	
 </beans>
