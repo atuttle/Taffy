@@ -78,7 +78,7 @@
 
 		<cfif isObject(_taffyRequest.continue)>
 			<!--- inspection complete but request has been aborted by developer; return custom response --->
-			<cfset _taffyRequest.result = _taffyRequest.continue />
+			<cfset _taffyRequest.result = duplicate(_taffyRequest.continue) />
 			<cfset structDelete(_taffyRequest, "continue")/>
 		<cfelse>
 			<!--- inspection complete and request allowed by developer; marshall request to service --->
