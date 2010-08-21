@@ -81,7 +81,7 @@
 			<cfset _taffyRequest.result = duplicate(_taffyRequest.continue) />
 			<cfset structDelete(_taffyRequest, "continue")/>
 		<cfelse>
-			<!--- inspection complete and request allowed by developer; marshall request to service --->
+			<!--- inspection complete and request allowed by developer; send request to service --->
 
 			<!--- if the verb is not implemented, refuse the request --->
 			<cfif not structKeyExists(_taffyRequest.matchDetails.methods, _taffyRequest.verb)>
