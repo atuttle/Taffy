@@ -47,7 +47,7 @@
 		</cfif>
 
 		<!--- display api dashboard if requested --->
-		<cfif structKeyExists(url, "dashboard")>
+		<cfif structKeyExists(url, application._taffy.settings.dashboardKey)>
 			<cfinclude template="dashboard.cfm" />
 			<cfabort>
 		</cfif>
@@ -150,7 +150,8 @@
 			debugKey = "debug",
 			reloadKey = "reload",
 			reloadPassword = "true",
-			defaultRepresentationClass = "taffy.core.genericRepresentation"
+			defaultRepresentationClass = "taffy.core.genericRepresentation",
+			dashboardKey = "dashboard"
 		} />
 		<!--- setup default mime type --->
 		<cfset registerMimeType("json", "application/json") />
@@ -412,6 +413,10 @@
 	<cffunction name="setDebugKey" access="public" output="false" returnType="void">
 		<cfargument name="keyName" type="string" required="true" hint="url parameter you want to use to enable ColdFusion debug output" />
 		<cfset application._taffy.settings.debugKey = arguments.keyName />
+	</cffunction>
+	<cffunction name="setDashboardKey" access="public" output="false" returnType="void">
+		<cfargument name="keyName" type="string" required="true" hint="url parameter you want to use to show the Taffy dashboard" />
+		<cfset application._taffy.settings.dashboardKey = arguments.keyName />
 	</cffunction>
 	<cffunction name="setReloadKey" access="public" output="false" returnType="void">
 		<cfargument name="keyName" type="string" required="true" hint="url parameter you want to use to reload Taffy (clear cache, reset settings)" />
