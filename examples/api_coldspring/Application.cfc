@@ -1,8 +1,6 @@
 <cfcomponent extends="taffy.core.api">
 	<cfscript>
 		this.name = hash(getCurrentTemplatePath());
-		this.mappings = {};
-		this.mappings["/taffy"] = expandPath('.');
 
 		//do your onApplicationStart stuff here
 		function applicationStartEvent(){

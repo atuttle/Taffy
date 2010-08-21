@@ -1,8 +1,6 @@
 component extends="taffy.core.api" {
 
 	this.name = "taffy_ParentAppExample";
-	this.mappings = {};
-	this.mappings["/taffy"] = expandPath('.');
 
 	//do your onApplicationStart stuff here
 	function applicationStartEvent(){}
