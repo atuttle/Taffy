@@ -157,10 +157,11 @@
 		<!--- allow setting overrides --->
 		<cfset configureTaffy()/>
 		<!--- if resources folder exists, use internal bean factory --->
-		<cfif directoryExists(expandPath('./resources'))>
+		<cfset _taffyRequest.resourcePath = getDirectoryFromPath(getBaseTemplatePath()) & '/resources' />
+		<cfif directoryExists(_taffyRequest.resourcePath)>
 			<!--- setup internal bean factory --->
-			<cfset application._taffy.factory = createObject("component", "factory").init() />
-			<cfset application._taffy.factory.loadBeansFromPath(expandPath('./resources')) />
+			<cfset application._taffy.factory = createObject("component", "taffy.core.factory").init() />
+			<cfset application._taffy.factory.loadBeansFromPath(_taffyRequest.resourcePath) />
 			<cfset application._taffy.beanList = application._taffy.factory.getBeanList() />
 			<cfset cacheBeanMetaData(application._taffy.factory, application._taffy.beanList) />
 			<!---
