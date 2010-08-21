@@ -6,8 +6,8 @@
 		function requestStartEvent(){}		//override this function to run your own code inside onRequestStart()
 		function configureTaffy(){}			//override this function to set Taffy config settings
 
-		/** onTaffyRequest gives you the opportunity to inspect the request before it is marshalled to the service.
-		  * If you override this function, you MUST either return TRUE or a response object (same class as services).
+		/** onTaffyRequest gives you the opportunity to inspect the request before it is sent to the service.
+		  * If you override this function, you MUST either return TRUE or a response object (same class as resources).
 		  */
 		function onTaffyRequest(verb, cfc, requestArguments, mimeExt){return true;}
 
@@ -41,11 +41,12 @@
 
 		<cfset var _taffyRequest = {} />
 
+		<!--- enable/disable debug output per settings --->
 		<cfif not structKeyExists(url, application._taffy.settings.debugKey)>
 			<cfsetting showdebugoutput="false" />
 		</cfif>
 
-		<!--- api dashboard --->
+		<!--- display api dashboard if requested --->
 		<cfif structKeyExists(url, "dashboard")>
 			<cfinclude template="dashboard.cfm" />
 			<cfabort>
@@ -143,6 +144,7 @@
 	<cffunction name="setupFramework" access="private" output="false" returntype="void">
 		<cfset application._taffy = structNew() />
 		<cfset application._taffy.endpoints = {} />
+		<!--- default settings --->
 		<cfset application._taffy.settings = {
 			defaultMime = "json",
 			debugKey = "debug",
@@ -152,6 +154,7 @@
 		} />
 		<!--- setup default mime type --->
 		<cfset registerMimeType("json", "application/json") />
+		<!--- allow setting overrides --->
 		<cfset configureTaffy()/>
 		<!--- if resources folder exists, use internal bean factory --->
 		<cfif directoryExists(expandPath('./resources'))>
