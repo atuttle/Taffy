@@ -217,7 +217,7 @@
 					dataType: "json",
 					success: function(data, textStatus, xhr){
 						var rowNum = 0;
-						for (rowNum = 0; rowNum < data.DATA.length; rowNum++){
+						if (data != null) for (rowNum = 0; rowNum < data.DATA.length; rowNum++){
 							addRow(
 								"##artists",
 								data.DATA[rowNum][0],
