@@ -6,7 +6,7 @@
 		this.name = hash(getCurrentTemplatePath());
 
 		function onApplicationStart(){
-			application.wsLoc = "http://#cgi.server_name#/taffy/examples/api/index.cfm";
+			application.wsLoc = "http://#cgi.server_name#:#cgi.server_port#/taffy/examples/api/index.cfm";
 		}
 
 		function onRequestStart(){
