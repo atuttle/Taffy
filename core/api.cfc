@@ -323,6 +323,12 @@
 			<!--- get the cfc metadata that defines the uri for that cfc --->
 			<cfset cfcMetadata = getMetaData(arguments.factory.getBean(beanName)) />
 			<cfset metaInfo = convertURItoRegex(cfcMetadata.taffy_uri) />
+			<cfif structKeyExists(application._taffy.endpoints, metaInfo.uriRegex)>
+				<cfthrow
+					message="Duplicate URI scheme detected. All URIs must be unique (excluding tokens)."
+					detail="The URI for `#beanName#` conflicts with the existing URI definition of `#application._taffy.endpoints[metaInfo.uriRegex].beanName#`"
+				/>
+			</cfif>
 			<cfset application._taffy.endpoints[metaInfo.uriRegex] = { beanName = beanName, tokens = metaInfo.tokens, methods = structNew() } />
 			<cfloop array="#cfcMetadata.functions#" index="f">
 				<cfif f.name eq "get" or f.name eq "post" or f.name eq "put" or f.name eq "delete">
