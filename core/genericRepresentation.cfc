@@ -13,7 +13,7 @@
 		<cfreturn this />
 	</cffunction>
 
-	<cffunction name="getAsJson" access="public" output="false" returntype="String" hint="serializes data as JSON">
+	<cffunction name="getAsJson" access="public" output="false" returntype="String" taffy_mime="application/json" taffy_default="true" hint="serializes data as JSON">
 		<cfreturn serializeJSON(variables.data) />
 	</cffunction>
 

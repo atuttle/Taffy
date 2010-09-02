@@ -19,7 +19,6 @@
 
 		//called when taffy is initializing or when a reload is requested
 		function configureTaffy(){
-
 			setBeanFactory(application.beanfactory);
 			setDebugKey("debug");
 			setReloadKey("reload");
@@ -27,10 +26,6 @@
 
 			//you could change this to a custom class to change the default instead of specifying an override for each response
 			setDefaultRepresentationClass("taffy.core.genericRepresentation");
-
-			//these are both the default settings, but the functions are used here to illustrate how and where you should use them
-			registerMimeType("json", "application/json");
-			setDefaultMime("json");
 		}
 	</cfscript>
 </cfcomponent>

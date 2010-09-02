@@ -157,6 +157,8 @@
 		<cfset registerMimeType("json", "application/json") />
 		<!--- allow setting overrides --->
 		<cfset configureTaffy()/>
+		<!--- automatically introspect mime types from cfc metadata of default representation class --->
+		<cfset inspectMimeTypes(application._taffy.settings.defaultRepresentationClass) />
 		<!--- if resources folder exists, use internal bean factory --->
 		<cfset _taffyRequest.resourcePath = getDirectoryFromPath(getBaseTemplatePath()) & '/resources' />
 		<cfif directoryExists(_taffyRequest.resourcePath)>
@@ -378,6 +380,23 @@
 			</cfif>
 		</cfloop>
 		<cfreturn beanList />
+	</cffunction>
+	<cffunction name="inspectMimeTypes" access="private" output="false" returntype="void">
+		<cfargument name="customClassDotPath" type="string" required="true" hint="dot-notation path of representation class" />
+		<cfset var tmp = getComponentMetadata(arguments.customClassDotPath).functions />
+		<cfset var f = 0 />
+		<cfset var ext = '' />
+		<cfloop from="1" to="#arrayLen(tmp)#" index="f">
+			<!--- for every function whose name starts with "getAs" *and* has a taffy_mime metadata attribute, register the mime type --->
+			<cfif ucase(left(tmp[f].name, 5)) eq "GETAS" and structKeyExists(tmp[f], "taffy_mime")>
+				<cfset ext = lcase(right(tmp[f].name, len(tmp[f].name)-5)) />
+				<cfset registerMimeType(ext, lcase(tmp[f].taffy_mime)) />
+				<!--- check for taffy_default metadata to set the current mime as the default --->
+				<cfif structKeyExists(tmp[f], "taffy_default") and tmp[f].taffy_default>
+					<cfset setDefaultMime(ext) />
+				</cfif>
+			</cfif>
+		</cfloop>
 	</cffunction>
 	<cfscript>
 	function reFindNoSuck(pattern, data, startPos){

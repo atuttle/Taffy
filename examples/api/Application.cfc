@@ -16,7 +16,6 @@
 
 		// called when taffy is initializing or when a reload is requested
 		function configureTaffy(){
-
 			setDebugKey("debug");
 			setReloadKey("reload");
 			setReloadPassword("true");
@@ -24,12 +23,6 @@
 			// Usage of this function is entirely optional. You may omit it if you want to use the default representation class.
 			// Change this to a custom class to change the default for the entire API instead of overriding for every individual response.
 			setDefaultRepresentationClass("taffy.core.genericRepresentation");
-
-			// these are both the default settings (and their usage is optional), but the functions are used here to illustrate
-			// how and where you should use them
-			registerMimeType("json", "application/json");
-			setDefaultMime("json");
-
 		}
 	</cfscript>
 </cfcomponent>
