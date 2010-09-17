@@ -345,7 +345,7 @@
 			</cfif>
 			<cfset application._taffy.endpoints[metaInfo.uriRegex] = { beanName = beanName, tokens = metaInfo.tokens, methods = structNew() } />
 			<cfloop array="#cfcMetadata.functions#" index="f">
-				<cfif f.name eq "get" or f.name eq "post" or f.name eq "put" or f.name eq "delete">
+				<cfif f.name eq "get" or f.name eq "post" or f.name eq "put" or f.name eq "delete" or f.name eq "head">
 					<cfset application._taffy.endpoints[metaInfo.uriRegex].methods[f.name] = true />
 				</cfif>
 			</cfloop>
