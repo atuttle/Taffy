@@ -122,10 +122,22 @@
 			method="getStatus"
 			returnvariable="_taffyRequest.resultStatus"
 		/>
+		<!--- get custom headers --->
+		<cfinvoke
+			component="#_taffyRequest.result#"
+			method="getHeaders"
+			returnvariable="_taffyRequest.resultHeaders"
+		/>
 
 		<cfsetting enablecfoutputonly="true" />
 		<cfcontent reset="true" type="#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#" />
 		<cfheader statuscode="#_taffyRequest.resultStatus#"/>
+		<cfif not structIsEmpty(_taffyRequest.resultHeaders)>
+			<cfloop collection="#_taffyRequest.resultHeaders#" item="_taffyRequest.headerName">
+				<cfheader name="#_taffyRequest.headerName#" value="#_taffyRequest.resultHeaders[_taffyRequest.headerName]#" />
+			</cfloop>
+			<cfset structDelete(_taffyRequest, "headerName")/>
+		</cfif>
 		<cfif _taffyRequest.resultSerialized neq '""""'>
 			<cfoutput>#_taffyRequest.resultSerialized#</cfoutput>
 		</cfif>

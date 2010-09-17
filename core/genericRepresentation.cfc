@@ -2,6 +2,7 @@
 
 	<cfset variables.data = "" />
 	<cfset variables.statusCode = 200 />
+	<cfset variables.miscHeaders = StructNew() />
 
 	<cffunction name="setData" access="public" output="false" returnType="taffy.core.genericRepresentation" hint="setter for the data to be returned">
 		<cfargument name="data" required="true" hint="the simple or complex data that you want to return to the api consumer" />
@@ -25,6 +26,16 @@
 
 	<cffunction name="getStatus" access="public" output="false" returnType="numeric">
 		<cfreturn variables.statusCode />
+	</cffunction>
+
+	<cffunction name="withHeaders" access="public" output="false" returntype="taffy.core.genericRepresentation" hint="used to set custom headers for the response">
+		<cfargument name="headerStruct" type="struct" required="true" />
+		<cfset variables.miscHeaders = arguments.headerStruct />
+		<cfreturn this />
+	</cffunction>
+
+	<cffunction name="getHeaders" access="public" output="false" returntype="Struct">
+		<cfreturn variables.miscHeaders />
 	</cffunction>
 
 </cfcomponent>
