@@ -171,7 +171,7 @@
 		<cfset configureTaffy()/>
 		<!--- check to make sure default mime is supported --->
 		<cfif not mimeSupported(application._taffy.settings.defaultMime)>
-			<cfthrow message="Default mime type does not appear to be supported" detail="The default mime type, #ucase(application._taffy.settings.defaultMime)#, does not have a corresponding serialization function 'getAs#application._taffy.settings.defaultMime#' in the default representation class: #application._taffy.settings.defaultRepresentationClass#." />
+			<cfthrow message="Default mime type does not appear to be supported" detail="The default mime type, #ucase(application._taffy.settings.defaultMime)#, does not have a corresponding serialization function 'getAs#application._taffy.settings.defaultMime#' in the default representation class: #application._taffy.settings.defaultRepresentationClass#." errorcode="taffy.mime.notsupported" />
 		</cfif>
 		<!--- automatically introspect mime types from cfc metadata of default representation class --->
 		<cfset inspectMimeTypes(application._taffy.settings.defaultRepresentationClass) />
@@ -345,6 +345,7 @@
 				<cfthrow
 					message="Duplicate URI scheme detected. All URIs must be unique (excluding tokens)."
 					detail="The URI for `#beanName#` conflicts with the existing URI definition of `#application._taffy.endpoints[metaInfo.uriRegex].beanName#`"
+					errorcode="taffy.resources.DuplicateUriPattern"
 				/>
 			</cfif>
 			<cfset application._taffy.endpoints[metaInfo.uriRegex] = { beanName = beanName, tokens = metaInfo.tokens, methods = structNew() } />
