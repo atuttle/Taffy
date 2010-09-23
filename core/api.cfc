@@ -426,28 +426,30 @@
 		</cfloop>
 		<cfreturn false />
 	</cffunction>
-	<cfscript>
-	function reFindNoSuck(pattern, data, startPos){
-		var sucky = '';
-		var i = 0;
-		var awesome = [];
-		var matchBody = '';
-		if (not structKeyExists(arguments, 'startPos')){ arguments.startPos = 1; }
-		sucky = refindNoCase(pattern, data, startPos, true);
-		if (not isArray(sucky.len) or arrayLen(sucky.len) eq 0){return arrayNew(1);} //handle no match at all
-		for (i=1; i<= arrayLen(sucky.len); i++){
-			//if there's a match with pos 0 & length 0, that means the mime type was not specified
-			if (sucky.len[i] gt 0 && sucky.pos[i] gt 0){
-				//don't include the group that matches the entire pattern
-				matchBody = mid( data, sucky.pos[i], sucky.len[i]);
-				if (matchBody neq arguments.data){
-					arrayAppend( awesome, matchBody );
+	<cffunction name="reFindNoSuck" output="false" access="private">
+		<cfargument name="pattern" required="true" type="string" />
+		<cfargument name="data" required="true" type="string" />
+		<cfargument name="startPos" required="false" default="1" />
+		<cfscript>
+			var sucky = '';
+			var i = 0;
+			var awesome = [];
+			var matchBody = '';
+			sucky = refindNoCase(pattern, data, startPos, true);
+			if (not isArray(sucky.len) or arrayLen(sucky.len) eq 0){return arrayNew(1);} //handle no match at all
+			for (i=1; i<= arrayLen(sucky.len); i++){
+				//if there's a match with pos 0 & length 0, that means the mime type was not specified
+				if (sucky.len[i] gt 0 && sucky.pos[i] gt 0){
+					//don't include the group that matches the entire pattern
+					matchBody = mid( data, sucky.pos[i], sucky.len[i]);
+					if (matchBody neq arguments.data){
+						arrayAppend( awesome, matchBody );
+					}
 				}
 			}
-		}
-		return awesome;
-	}
-	</cfscript>
+			return awesome;
+		</cfscript>
+	</cffunction>
 
 	<!--- helper methods --->
 	<cffunction name="setBeanFactory" access="public" output="false" returntype="void">
