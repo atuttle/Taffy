@@ -158,23 +158,21 @@
 		<cfset application._taffy.endpoints = {} />
 		<!--- default settings --->
 		<cfset application._taffy.settings = {
-			defaultMime = "json",
+			defaultMime = "",
 			debugKey = "debug",
 			reloadKey = "reload",
 			reloadPassword = "true",
 			defaultRepresentationClass = "taffy.core.genericRepresentation",
 			dashboardKey = "dashboard"
 		} />
-		<!--- setup default mime type --->
-		<cfset registerMimeType("json", "application/json") />
 		<!--- allow setting overrides --->
 		<cfset configureTaffy()/>
+		<!--- automatically introspect mime types from cfc metadata of default representation class --->
+		<cfset inspectMimeTypes(application._taffy.settings.defaultRepresentationClass) />
 		<!--- check to make sure default mime is supported --->
 		<cfif not mimeSupported(application._taffy.settings.defaultMime)>
 			<cfthrow message="Default mime type does not appear to be supported" detail="The default mime type, #ucase(application._taffy.settings.defaultMime)#, does not have a corresponding serialization function 'getAs#application._taffy.settings.defaultMime#' in the default representation class: #application._taffy.settings.defaultRepresentationClass#." errorcode="taffy.mime.notsupported" />
 		</cfif>
-		<!--- automatically introspect mime types from cfc metadata of default representation class --->
-		<cfset inspectMimeTypes(application._taffy.settings.defaultRepresentationClass) />
 		<!--- if resources folder exists, use internal bean factory --->
 		<cfset _taffyRequest.resourcePath = getDirectoryFromPath(getBaseTemplatePath()) & '/resources' />
 		<cfif directoryExists(_taffyRequest.resourcePath)>
