@@ -47,7 +47,7 @@
 		</cfif>
 
 		<!--- display api dashboard if requested --->
-		<cfif structKeyExists(url, application._taffy.settings.dashboardKey)>
+		<cfif structKeyExists(url, application._taffy.settings.dashboardKey) and not application._taffy.settings.disableDashboard>
 			<cfinclude template="dashboard.cfm" />
 			<cfabort>
 		</cfif>
@@ -163,7 +163,8 @@
 			reloadKey = "reload",
 			reloadPassword = "true",
 			defaultRepresentationClass = "taffy.core.genericRepresentation",
-			dashboardKey = "dashboard"
+			dashboardKey = "dashboard",
+			disableDashboard = false
 		} />
 		<!--- allow setting overrides --->
 		<cfset configureTaffy()/>
@@ -470,6 +471,10 @@
 	<cffunction name="setDashboardKey" access="public" output="false" returnType="void">
 		<cfargument name="keyName" type="string" required="true" hint="url parameter you want to use to show the Taffy dashboard" />
 		<cfset application._taffy.settings.dashboardKey = arguments.keyName />
+	</cffunction>
+	<cffunction name="enableDashboard" access="public" output="false" returntype="void" hint="Enable and disable usage of the dashboard via the dashboard key existing as a url parameter">
+		<cfargument name="enabled" type="boolean" required="true" />
+		<cfset application._taffy.settings.disableDashboard = !(arguments.enabled) />
 	</cffunction>
 	<cffunction name="setReloadKey" access="public" output="false" returnType="void">
 		<cfargument name="keyName" type="string" required="true" hint="url parameter you want to use to reload Taffy (clear cache, reset settings)" />
