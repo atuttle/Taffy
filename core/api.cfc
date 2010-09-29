@@ -170,10 +170,6 @@
 		<cfset configureTaffy()/>
 		<!--- automatically introspect mime types from cfc metadata of default representation class --->
 		<cfset inspectMimeTypes(application._taffy.settings.defaultRepresentationClass) />
-		<!--- check to make sure default mime is supported --->
-		<cfif not mimeSupported(application._taffy.settings.defaultMime)>
-			<cfthrow message="Default mime type does not appear to be supported" detail="The default mime type, #ucase(application._taffy.settings.defaultMime)#, does not have a corresponding serialization function 'getAs#application._taffy.settings.defaultMime#' in the default representation class: #application._taffy.settings.defaultRepresentationClass#." errorcode="taffy.mime.notsupported" />
-		</cfif>
 		<!--- if resources folder exists, use internal bean factory --->
 		<cfset _taffyRequest.resourcePath = getDirectoryFromPath(getBaseTemplatePath()) & '/resources' />
 		<cfif directoryExists(_taffyRequest.resourcePath)>
@@ -414,17 +410,7 @@
 			</cfif>
 		</cfloop>
 	</cffunction>
-	<cffunction name="mimeSupported" access="private" output="false" returntype="boolean">
-		<cfargument name="mime" type="string" required="true" />
-		<cfset var metadata = getComponentMetadata(application._taffy.settings.defaultRepresentationClass) />
-		<cfset var i = 0 />
-		<cfloop from="1" to="#arrayLen(metadata.functions)#" index="i">
-			<cfif lcase(metadata.functions[i].name) eq "getas#lcase(arguments.mime)#">
-				<cfreturn true />
 			</cfif>
-		</cfloop>
-		<cfreturn false />
-	</cffunction>
 	<cffunction name="reFindNoSuck" output="false" access="private">
 		<cfargument name="pattern" required="true" type="string" />
 		<cfargument name="data" required="true" type="string" />
