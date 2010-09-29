@@ -162,7 +162,7 @@
 			debugKey = "debug",
 			reloadKey = "reload",
 			reloadPassword = "true",
-			defaultRepresentationClass = "taffy.core.genericRepresentation",
+			defaultRepresentationClass = "taffy.core.nativeJsonRepresentation",
 			dashboardKey = "dashboard",
 			disableDashboard = false
 		} />
