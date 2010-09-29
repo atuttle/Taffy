@@ -395,22 +395,33 @@
 	</cffunction>
 	<cffunction name="inspectMimeTypes" access="private" output="false" returntype="void">
 		<cfargument name="customClassDotPath" type="string" required="true" hint="dot-notation path of representation class" />
-		<cfset var tmp = getComponentMetadata(arguments.customClassDotPath).functions />
-		<cfset var f = 0 />
-		<cfset var ext = '' />
-		<cfloop from="1" to="#arrayLen(tmp)#" index="f">
-			<!--- for every function whose name starts with "getAs" *and* has a taffy_mime metadata attribute, register the mime type --->
-			<cfif ucase(left(tmp[f].name, 5)) eq "GETAS" and structKeyExists(tmp[f], "taffy_mime")>
-				<cfset ext = lcase(right(tmp[f].name, len(tmp[f].name)-5)) />
-				<cfset registerMimeType(ext, lcase(tmp[f].taffy_mime)) />
-				<!--- check for taffy_default metadata to set the current mime as the default --->
-				<cfif structKeyExists(tmp[f], "taffy_default") and tmp[f].taffy_default>
-					<cfset setDefaultMime(ext) />
-				</cfif>
-			</cfif>
-		</cfloop>
+		<cfset _recurse_inspectMimeTypes(getComponentMetadata(arguments.customClassDotPath)) />
 	</cffunction>
-			</cfif>
+	<cffunction name="_recurse_inspectMimeTypes" output="false" access="private" returntype="void">
+		<cfargument name="objMetaData" type="struct" required="true" />
+		<cfset var ext = '' />
+		<cfset var f = 0 />
+		<cfset var funcs = 0 />
+		<!--- recurse into parents first so that child defaults override parent defaults --->
+		<cfif structKeyExists(arguments.objMetaData, "extends")>
+			<cfset _recurse_inspectMimeTypes(arguments.objMetaData.extends) />
+		</cfif>
+		<!--- then handle child settings --->
+		<cfif structKeyExists(arguments.objMetaData, "functions") and isArray(arguments.objMetaData.functions)>
+			<cfset funcs = arguments.objMetaData.functions />
+			<cfloop from="1" to="#arrayLen(funcs)#" index="f">
+				<!--- for every function whose name starts with "getAs" *and* has a taffy_mime metadata attribute, register the mime type --->
+				<cfif ucase(left(funcs[f].name, 5)) eq "GETAS" and structKeyExists(funcs[f], "taffy_mime")>
+					<cfset ext = lcase(right(funcs[f].name, len(funcs[f].name)-5)) />
+					<cfset registerMimeType(ext, lcase(funcs[f].taffy_mime)) />
+					<!--- check for taffy_default metadata to set the current mime as the default --->
+					<cfif structKeyExists(funcs[f], "taffy_default") and funcs[f].taffy_default>
+						<cfset setDefaultMime(ext) />
+					</cfif>
+				</cfif>
+			</cfloop>
+		</cfif>
+	</cffunction>
 	<cffunction name="reFindNoSuck" output="false" access="private">
 		<cfargument name="pattern" required="true" type="string" />
 		<cfargument name="data" required="true" type="string" />
