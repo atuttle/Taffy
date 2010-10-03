@@ -331,20 +331,23 @@
 			<cfelseif structKeyExists(local.cfcMetadata, "taffy:uri")>
 				<cfset local.uri = local.cfcMetadata["taffy:uri"] />
 			</cfif>
-			<cfset local.metaInfo = convertURItoRegex(local.uri) />
-			<cfif structKeyExists(application._taffy.endpoints, local.metaInfo.uriRegex)>
-				<cfthrow
-					message="Duplicate URI scheme detected. All URIs must be unique (excluding tokens)."
-					detail="The URI for `#beanName#` conflicts with the existing URI definition of `#application._taffy.endpoints[metaInfo.uriRegex].beanName#`"
-					errorcode="taffy.resources.DuplicateUriPattern"
-				/>
-			</cfif>
-			<cfset application._taffy.endpoints[local.metaInfo.uriRegex] = { beanName = local.beanName, tokens = local.metaInfo.tokens, methods = structNew(), srcURI = local.uri } />
-			<cfloop array="#local.cfcMetadata.functions#" index="local.f">
-				<cfif local.f.name eq "get" or local.f.name eq "post" or local.f.name eq "put" or local.f.name eq "delete" or local.f.name eq "head">
-					<cfset application._taffy.endpoints[local.metaInfo.uriRegex].methods[local.f.name] = true />
+			<!--- if it doesn't have a uri, then it's not a resource --->
+			<cfif len(local.uri)>
+				<cfset local.metaInfo = convertURItoRegex(local.uri) />
+				<cfif structKeyExists(application._taffy.endpoints, local.metaInfo.uriRegex)>
+					<cfthrow
+						message="Duplicate URI scheme detected. All URIs must be unique (excluding tokens)."
+						detail="The URI for `#beanName#` conflicts with the existing URI definition of `#application._taffy.endpoints[metaInfo.uriRegex].beanName#`"
+						errorcode="taffy.resources.DuplicateUriPattern"
+					/>
 				</cfif>
-			</cfloop>
+				<cfset application._taffy.endpoints[local.metaInfo.uriRegex] = { beanName = local.beanName, tokens = local.metaInfo.tokens, methods = structNew(), srcURI = local.uri } />
+				<cfloop array="#local.cfcMetadata.functions#" index="local.f">
+					<cfif local.f.name eq "get" or local.f.name eq "post" or local.f.name eq "put" or local.f.name eq "delete" or local.f.name eq "head">
+						<cfset application._taffy.endpoints[local.metaInfo.uriRegex].methods[local.f.name] = true />
+					</cfif>
+				</cfloop>
+			</cfif>
 		</cfloop>
 	</cffunction>
 	<cffunction name="resolveDependencies" access="private" output="false" returnType="void">
@@ -387,7 +390,11 @@
 	</cffunction>
 	<cffunction name="inspectMimeTypes" access="private" output="false" returntype="void">
 		<cfargument name="customClassDotPath" type="string" required="true" hint="dot-notation path of representation class" />
-		<cfset _recurse_inspectMimeTypes(getComponentMetadata(arguments.customClassDotPath)) />
+		<cfif application._taffy.factory.beanExists(arguments.customClassDotPath)>
+			<cfset _recurse_inspectMimeTypes(getMetadata(application._taffy.factory.getBean(arguments.customClassDotPath))) />
+		<cfelse>
+			<cfset _recurse_inspectMimeTypes(getComponentMetadata(arguments.customClassDotPath)) />
+		</cfif>
 	</cffunction>
 	<cffunction name="_recurse_inspectMimeTypes" output="false" access="private" returntype="void">
 		<cfargument name="objMetaData" type="struct" required="true" />
