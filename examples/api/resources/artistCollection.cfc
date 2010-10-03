@@ -2,7 +2,7 @@
 
 	<cffunction name="get" access="public" output="false">
 		<cfset var q = "" />
-		<cfquery name="q" datasource="cfartgallery" cachedwithin="#createTimeSpan(0,0,0,1)#">
+		<cfquery name="q" datasource="cfartgallery">
 			select * from artists
 		</cfquery>
 		<cfreturn representationOf(q).withStatus(200) />
