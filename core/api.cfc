@@ -285,6 +285,7 @@
 		<cfset var returnData = {} /><!--- this will be used as an argumentCollection for the method that ultimately gets called --->
 		<cfset var t = '' />
 		<cfset var i = '' />
+		<cfset var tmp = '' />
 		<cfset var mime = '' />
 		<cfset var mimeLen = '' />
 		<!--- parse path_info data into key-value pairs --->
@@ -297,9 +298,14 @@
 			</cfloop>
 		</cfif>
 		<!--- also parse query string parameters into key-value pairs --->
-		<cfloop list="#arguments.queryString#" delimiters="&" index="t">
-			<cfset returnData[listFirst(t,'=')] = urlDecode(listLast(t,'=')) />
-		</cfloop>
+		<cfif not isJSON(arguments.queryString)>
+			<cfloop list="#arguments.queryString#" delimiters="&" index="t">
+				<cfset returnData[listFirst(t,'=')] = urlDecode(listLast(t,'=')) />
+			</cfloop>
+		<cfelse>
+			<cfset tmp = deserializeJSON(arguments.queryString) />
+			<cfset structAppend(returnData, tmp) />
+		</cfif>
 		<!--- if a mime type is requested as part of the url ("whatever.json"), then extract that so taffy can use it --->
 		<cfif numTokenValues gt numTokenNames>
 			<cfset mime = tokenValues[numTokenValues] /><!--- the last token represents ".json"/etc --->
