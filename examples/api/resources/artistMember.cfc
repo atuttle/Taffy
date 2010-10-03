@@ -3,10 +3,19 @@
 	<cffunction name="get" access="public" output="false">
 		<cfargument name="id" type="numeric" required="true" />
 		<cfset var q = ""/>
+		<cfset var col = "" />
+		<cfset var rtn = StructNew() />
 		<cfquery name="q" datasource="cfartgallery">
 			select * from artists where artistId = <cfqueryparam cfsqltype="cf_sql_varchar" value="#arguments.id#" />
 		</cfquery>
-		<cfreturn representationOf(q).withStatus(200) />
+		<cfif q.recordCount gt 0>
+			<cfloop list="#q.ColumnList#" index="col">
+				<cfset rtn[col] = q[col][1] />
+			</cfloop>
+			<cfreturn representationOf(rtn).withStatus(200) />
+		<cfelse>
+			<cfreturn noData().withStatus(404) />
+		</cfif>
 	</cffunction>
 
 	<cffunction name="put" access="public" output="false">
