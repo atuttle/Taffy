@@ -334,7 +334,7 @@
 					errorcode="taffy.resources.DuplicateUriPattern"
 				/>
 			</cfif>
-			<cfset application._taffy.endpoints[metaInfo.uriRegex] = { beanName = beanName, tokens = metaInfo.tokens, methods = structNew() } />
+			<cfset application._taffy.endpoints[metaInfo.uriRegex] = { beanName = beanName, tokens = metaInfo.tokens, methods = structNew(), srcURI = cfcMetadata.taffy_uri } />
 			<cfloop array="#cfcMetadata.functions#" index="f">
 				<cfif f.name eq "get" or f.name eq "post" or f.name eq "put" or f.name eq "delete" or f.name eq "head">
 					<cfset application._taffy.endpoints[metaInfo.uriRegex].methods[f.name] = true />
