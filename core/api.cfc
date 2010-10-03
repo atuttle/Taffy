@@ -239,26 +239,26 @@
 	</cffunction>
 	<cffunction name="convertURItoRegex" access="private" output="false">
 		<cfargument name="uri" type="string" required="true" hint="wants the uri mapping defined by the cfc endpoint" />
-
-		<cfset var almostTokens = rematch("{([^}]+)}", arguments.uri)/>
-		<cfset var token = '' />
-		<cfset var returnData = { tokens = [] } />
+		<cfset var local = StructNew() />
+		<cfset local.almostTokens = rematch("{([^}]+)}", arguments.uri)/>
+		<cfset local.returnData = StructNew() />
+		<cfset local.returnData.tokens = ArrayNew(1) />
 
 		<!--- extract token names and values from requested uri --->
-		<cfset var uriRegex = arguments.uri />
-		<cfloop array="#almostTokens#" index="token">
-			<cfset arrayAppend(returnData.tokens, replaceList(token, "{,}", ",")) />
-			<cfset uriRegex = rereplaceNoCase(uriRegex,"{[^}]+}", "([^\/\.]+)") />
+		<cfset local.uriRegex = arguments.uri />
+		<cfloop array="#local.almostTokens#" index="local.token">
+			<cfset arrayAppend(local.returnData.tokens, replaceList(local.token, "{,}", ",")) />
+			<cfset local.uriRegex = rereplaceNoCase(local.uriRegex,"{[^}]+}", "([^\/\.]+)") />
 		</cfloop>
 
 		<!--- require the uri to terminate after specified content --->
-		<cfset uriRegex &=
-						"(\.[^\.\?]+)?"		<!--- anything other than these characters will be considered a mime-type request: / \ ? . --->
-						& "$" />			<!--- terminate the uri (query string not included in cgi.path_info, does not need to be accounted for here) --->
+		<cfset local.uriRegex &=
+							  "(\.[^\.\?]+)?"	<!--- anything other than these characters will be considered a mime-type request: / \ ? . --->
+							  & "$" />			<!--- terminate the uri (query string not included in cgi.path_info, does not need to be accounted for here) --->
 
-		<cfset returnData.uriRegex = uriRegex />
+		<cfset local.returnData.uriRegex = local.uriRegex />
 
-		<cfreturn returnData />
+		<cfreturn local.returnData />
 	</cffunction>
 	<cffunction name="matchURI" access="private" output="false" returnType="string">
 		<cfargument name="requestedURI" type="string" required="true" hint="probably just pass in cgi.path_info" />
@@ -282,35 +282,31 @@
 		<cfargument name="tokenNamesArray" type="array" required="true" hint="array of token names associated with the matched uri" />
 		<cfargument name="uri" type="string" required="true" hint="the requested uri" />
 		<cfargument name="queryString" type="string" required="true" hint="any query string parameters included in the request" />
-		<cfset var returnData = {} /><!--- this will be used as an argumentCollection for the method that ultimately gets called --->
-		<cfset var t = '' />
-		<cfset var i = '' />
-		<cfset var tmp = '' />
-		<cfset var mime = '' />
-		<cfset var mimeLen = '' />
+		<cfset var local = StructNew() />
+		<cfset local.returnData = StructNew() /><!--- this will be used as an argumentCollection for the method that ultimately gets called --->
 		<!--- parse path_info data into key-value pairs --->
-		<cfset var tokenValues = reFindNoSuck(arguments.regex, arguments.uri) />
-		<cfset var numTokenValues = arrayLen(tokenValues) />
-		<cfset var numTokenNames = arrayLen(arguments.tokenNamesArray) />
-		<cfif numTokenNames gt 0>
-			<cfloop from="1" to="#numTokenNames#" index="t">
-				<cfset returnData[arguments.tokenNamesArray[t]] = tokenValues[t] />
+		<cfset local.tokenValues = reFindNoSuck(arguments.regex, arguments.uri) />
+		<cfset local.numTokenValues = arrayLen(local.tokenValues) />
+		<cfset local.numTokenNames = arrayLen(arguments.tokenNamesArray) />
+		<cfif local.numTokenNames gt 0>
+			<cfloop from="1" to="#local.numTokenNames#" index="local.t">
+				<cfset local.returnData[arguments.tokenNamesArray[local.t]] = local.tokenValues[local.t] />
 			</cfloop>
 		</cfif>
-		<!--- also parse query string parameters into key-value pairs --->
-		<cfif not isJSON(arguments.queryString)>
-			<cfloop list="#arguments.queryString#" delimiters="&" index="t">
-				<cfset returnData[listFirst(t,'=')] = urlDecode(listLast(t,'=')) />
-			</cfloop>
+		<!--- also parse query string parameters into key-value pairs (support both json packet and query string as input) --->
+		<cfif isJSON(arguments.queryString)>
+			<cfset local.tmp = deserializeJSON(arguments.queryString) />
+			<cfset structAppend(local.returnData, local.tmp) />
 		<cfelse>
-			<cfset tmp = deserializeJSON(arguments.queryString) />
-			<cfset structAppend(returnData, tmp) />
+			<cfloop list="#arguments.queryString#" delimiters="&" index="local.t">
+				<cfset local.returnData[listFirst(local.t,'=')] = urlDecode(listLast(local.t,'=')) />
+			</cfloop>
 		</cfif>
 		<!--- if a mime type is requested as part of the url ("whatever.json"), then extract that so taffy can use it --->
-		<cfif numTokenValues gt numTokenNames>
-			<cfset mime = tokenValues[numTokenValues] /><!--- the last token represents ".json"/etc --->
-			<cfset mimeLen = len(mime) />
-			<cfset returnData["_taffy_mime"] = right(mime, mimeLen - 1) />
+		<cfif local.numTokenValues gt local.numTokenNames>
+			<cfset local.mime = local.tokenValues[local.numTokenValues] /><!--- the last token represents ".json"/etc --->
+			<cfset local.mimeLen = len(local.mime) />
+			<cfset local.returnData["_taffy_mime"] = right(local.mime, local.mimeLen - 1) />
 		</cfif>
 		<!--- return --->
 		<cfreturn returnData />
@@ -325,50 +321,42 @@
 	<cffunction name="cacheBeanMetaData" access="private" output="false" returnType="void">
 		<cfargument name="factory" required="true" />
 		<cfargument name="beanList" type="string" required="true" />
-		<cfset var beanName = '' />
-		<cfset var metaInfo = '' />
-		<cfset var cfcMetadata = '' />
-		<cfset var uri = '' />
-		<cfset var f = '' />
-		<cfloop list="#arguments.beanList#" index="beanName">
+		<cfset var local = StructNew() />
+		<cfloop list="#arguments.beanList#" index="local.beanName">
 			<!--- get the cfc metadata that defines the uri for that cfc --->
-			<cfset cfcMetadata = getMetaData(arguments.factory.getBean(beanName)) />
-			<cfif structKeyExists(cfcMetadata, "taffy_uri")>
-				<cfset uri = cfcMetadata["taffy_uri"] />
-			<cfelseif structKeyExists(cfcMetadata, "taffy:uri")>
-				<cfset uri = cfcMetadata["taffy:uri"] />
+			<cfset local.cfcMetadata = getMetaData(arguments.factory.getBean(local.beanName)) />
+			<cfif structKeyExists(local.cfcMetadata, "taffy_uri")>
+				<cfset local.uri = local.cfcMetadata["taffy_uri"] />
+			<cfelseif structKeyExists(local.cfcMetadata, "taffy:uri")>
+				<cfset local.uri = local.cfcMetadata["taffy:uri"] />
 			</cfif>
-			<cfset metaInfo = convertURItoRegex(uri) />
-			<cfif structKeyExists(application._taffy.endpoints, metaInfo.uriRegex)>
+			<cfset local.metaInfo = convertURItoRegex(local.uri) />
+			<cfif structKeyExists(application._taffy.endpoints, local.metaInfo.uriRegex)>
 				<cfthrow
 					message="Duplicate URI scheme detected. All URIs must be unique (excluding tokens)."
 					detail="The URI for `#beanName#` conflicts with the existing URI definition of `#application._taffy.endpoints[metaInfo.uriRegex].beanName#`"
 					errorcode="taffy.resources.DuplicateUriPattern"
 				/>
 			</cfif>
-			<cfset application._taffy.endpoints[metaInfo.uriRegex] = { beanName = beanName, tokens = metaInfo.tokens, methods = structNew(), srcURI = uri } />
-			<cfloop array="#cfcMetadata.functions#" index="f">
-				<cfif f.name eq "get" or f.name eq "post" or f.name eq "put" or f.name eq "delete" or f.name eq "head">
-					<cfset application._taffy.endpoints[metaInfo.uriRegex].methods[f.name] = true />
+			<cfset application._taffy.endpoints[local.metaInfo.uriRegex] = { beanName = local.beanName, tokens = local.metaInfo.tokens, methods = structNew(), srcURI = local.uri } />
+			<cfloop array="#local.cfcMetadata.functions#" index="local.f">
+				<cfif local.f.name eq "get" or local.f.name eq "post" or local.f.name eq "put" or local.f.name eq "delete" or local.f.name eq "head">
+					<cfset application._taffy.endpoints[local.metaInfo.uriRegex].methods[local.f.name] = true />
 				</cfif>
 			</cfloop>
 		</cfloop>
 	</cffunction>
 	<cffunction name="resolveDependencies" access="private" output="false" returnType="void">
-		<cfset var endpoint = '' />
-		<cfset var method = '' />
-		<cfset var beanName = '' />
-		<cfset var bean = '' />
-		<cfset var dependency = '' />
-		<cfloop list="#structKeyList(application._taffy.endpoints)#" index="endpoint">
-			<cfloop list="#structKeyList(application._taffy.endpoints[endpoint].methods)#" index="method">
-				<cfif left(method, 3) eq "set">
+		<cfset var local = StructNew() />
+		<cfloop list="#structKeyList(application._taffy.endpoints)#" index="local.endpoint">
+			<cfloop list="#structKeyList(application._taffy.endpoints[endpoint].methods)#" index="local.method">
+				<cfif left(local.method, 3) eq "set">
 					<!--- we've found a dependency, try to resolve it --->
-					<cfset beanName = right(method, len(method) - 3) />
-					<cfif application._taffy.externalBeanFactory.containsBean(beanName)>
-						<cfset bean = application._taffy.factory.getBean(application._taffy.endpoints[endpoint].beanName) />
-						<cfset dependency = application._taffy.externalBeanFactory.getBean(beanName) />
-						<cfset evaluate("bean.#method#(dependency)") />
+					<cfset local.beanName = right(local.method, len(local.method) - 3) />
+					<cfif application._taffy.externalBeanFactory.containsBean(local.beanName)>
+						<cfset local.bean = application._taffy.factory.getBean(application._taffy.endpoints[local.endpoint].beanName) />
+						<cfset local.dependency = application._taffy.externalBeanFactory.getBean(local.beanName) />
+						<cfset evaluate("local.bean.#method#(local.dependency)") />
 					</cfif>
 				</cfif>
 			</cfloop>
@@ -381,20 +369,20 @@
 		<!---
 			What other popular bean factories should be supported?
 			They would be added here, if they don't support getBeanList out of the box.
+			TODO: Add support for DI/1 when it is released
 		 --->
 		</cfif>
 		<cfreturn "" />
 	</cffunction>
 	<cffunction name="getBeanListFromColdSpring" access="private" output="false" returntype="string">
-		<cfset var beans = application._taffy.externalBeanFactory.getBeanDefinitionList() />
-		<cfset var beanList = "" />
-		<cfset var beanName = "" />
-		<cfloop collection="#beans#" item="beanName">
-			<cfif beans[beanName].instanceOf('taffy.core.resource')>
-				<cfset beanList = listAppend(beanList, beanName) />
+		<cfset var local = StructNew() />
+		<cfset local.beans = application._taffy.externalBeanFactory.getBeanDefinitionList() />
+		<cfloop collection="#local.beans#" item="local.beanName">
+			<cfif local.beans[local.beanName].instanceOf('taffy.core.resource')>
+				<cfset local.beanList = listAppend(local.beanList, local.beanName) />
 			</cfif>
 		</cfloop>
-		<cfreturn beanList />
+		<cfreturn local.beanList />
 	</cffunction>
 	<cffunction name="inspectMimeTypes" access="private" output="false" returntype="void">
 		<cfargument name="customClassDotPath" type="string" required="true" hint="dot-notation path of representation class" />
@@ -402,33 +390,31 @@
 	</cffunction>
 	<cffunction name="_recurse_inspectMimeTypes" output="false" access="private" returntype="void">
 		<cfargument name="objMetaData" type="struct" required="true" />
-		<cfset var ext = '' />
-		<cfset var f = 0 />
-		<cfset var funcs = 0 />
-		<cfset var mime = '' />
+		<cfset var local = StructNew() />
+		<cfset local.ext = '' />
 		<!--- recurse into parents first so that child defaults override parent defaults --->
 		<cfif structKeyExists(arguments.objMetaData, "extends")>
 			<cfset _recurse_inspectMimeTypes(arguments.objMetaData.extends) />
 		</cfif>
 		<!--- then handle child settings --->
 		<cfif structKeyExists(arguments.objMetaData, "functions") and isArray(arguments.objMetaData.functions)>
-			<cfset funcs = arguments.objMetaData.functions />
-			<cfloop from="1" to="#arrayLen(funcs)#" index="f">
+			<cfset local.funcs = arguments.objMetaData.functions />
+			<cfloop from="1" to="#arrayLen(local.funcs)#" index="local.f">
 				<!--- for every function whose name starts with "getAs" *and* has a taffy_mime metadata attribute, register the mime type --->
-				<cfset mime = '' />
-				<cfif structKeyExists(funcs[f], "taffy_mime")>
-					<cfset mime = funcs[f].taffy_mime />
-				<cfelseif structKeyExists(funcs[f], "taffy:mime")>
-					<cfset mime = funcs[f]["taffy:mime"] />
+				<cfset local.mime = '' />
+				<cfif structKeyExists(local.funcs[local.f], "taffy_mime")>
+					<cfset local.mime = local.funcs[local.f].taffy_mime />
+				<cfelseif structKeyExists(local.funcs[local.f], "taffy:mime")>
+					<cfset local.mime = local.funcs[local.f]["taffy:mime"] />
 				</cfif>
-				<cfif ucase(left(funcs[f].name, 5)) eq "GETAS" and len(mime)>
-					<cfset ext = lcase(right(funcs[f].name, len(funcs[f].name)-5)) />
-					<cfset registerMimeType(ext, lcase(mime)) />
+				<cfif ucase(left(local.funcs[local.f].name, 5)) eq "GETAS" and len(local.mime)>
+					<cfset local.ext = lcase(right(local.funcs[local.f].name, len(local.funcs[local.f].name)-5)) />
+					<cfset registerMimeType(local.ext, lcase(local.mime)) />
 					<!--- check for taffy_default metadata to set the current mime as the default --->
-					<cfif structKeyExists(funcs[f], "taffy_default") and funcs[f].taffy_default>
-						<cfset setDefaultMime(ext) />
-					<cfelseif structKeyExists(funcs[f], "taffy:default") and funcs[f]["taffy:default"] eq true>
-						<cfset setDefaultMime(ext) />
+					<cfif structKeyExists(local.funcs[local.f], "taffy_default") and local.funcs[local.f].taffy_default>
+						<cfset setDefaultMime(local.ext) />
+					<cfelseif structKeyExists(local.funcs[local.f], "taffy:default") and local.funcs[local.f]["taffy:default"] eq true>
+						<cfset setDefaultMime(local.ext) />
 					</cfif>
 				</cfif>
 			</cfloop>
@@ -446,23 +432,21 @@
 		<cfargument name="data" required="true" type="string" />
 		<cfargument name="startPos" required="false" default="1" />
 		<cfscript>
-			var sucky = '';
-			var i = 0;
-			var awesome = [];
-			var matchBody = '';
-			sucky = refindNoCase(pattern, data, startPos, true);
-			if (not isArray(sucky.len) or arrayLen(sucky.len) eq 0){return arrayNew(1);} //handle no match at all
-			for (i=1; i<= arrayLen(sucky.len); i++){
+			var local = StructNew();
+			local.awesome = arrayNew(1);
+			local.sucky = refindNoCase(local.pattern, local.data, local.startPos, true);
+			if (not isArray(local.sucky.len) or arrayLen(local.sucky.len) eq 0){return arrayNew(1);} //handle no match at all
+			for (local.i=1; local.i<= arrayLen(local.sucky.len); local.i++){
 				//if there's a match with pos 0 & length 0, that means the mime type was not specified
-				if (sucky.len[i] gt 0 && sucky.pos[i] gt 0){
+				if (local.sucky.len[local.i] gt 0 && local.sucky.pos[local.i] gt 0){
 					//don't include the group that matches the entire pattern
-					matchBody = mid( data, sucky.pos[i], sucky.len[i]);
-					if (matchBody neq arguments.data){
-						arrayAppend( awesome, matchBody );
+					local.matchBody = mid(local.data, local.sucky.pos[local.i], local.sucky.len[local.i]);
+					if (local.matchBody neq arguments.data){
+						arrayAppend( local.awesome, local.matchBody );
 					}
 				}
 			}
-			return awesome;
+			return local.awesome;
 		</cfscript>
 	</cffunction>
 
