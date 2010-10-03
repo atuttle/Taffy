@@ -129,7 +129,7 @@
 			</cfloop>
 			<cfset structDelete(_taffyRequest, "headerName")/>
 		</cfif>
-		<cfif _taffyRequest.resultSerialized neq '""""'>
+		<cfif _taffyRequest.resultSerialized neq ('"' & '"')>
 			<cfoutput>#_taffyRequest.resultSerialized#</cfoutput>
 		</cfif>
 
