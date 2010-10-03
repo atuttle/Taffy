@@ -2,9 +2,7 @@
 
 	<cffunction
 		name="getAsJson"
-		access="public"
 		output="false"
-		returntype="String"
 		taffy:mime="application/json"
 		taffy:default="true"
 		hint="serializes data as JSON">

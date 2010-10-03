@@ -2,8 +2,12 @@
 
 	<cfset variables.anythingToXml = application.anythingToXml />
 
-	<cffunction name="getAsXML" taffy_mime="application/xml" taffy_default="true">
-		<cfreturn variables.anythingToXml.toXml(variables.data) />
+	<cffunction
+		name="getAsXML"
+		output="false"
+		taffy:mime="application/xml"
+		taffy:default="true">
+			<cfreturn variables.anythingToXml.toXml(variables.data) />
 	</cffunction>
 
 </cfcomponent>
