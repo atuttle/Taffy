@@ -328,11 +328,17 @@
 		<cfset var beanName = '' />
 		<cfset var metaInfo = '' />
 		<cfset var cfcMetadata = '' />
+		<cfset var uri = '' />
 		<cfset var f = '' />
 		<cfloop list="#arguments.beanList#" index="beanName">
 			<!--- get the cfc metadata that defines the uri for that cfc --->
 			<cfset cfcMetadata = getMetaData(arguments.factory.getBean(beanName)) />
-			<cfset metaInfo = convertURItoRegex(cfcMetadata.taffy_uri) />
+			<cfif structKeyExists(cfcMetadata, "taffy_uri")>
+				<cfset uri = cfcMetadata["taffy_uri"] />
+			<cfelseif structKeyExists(cfcMetadata, "taffy:uri")>
+				<cfset uri = cfcMetadata["taffy:uri"] />
+			</cfif>
+			<cfset metaInfo = convertURItoRegex(uri) />
 			<cfif structKeyExists(application._taffy.endpoints, metaInfo.uriRegex)>
 				<cfthrow
 					message="Duplicate URI scheme detected. All URIs must be unique (excluding tokens)."
@@ -340,7 +346,7 @@
 					errorcode="taffy.resources.DuplicateUriPattern"
 				/>
 			</cfif>
-			<cfset application._taffy.endpoints[metaInfo.uriRegex] = { beanName = beanName, tokens = metaInfo.tokens, methods = structNew(), srcURI = cfcMetadata.taffy_uri } />
+			<cfset application._taffy.endpoints[metaInfo.uriRegex] = { beanName = beanName, tokens = metaInfo.tokens, methods = structNew(), srcURI = uri } />
 			<cfloop array="#cfcMetadata.functions#" index="f">
 				<cfif f.name eq "get" or f.name eq "post" or f.name eq "put" or f.name eq "delete" or f.name eq "head">
 					<cfset application._taffy.endpoints[metaInfo.uriRegex].methods[f.name] = true />
@@ -399,6 +405,7 @@
 		<cfset var ext = '' />
 		<cfset var f = 0 />
 		<cfset var funcs = 0 />
+		<cfset var mime = '' />
 		<!--- recurse into parents first so that child defaults override parent defaults --->
 		<cfif structKeyExists(arguments.objMetaData, "extends")>
 			<cfset _recurse_inspectMimeTypes(arguments.objMetaData.extends) />
@@ -408,11 +415,19 @@
 			<cfset funcs = arguments.objMetaData.functions />
 			<cfloop from="1" to="#arrayLen(funcs)#" index="f">
 				<!--- for every function whose name starts with "getAs" *and* has a taffy_mime metadata attribute, register the mime type --->
-				<cfif ucase(left(funcs[f].name, 5)) eq "GETAS" and structKeyExists(funcs[f], "taffy_mime")>
+				<cfset mime = '' />
+				<cfif structKeyExists(funcs[f], "taffy_mime")>
+					<cfset mime = funcs[f].taffy_mime />
+				<cfelseif structKeyExists(funcs[f], "taffy:mime")>
+					<cfset mime = funcs[f]["taffy:mime"] />
+				</cfif>
+				<cfif ucase(left(funcs[f].name, 5)) eq "GETAS" and len(mime)>
 					<cfset ext = lcase(right(funcs[f].name, len(funcs[f].name)-5)) />
-					<cfset registerMimeType(ext, lcase(funcs[f].taffy_mime)) />
+					<cfset registerMimeType(ext, lcase(mime)) />
 					<!--- check for taffy_default metadata to set the current mime as the default --->
 					<cfif structKeyExists(funcs[f], "taffy_default") and funcs[f].taffy_default>
+						<cfset setDefaultMime(ext) />
+					<cfelseif structKeyExists(funcs[f], "taffy:default") and funcs[f]["taffy:default"] eq true>
 						<cfset setDefaultMime(ext) />
 					</cfif>
 				</cfif>

@@ -1,4 +1,4 @@
-<cfcomponent extends="taffy.core.resource" taffy_uri="/artist/{artistId}/art">
+<cfcomponent extends="taffy.core.resource" taffy:uri="/artist/{artistId}/art">
 
 	<cfset variables.dummyData = StructNew() />
 	<cfset variables.dummyData.whatever = true />
