@@ -159,8 +159,6 @@
 		} />
 		<!--- allow setting overrides --->
 		<cfset configureTaffy()/>
-		<!--- automatically introspect mime types from cfc metadata of default representation class --->
-		<cfset inspectMimeTypes(application._taffy.settings.defaultRepresentationClass) />
 		<!--- if resources folder exists, use internal bean factory --->
 		<cfset _taffyRequest.resourcePath = getDirectoryFromPath(getBaseTemplatePath()) & '/resources' />
 		<cfif directoryExists(_taffyRequest.resourcePath)>
@@ -180,6 +178,8 @@
 			<!--- only using external factory, so create a pointer to it --->
 			<cfset application._taffy.factory = application._taffy.externalBeanFactory />
 		</cfif>
+		<!--- automatically introspect mime types from cfc metadata of default representation class --->
+		<cfset inspectMimeTypes(application._taffy.settings.defaultRepresentationClass) />
 	</cffunction>
 	<cffunction name="parseRequest" access="private" output="false" returnType="struct">
 		<cfset var requestObj = {} />
