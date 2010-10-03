@@ -97,16 +97,7 @@
 		</cfif>
 		<!--- make sure the requested mime type is available --->
 		<cfset _taffyRequest.responseMetaData = getMetaData(_taffyRequest.result) />
-		<cfset _taffyRequest.mimeFound = false />
-		<cfloop from="1" to="#arrayLen(_taffyRequest.responseMetaData.functions)#" index="_taffyRequest.fnI">
-			<cfif lcase(_taffyRequest.responseMetaData.functions[_taffyRequest.fnI].name) eq "getas#_taffyRequest.returnMimeExt#">
-				<cfset _taffyRequest.mimeFound = true />
-				<cfbreak />
-			</cfif>
-		</cfloop>
-		<cfset structDelete(_taffyRequest, "responseMetaData") />
-		<cfset structDelete(_taffyRequest, "fnI") />
-		<cfif not _taffyRequest.mimeFound>
+		<cfif not mimeSupported(_taffyRequest.returnMimeExt)>
 			<cfset throwError(400, "Requested MIME type not available") />
 		</cfif>
 
@@ -421,6 +412,13 @@
 				</cfif>
 			</cfloop>
 		</cfif>
+	</cffunction>
+	<cffunction name="mimeSupported" output="false" access="private" returntype="boolean">
+		<cfargument name="mimeExt" type="string" required="true" />
+		<cfif structKeyExists(application._taffy.settings.mimeExtensions, arguments.mimeExt)>
+			<cfreturn true />
+		</cfif>
+		<cfreturn false />
 	</cffunction>
 	<cffunction name="reFindNoSuck" output="false" access="private">
 		<cfargument name="pattern" required="true" type="string" />
