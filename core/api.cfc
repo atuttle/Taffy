@@ -434,13 +434,13 @@
 		<cfscript>
 			var local = StructNew();
 			local.awesome = arrayNew(1);
-			local.sucky = refindNoCase(local.pattern, local.data, local.startPos, true);
+			local.sucky = refindNoCase(arguments.pattern, arguments.data, arguments.startPos, true);
 			if (not isArray(local.sucky.len) or arrayLen(local.sucky.len) eq 0){return arrayNew(1);} //handle no match at all
 			for (local.i=1; local.i<= arrayLen(local.sucky.len); local.i++){
 				//if there's a match with pos 0 & length 0, that means the mime type was not specified
 				if (local.sucky.len[local.i] gt 0 && local.sucky.pos[local.i] gt 0){
 					//don't include the group that matches the entire pattern
-					local.matchBody = mid(local.data, local.sucky.pos[local.i], local.sucky.len[local.i]);
+					local.matchBody = mid(arguments.data, local.sucky.pos[local.i], local.sucky.len[local.i]);
 					if (local.matchBody neq arguments.data){
 						arrayAppend( local.awesome, local.matchBody );
 					}
