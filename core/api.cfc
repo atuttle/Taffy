@@ -325,6 +325,7 @@
 		<cfloop list="#arguments.beanList#" index="local.beanName">
 			<!--- get the cfc metadata that defines the uri for that cfc --->
 			<cfset local.cfcMetadata = getMetaData(arguments.factory.getBean(local.beanName)) />
+			<cfset local.uri = '' />
 			<cfif structKeyExists(local.cfcMetadata, "taffy_uri")>
 				<cfset local.uri = local.cfcMetadata["taffy_uri"] />
 			<cfelseif structKeyExists(local.cfcMetadata, "taffy:uri")>
