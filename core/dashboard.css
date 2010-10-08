@@ -106,3 +106,16 @@ th {
 	#submit_post {
 		color: #900;
 	}
+
+/* documentation generation tool */
+	#docs {
+		display: none;
+	}
+	#docs table {
+		font-size: .8em;
+		width: 100%;
+	}
+	#docs thead td {
+		background-color: #B2A46B;
+		color: #000;
+	}

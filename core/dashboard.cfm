@@ -10,6 +10,7 @@
 <p id="toolbar">
 	<button type="button" id="reloader">Reload API Cache</button>
 	<button type="button" id="showDash" class="active">API Configuration</button>
+	<button type="button" id="showDocs">API Documentation</button>
 	<button type="button" id="showMock">Mock Client</button>
 </p>
 
@@ -49,26 +50,44 @@
 <div id="mock">
 	<cfinclude template="mocker.cfm"/>
 </div>
+<div id="docs">
+	<cfinclude template="docs.cfm" />
+</div>
 
 <script type="text/javascript">
 	$(function(){
+		var baseurl = '<cfoutput>#cgi.script_name#?dashboard</cfoutput>';
 		$("#reloader").click(function(){
-			document.location.href = "<cfoutput>#cgi.script_name#?dashboard&#application._taffy.settings.reloadKey#=#application._taffy.settings.reloadPassword#</cfoutput>";
+			document.location.href = baseurl + '<cfoutput>&#application._taffy.settings.reloadKey#=#application._taffy.settings.reloadPassword#</cfoutput>';
 		});
-		$("#resourcesList").click(function(e){
-			$("#resourcesTable").toggle("slow");
+		$("#exportPDF").click(function(){
+			document.location.href = baseurl + '&exportPDF';
 		});
+		//save some selector refs for frequent use
+		var m = $("#mock");
+		var d = $("#dash");
+		var o = $("#docs");
+		var b = $("#toolbar button");
 		$("#showDash").click(function(){
-			$("#showMock").removeClass("active");
-			$("#showDash").addClass("active");
-			$("#mock").hide("fast");
-			$("#dash").show("fast");
+			b.removeClass("active");
+			$(this).addClass("active");
+			m.hide("fast");
+			o.hide("fast");
+			d.show("fast");
 		});
 		$("#showMock").click(function(){
-			$("#showDash").removeClass("active");
-			$("#showMock").addClass("active");
-			$("#dash").hide("fast");
-			$("#mock").show("fast");
+			b.removeClass("active");
+			$(this).addClass("active");
+			d.hide("fast");
+			o.hide("fast");
+			m.show("fast");
+		});
+		$("#showDocs").click(function(){
+			b.removeClass("active");
+			$(this).addClass("active");
+			m.hide("fast");
+			d.hide("fast");
+			o.show("fast");
 		});
 	});
 </script>

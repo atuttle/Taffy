@@ -1,4 +1,4 @@
-<cfcomponent extends="taffy.core.resource" taffy_uri="/artist/{id}">
+<cfcomponent extends="taffy.core.resource" taffy:uri="/artist/{id}" hint="some hint about this resource">
 
 	<cffunction name="get" access="public" output="false">
 		<cfargument name="id" type="numeric" required="true" />
@@ -22,7 +22,7 @@
 		<cfargument name="id" type="numeric" required="true" />
 		<cfargument name="firstname" type="string" required="false" default="" />
 		<cfargument name="lastname" type="string" required="false" default="" />
-		<cfargument name="address" type="string" required="false" default="" />
+		<cfargument name="address" type="string" required="false" default="" hint="some hint about this parameter" />
 		<cfargument name="city" type="string" required="false" default="" />
 		<cfargument name="state" type="string" required="false" default="" />
 		<cfargument name="postalcode" type="string" required="false" default="" />
