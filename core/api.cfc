@@ -9,7 +9,7 @@
 		/** onTaffyRequest gives you the opportunity to inspect the request before it is sent to the service.
 		  * If you override this function, you MUST either return TRUE or a response object (same class as resources).
 		  */
-		function onTaffyRequest(verb, cfc, requestArguments, mimeExt){return true;}
+		function onTaffyRequest(verb, cfc, requestArguments, mimeExt, headers){return true;}
 
 		/* DO NOT OVERRIDE THIS FUNCTION - SEE applicationStartEvent ABOVE */
 		function onApplicationStart(){
@@ -64,7 +64,8 @@
 			_taffyRequest.verb,
 			_taffyRequest.matchDetails.beanName,
 			_taffyRequest.requestArguments,
-			_taffyRequest.returnMimeExt
+			_taffyRequest.returnMimeExt,
+			_taffyRequest.headers
 		) />
 
 		<cfif not structKeyExists(_taffyRequest, "continue")>
@@ -204,6 +205,9 @@
 		<cfelse>
 			<cfset requestObj.queryString = cgi.query_string />
 		</cfif>
+		
+		<!--- grab request headers --->
+		<cfset requestObj.headers = getHTTPRequestData().headers />
 
 		<!--- build the argumentCollection to pass to the cfc --->
 		<cfset requestObj.requestArguments = buildRequestArguments(
