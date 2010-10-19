@@ -147,17 +147,16 @@
 	<!--- internal methods --->
 	<cffunction name="setupFramework" access="private" output="false" returntype="void">
 		<cfset application._taffy = structNew() />
-		<cfset application._taffy.endpoints = {} />
+		<cfset application._taffy.endpoints = structNew() />
 		<!--- default settings --->
-		<cfset application._taffy.settings = {
-			defaultMime = "",
-			debugKey = "debug",
-			reloadKey = "reload",
-			reloadPassword = "true",
-			defaultRepresentationClass = "taffy.core.nativeJsonRepresentation",
-			dashboardKey = "dashboard",
-			disableDashboard = false
-		} />
+		<cfset application._taffy.settings = structNew() />
+		<cfset application._taffy.settings.defaultMime = "" />
+		<cfset application._taffy.settings.debugKey = "debug" />
+		<cfset application._taffy.settings.reloadKey = "reload"/>
+		<cfset application._taffy.settings.reloadPassword = "true"/>
+		<cfset application._taffy.settings.defaultRepresentationClass = "taffy.core.nativeJsonRepresentation"/>
+		<cfset application._taffy.settings.dashboardKey = "dashboard"/>
+		<cfset application._taffy.settings.disableDashboard = false />
 		<!--- allow setting overrides --->
 		<cfset configureTaffy()/>
 		<!--- if resources folder exists, use internal bean factory --->
