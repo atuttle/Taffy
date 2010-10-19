@@ -506,5 +506,16 @@
 		<cfargument name="customClassDotPath" type="string" required="true" hint="Dot-notation path to your custom class to use as the default" />
 		<cfset application._taffy.settings.defaultRepresentationClass = arguments.customClassDotPath />
 	</cffunction>
+	<cffunction name="newRepresentation" access="public" output="false">
+		<cfargument name="class" type="string" default="" />
+		<cfif not len(arguments.class)>
+			<cfset arguments.class = application._taffy.settings.defaultRepresentationClass />
+		</cfif>
+		<cfif application._taffy.factory.beanExists(arguments.class)>
+			<cfreturn application._taffy.factory.getBean(arguments.class) />
+		<cfelse>
+			<cfreturn createObject("component", arguments.class) />
+		</cfif>
+	</cffunction>
 
 </cfcomponent>
