@@ -312,7 +312,7 @@
 			<cfset local.returnData["_taffy_mime"] = right(local.mime, local.mimeLen - 1) />
 		</cfif>
 		<!--- return --->
-		<cfreturn returnData />
+		<cfreturn local.returnData />
 	</cffunction>
 	<cffunction name="throwError" access="private" output="false" returntype="void">
 		<cfargument name="statusCode" type="numeric" default="500" />
