@@ -91,7 +91,7 @@
 			<!--- returns a representation-object --->
 			<cfinvoke
 				component="#application._taffy.factory.getBean(_taffyRequest.matchDetails.beanName)#"
-				method="#_taffyRequest.verb#"
+				method="#_taffyRequest.method#"
 				argumentcollection="#_taffyRequest.requestArguments#"
 				returnvariable="_taffyRequest.result"
 			/>
@@ -198,6 +198,7 @@
 
 		<!--- which verb is requested? --->
 		<cfset requestObj.verb = cgi.request_method />
+		<cfset requestObj.method = application._taffy.endpoints[requestObj.matchingRegex].methods[requestObj.verb] />
 
 		<cfif ucase(requestObj.verb) eq "PUT">
 			<cfset requestObj.queryString = getPutParameters() />
@@ -347,7 +348,13 @@
 				<cfset application._taffy.endpoints[local.metaInfo.uriRegex] = { beanName = local.beanName, tokens = local.metaInfo.tokens, methods = structNew(), srcURI = local.uri } />
 				<cfloop array="#local.cfcMetadata.functions#" index="local.f">
 					<cfif local.f.name eq "get" or local.f.name eq "post" or local.f.name eq "put" or local.f.name eq "delete" or local.f.name eq "head">
-						<cfset application._taffy.endpoints[local.metaInfo.uriRegex].methods[local.f.name] = true />
+						<cfset application._taffy.endpoints[local.metaInfo.uriRegex].methods[local.f.name] = local.f.name />
+
+					<!--- also support future/misc verbs via metadata --->
+					<cfelseif structKeyExists(local.f,"taffy:verb")>
+						<cfset  application._taffy.endpoints[local.metaInfo.uriRegex].methods[local.f["taffy:verb"]] = local.f.name />
+					<cfelseif structKeyExists(local.f,"taffy_verb")>
+						<cfset  application._taffy.endpoints[local.metaInfo.uriRegex].methods[local.f["taffy_verb"]] = local.f.name />
 					</cfif>
 				</cfloop>
 			</cfif>
