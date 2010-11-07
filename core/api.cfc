@@ -255,8 +255,8 @@
 		</cfloop>
 
 		<!--- require the uri to terminate after specified content --->
-		<cfset local.uriRegex &=
-							  "(\.[^\.\?]+)?"	<!--- anything other than these characters will be considered a mime-type request: / \ ? . --->
+		<cfset local.uriRegex = local.uriRegex
+							  & "(\.[^\.\?]+)?"	<!--- anything other than these characters will be considered a mime-type request: / \ ? . --->
 							  & "$" />			<!--- terminate the uri (query string not included in cgi.path_info, does not need to be accounted for here) --->
 
 		<cfset local.returnData.uriRegex = local.uriRegex />
