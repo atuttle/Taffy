@@ -523,5 +523,9 @@
 			<cfreturn createObject("component", arguments.class) />
 		</cfif>
 	</cffunction>
-
+	<cfif NOT isDefined("getComponentMetadata")>
+		<cffunction name="getComponentMetadata">
+			<cfreturn getMetaData(createObject("component",arguments[1])) />
+		</cffunction>
+	</cfif>
 </cfcomponent>
