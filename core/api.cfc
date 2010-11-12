@@ -186,7 +186,7 @@
 		<cfset var tmp = 0 />
 
 		<!--- attempt to find the cfc for the requested uri --->
-		<cfset requestObj.matchingRegex = matchURI(cgi.path_info) />
+		<cfset requestObj.matchingRegex = matchURI(getPath()) />
 
 		<!--- uri doesn't map to any known resources --->
 		<cfif not len(requestObj.matchingRegex)>
@@ -213,7 +213,7 @@
 		<cfset requestObj.requestArguments = buildRequestArguments(
 			requestObj.matchingRegex,
 			requestObj.matchDetails.tokens,
-			cgi.path_info,
+			getPath(),
 			requestObj.queryString
 		) />
 		<!--- also capture form POST data (higher priority that url variables of same name) --->
@@ -528,4 +528,7 @@
 			<cfreturn getMetaData(createObject("component",arguments[1])) />
 		</cffunction>
 	</cfif>
+	<cffunction name="getPath" output="false" access="public" returntype="String" hint="This method returns just the URI portion of the URL, and makes it easier to port Taffy to other platforms by subclassing this method to match the way the platform works. The default behavior is tested and works on Adobe ColdFusion 9.0.1.">
+		<cfreturn cgi.path_info />
+	</cffunction>
 </cfcomponent>
