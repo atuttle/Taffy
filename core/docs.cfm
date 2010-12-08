@@ -132,8 +132,8 @@
 	</cfif>
 	<cfloop from="1" to="#arrayLen(metadata.functions)#" index="f">
 		<cfset func = metadata.functions[f] />
-		<!--- ignore hidden methods --->
-		<cfif func.access neq "private" and func.access neq "package">
+		<!--- ignore hidden methods, if access is not set, assume public --->
+		<cfif not structKeyExists(func, "access") or (func.access neq "private" and func.access neq "package")>
 			<cfset arrayAppend(result.functions, func) />
 		</cfif>
 	</cfloop>
