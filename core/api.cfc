@@ -198,14 +198,23 @@
 
 		<!--- which verb is requested? --->
 		<cfset requestObj.verb = cgi.request_method />
-		<cfset requestObj.method = application._taffy.endpoints[requestObj.matchingRegex].methods[requestObj.verb] />
+		<cfif structKeyExists(application._taffy.endpoints[requestObj.matchingRegex].methods, requestObj.verb)>
+			<cfset requestObj.method = application._taffy.endpoints[requestObj.matchingRegex].methods[requestObj.verb] />
+		<cfelse>
+			<cfset requestObj.method = "" />
+		</cfif>
 
 		<cfif ucase(requestObj.verb) eq "PUT">
-			<cfset requestObj.queryString = getPutParameters() />
+			<!--- if requestObj.method == "" then the PUT method is not allowed --->
+			<cfif len(requestObj.method)>
+				<cfset requestObj.queryString = getPutParameters() />
+			<cfelse>
+				<cfset requestObj.queryString = "" />
+			</cfif>
 		<cfelse>
 			<cfset requestObj.queryString = cgi.query_string />
 		</cfif>
-		
+
 		<!--- grab request headers --->
 		<cfset requestObj.headers = getHTTPRequestData().headers />
 
