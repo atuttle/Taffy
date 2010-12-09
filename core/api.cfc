@@ -72,7 +72,7 @@
 			<!--- developer forgot to return true --->
 			<cfthrow
 				message="Error in your onTaffyRequest method"
-				detail="Your onTaffyRequest method returned no value. Expected: TRUE or a Response Object."
+				detail="Your onTaffyRequest method returned no value. Expected: TRUE or a Representation Object."
 				errorcode="400"
 			/>
 		</cfif>
