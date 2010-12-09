@@ -28,10 +28,10 @@
 		}
 
 		function custom_status_is_returned(){
-			local.result = apiCall("get", "/echo/1.json?status=200", "");
+			local.result = apiCall("get", "/echo/1.json?foo=bar", "");
 			debug(local.result);
 			debug(application);
-			assertEquals(202, local.result.responseHeader.status_code);
+			assertEquals(999, local.result.responseHeader.status_code);
 		}
 
 		function custom_headers_work(){
@@ -48,15 +48,13 @@
 		function uri_matching_works_with_extension(){
 			makePublic(variables.taffy, "matchURI");
 			local.result = variables.taffy.matchURI("/echo/3.json");
-			debug(local.result);
-			assertEquals(true,false);//fix after testing is working :-\
+			assertEquals(local.result,'/echo/([^\/\.]+)(\.[^\.\?]+)?$');//fix after testing is working :-\
 		}
 
 		function uri_matching_works_without_extension(){
 			makePublic(variables.taffy, "matchURI");
 			local.result = variables.taffy.matchURI("/echo/3");
-			debug(local.result);
-			assertEquals(true,false);//fix after testing is working :-\
+			assertEquals(local.result,'/echo/([^\/\.]+)(\.[^\.\?]+)?$');//fix after testing is working :-\
 		}
 
 		function request_parsing_works(){
@@ -71,13 +69,6 @@
 			assertEquals(true, structKeyExists(local.result, "foo") && local.result.foo == "bar");
 			assertEquals(true, structKeyExists(local.result, "bar") && local.result.bar == "foo");
 			assertEquals(true, structKeyExists(local.result, "id") && local.result.id == 16);
-		}
-
-		function throwError_sets_header(){
-			makePublic(variables.taffy, "throwError");
-			variables.taffy.throwError(400, "testing error throwing");
-			//todo- remember how to check existing headers (I answered that on stackoverflow, actually!)
-			assertEquals(true,false);
 		}
 
 		function returns_error_when_default_mime_not_supported(){
