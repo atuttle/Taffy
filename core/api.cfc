@@ -18,7 +18,7 @@
 			return true;
 		}
 		/* DO NOT OVERRIDE THIS FUNCTION - SEE requestStartEvent ABOVE */
-		function onRequestStart(){
+		function onRequestStart(targetPath){
 			//this will probably happen if taffy is sharing an app name with an existing application so that you can use its bean factory
 			if (not structKeyExists(application, "_taffy")){
 				onApplicationStart();
@@ -27,6 +27,12 @@
 			if (structKeyExists(url, application._taffy.settings.reloadKey) and url[application._taffy.settings.reloadKey] eq application._taffy.settings.reloadPassword){
 				setupFramework();
 			}
+			//allow pass-thru for selected paths
+			if ( REFindNoCase( "^(" & application._taffy.settings.unhandledPathsRegex & ")", arguments.targetPath ) ) {
+				structDelete(this, 'onRequest');
+				structDelete(variables, 'onRequest');
+			}
+			//allow child application.cfc to do stuff
 			requestStartEvent();
 			return true;
 		}
@@ -156,8 +162,14 @@
 		<cfset application._taffy.settings.defaultRepresentationClass = "taffy.core.nativeJsonRepresentation"/>
 		<cfset application._taffy.settings.dashboardKey = "dashboard"/>
 		<cfset application._taffy.settings.disableDashboard = false />
+		<cfset application._taffy.settings.unhandledPaths = "/flex2gateway" />
 		<!--- allow setting overrides --->
 		<cfset configureTaffy()/>
+		<!--- translate unhandledPaths config to regex for easier matching (This is ripped off from FW/1. Thanks, Sean!) --->
+		<cfset application._taffy.settings.unhandledPathsRegex = replaceNoCase(
+				REReplace(application._taffy.settings.unhandledPaths, '(\+|\*|\?|\.|\[|\^|\$|\(|\)|\{|\||\\)', '\\\1', 'all' ), <!---escape regex-special characters--->
+			',', '|', 'all' ) <!---convert commas to pipes (or's)--->
+		/>
 		<!--- if resources folder exists, use internal bean factory --->
 		<cfset _taffyRequest.resourcePath = getDirectoryFromPath(getBaseTemplatePath()) & '/resources' />
 		<cfif directoryExists(_taffyRequest.resourcePath)>
@@ -485,6 +497,10 @@
 			<cfset arguments.beanList = getBeanListFromExternalFactory() />
 		</cfif>
 		<cfset cacheBeanMetaData(application._taffy.externalBeanFactory, arguments.beanList) />
+	</cffunction>
+	<cffunction name="setUnhandledPaths" access="public" output="false" returntype="void">
+		<cfargument name="unhandledPaths" type="string" required="true" hint="new list of unhandled paths, comma-delimited (commas may not be part of any list item)" />
+		<cfset application._taffy.settings.unhandledPaths = arguments.unhandledPaths />
 	</cffunction>
 	<cffunction name="setDefaultMime" access="public" output="false" returntype="void">
 		<cfargument name="DefaultMimeType" type="string" required="true" hint="mime time to set as default for this api" />

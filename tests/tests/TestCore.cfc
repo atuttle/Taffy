@@ -90,6 +90,12 @@
 			assertEquals(405, local.result.responseHeader.status_code);
 		}
 
+		function external_file_request_passes_through(){
+			local.result = getUrl('http://localhost/taffy/tests/someFolder/someOtherFile.cfm');
+			debug(local.result);
+			assertEquals(true,!!findNoCase('woot', local.result.fileContent));//!! converts a +int into a bool true
+		}
+
 	</cfscript>
 
 	<cffunction name="apiCall" access="private" output="false">
@@ -97,6 +103,12 @@
 		<cfargument name="uri" type="string"/>
 		<cfargument name="query" type="string"/>
 		<cfhttp method="#arguments.method#" url="http://localhost/taffy/tests/index.cfm#arguments.uri#?#arguments.query#" result="local.result"/>
+		<cfreturn local.result />
+	</cffunction>
+
+	<cffunction name="getUrl" access="private" output="false">
+		<cfargument name="url" type="string" required="true" />
+		<cfhttp method="get" url="#arguments.url#" result="local.result" />
 		<cfreturn local.result />
 	</cffunction>
 
