@@ -521,10 +521,7 @@
 		<cfset application._taffy.settings.defaultRepresentationClass = arguments.customClassDotPath />
 	</cffunction>
 	<cffunction name="newRepresentation" access="public" output="false">
-		<cfargument name="class" type="string" default="" />
-		<cfif not len(arguments.class)>
-			<cfset arguments.class = application._taffy.settings.defaultRepresentationClass />
-		</cfif>
+		<cfargument name="class" type="string" default="#application._taffy.settings.defaultRepresentationClass#" />
 		<cfif application._taffy.factory.beanExists(arguments.class)>
 			<cfreturn application._taffy.factory.getBean(arguments.class) />
 		<cfelse>
