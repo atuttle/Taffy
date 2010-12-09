@@ -10,6 +10,10 @@
 		<cfreturn this />
 	</cffunction>
 
+	<cffunction name="getData" access="public" output="false" hint="mostly for testability, returns the native data embedded in the representation instance">
+		<cfreturn variables.data />
+	</cffunction>
+
 	<cffunction name="noData" access="public" output="false" hint="returns empty representation instance">
 		<cfreturn this />
 	</cffunction>
