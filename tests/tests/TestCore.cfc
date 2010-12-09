@@ -90,6 +90,18 @@
 			assertEquals(405, local.result.responseHeader.status_code);
 		}
 
+		function test_onTaffyRequest_allow(){
+			local.result = apiCall("get","/echo/12.json","refuse=false");
+			debug(local.result);
+			assertEquals(999,local.result.responseHeader.status_code);
+		}
+
+		function test_onTaffyRequest_deny(){
+			local.result = apiCall("get","/echo/12.json","refuse=true");
+			debug(local.result);
+			assertEquals(405,local.result.responseHeader.status_code);
+		}
+
 		function external_file_request_passes_through(){
 			local.result = getUrl('http://localhost/taffy/tests/someFolder/someOtherFile.cfm');
 			debug(local.result);
