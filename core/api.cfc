@@ -107,7 +107,7 @@
 			<cfset throwError(400, "Requested MIME type not available") />
 		</cfif>
 
-		<!--- serialize the representation into the requested mime type --->
+		<!--- serialize the representation's data into the requested mime type --->
 		<cfinvoke
 			component="#_taffyRequest.result#"
 			method="getAs#_taffyRequest.returnMimeExt#"
