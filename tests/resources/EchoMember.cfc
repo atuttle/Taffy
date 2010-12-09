@@ -2,10 +2,9 @@
 
 	<cffunction name="get">
 		<cfargument name="id" />
-		<cfargument name="status" required="false" default="200" />
 		<cfset local.headers = {}/>
 		<cfset local.headers['x-dude'] = "dude!" />
-		<cfreturn representationOf(arguments).withStatus(arguments.status).withHeaders(local.headers) />
+		<cfreturn representationOf(arguments).withStatus(999).withHeaders(local.headers) />
 	</cffunction>
 
 </cfcomponent>
