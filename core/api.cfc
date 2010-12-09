@@ -97,7 +97,6 @@
 			/>
 		</cfif>
 		<!--- make sure the requested mime type is available --->
-		<cfset _taffyRequest.responseMetaData = getMetaData(_taffyRequest.result) />
 		<cfif not mimeSupported(_taffyRequest.returnMimeExt)>
 			<cfset throwError(400, "Requested MIME type not available") />
 		</cfif>
