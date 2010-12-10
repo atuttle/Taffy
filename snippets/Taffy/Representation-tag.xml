@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<snippet filetemplate="false" extension="">
+<name>Representation-tag</name>
+<help>Creates a Taffy Custom Representation CFC using cfml tags</help>
+<starttext><![CDATA[<cfcomponent extends="taffy.core.baseRepresentation">
+
+	<cffunction
+		name="getAs]]></starttext>
+<endtext><![CDATA["
+		output="false"
+		taffy:mime=""
+		taffy:default="">
+		<cfreturn serializeToMyCustomFormat(variables.data) />
+	</cffunction>
+
+</cfcomponent>]]></endtext>
+</snippet>

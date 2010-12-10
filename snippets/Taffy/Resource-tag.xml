@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<snippet filetemplate="false" extension="">
+<name>Resource-tag</name>
+<help>Creates a Taffy Resource CFC using cfml tags</help>
+<starttext><![CDATA[<cfcomponent extends="taffy.core.resource" taffy:uri="]]></starttext>
+<endtext><![CDATA[">
+	
+	<cffunction name="get" output="false" hint="read">
+	</cffunction>
+	
+	<cffunction name="put" output="false" hint="update">
+	</cffunction>
+	
+	<cffunction name="post" output="false" hint="create">
+	</cffunction>
+	
+	<cffunction name="delete" output="false" hint="delete">
+	</cffunction>
+	
+</cfcomponent>]]></endtext>
+</snippet>

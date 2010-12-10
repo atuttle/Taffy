@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<snippet filetemplate="false" extension="">
+<name>Application cfc-tag</name>
+<help>Creates an Application.cfc skeleton for a Taffy API using cfml tags</help>
+<starttext><![CDATA[<cfcomponent extends="taffy.core.api">
+
+	<cfset this.name = "]]></starttext>
+<endtext><![CDATA["/>
+
+	<cffunction name="applicationStartEvent">
+	</cffunction>
+
+	<cffunction name="requestStartEvent">
+	</cffunction>
+
+	<cffunction name="onTaffyRequest">
+		<cfargument name="verb" />
+		<cfargument name="cfc" />
+		<cfargument name="requestArguments" />
+		<cfargument name="mimeExt" />
+		<cfargument name="headers" />
+		<cfreturn true />
+	</cffunction>
+
+	<cffunction name="configureTaffy">
+		<cfset enableDashboard(true)/>
+		<cfset setUnhandledPaths('/flex2gateway')/>
+	</cffunction>
+</cfcomponent>]]></endtext>
+</snippet>

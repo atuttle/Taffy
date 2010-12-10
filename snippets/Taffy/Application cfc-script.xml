@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<snippet filetemplate="false" extension="">
+<name>Application cfc-script</name>
+<help>Creates an Application.cfc skeleton for a Taffy API using cfscript syntax</help>
+<starttext><![CDATA[component extends="taffy.core.api"
+{
+	this.name = "]]></starttext>
+<endtext><![CDATA[";
+
+	function applicationStartEvent()
+	{
+	}
+
+	function requestStartEvent()
+	{
+	}
+
+	function onTaffyRequest(verb,cfc,requestArguments,mimeExt,headers)
+	{
+	}
+
+	function configureTaffy()
+	{
+		enableDashboard(true);
+		setUnhandledPaths('/flex2gateway');
+	}
+}]]></endtext>
+</snippet>

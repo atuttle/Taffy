@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<snippet filetemplate="false" extension="">
+<name>Resource-script</name>
+<help>Creates a Taffy Resource CFC using cfscript syntax</help>
+<starttext><![CDATA[component extends="taffy.core.resource" taffy:uri="]]></starttext>
+<endtext><![CDATA["
+{
+	
+	public function get() output="false" hint="read"
+	{
+	}
+	
+	public function put() output="false" hint="update"
+	{
+	}
+	
+	public function post() output="false" hint="create"
+	{
+	}
+	
+	public function delete() output="false" hint="delete"
+	{
+	}
+	
+}]]></endtext>
+</snippet>
