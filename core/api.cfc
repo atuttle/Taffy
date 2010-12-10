@@ -1,42 +1,51 @@
 <cfcomponent hint="Base class for taffy REST application's Application.cfc">
 
-	<cfscript>
-		//you can override these methods in your application.cfc
-		function applicationStartEvent(){}	//override this function to run your own code inside onApplicationStart()
-		function requestStartEvent(){}		//override this function to run your own code inside onRequestStart()
-		function configureTaffy(){}			//override this function to set Taffy config settings
+	<!--- these methods are meant to be (optionally) overrided in your application.cfc --->
+	<cffunction name="applicationStartEvent" output="false" hint="override this function to run your own code inside onApplicationStart()"></cffunction>
+	<cffunction name="requestStartEvent" output="false" hint="override this function to run your own code inside onRequestStart()"></cffunction>
+	<cffunction name="configureTaffy" output="false" hint="override this function to set Taffy config settings"></cffunction>
 
-		/** onTaffyRequest gives you the opportunity to inspect the request before it is sent to the service.
-		  * If you override this function, you MUST either return TRUE or a response object (same class as resources).
-		  */
-		function onTaffyRequest(verb, cfc, requestArguments, mimeExt, headers){return true;}
+	<!---
+		onTaffyRequest gives you the opportunity to inspect the request before it is sent to the service.
+		If you override this function, you MUST either return TRUE or a representation object
+		(eg either taffy.core.nativeJsonRepresentation or your default representation class)
+	--->
+	<cffunction name="onTaffyRequest" output="false">
+		<cfargument name="verb" />
+		<cfargument name="cfc" />
+		<cfargument name="requestArguments" />
+		<cfargument name="mimeExt" />
+		<cfargument name="headers" />
+		<cfreturn true />
+	</cffunction>
 
-		/* DO NOT OVERRIDE THIS FUNCTION - SEE applicationStartEvent ABOVE */
-		function onApplicationStart(){
-			applicationStartEvent();
-			setupFramework();
-			return true;
-		}
-		/* DO NOT OVERRIDE THIS FUNCTION - SEE requestStartEvent ABOVE */
-		function onRequestStart(targetPath){
-			//this will probably happen if taffy is sharing an app name with an existing application so that you can use its bean factory
-			if (not structKeyExists(application, "_taffy")){
-				onApplicationStart();
-			}
-			//allow reloading
-			if (structKeyExists(url, application._taffy.settings.reloadKey) and url[application._taffy.settings.reloadKey] eq application._taffy.settings.reloadPassword){
-				setupFramework();
-			}
-			//allow pass-thru for selected paths
-			if ( REFindNoCase( "^(" & application._taffy.settings.unhandledPathsRegex & ")", arguments.targetPath ) ) {
-				structDelete(this, 'onRequest');
-				structDelete(variables, 'onRequest');
-			}
-			//allow child application.cfc to do stuff
-			requestStartEvent();
-			return true;
-		}
-    </cfscript>
+	<!--- DO NOT OVERRIDE THIS FUNCTION - SEE applicationStartEvent ABOVE --->
+	<cffunction name="onApplicationStart">
+		<cfset applicationStartEvent() />
+		<cfset setupFramework() />
+		<cfreturn true />
+	</cffunction>
+
+	<!--- DO NOT OVERRIDE THIS FUNCTION - SEE requestStartEvent ABOVE --->
+	<cffunction name="onRequestStart">
+		<cfargument name="targetPath" />
+		<!--- this will probably happen if taffy is sharing an app name with an existing application so that you can use its bean factory --->
+		<cfif not structKeyExists(application, "_taffy")>
+			<cfset onApplicationStart() />
+		</cfif>
+		<!--- allow reloading --->
+		<cfif structKeyExists(url, application._taffy.settings.reloadKey) and url[application._taffy.settings.reloadKey] eq application._taffy.settings.reloadPassword>
+			<cfset setupFramework() />
+		</cfif>
+		<!--- allow pass-thru for selected paths --->
+		<cfif REFindNoCase( "^(" & application._taffy.settings.unhandledPathsRegex & ")", arguments.targetPath )>
+			<cfset structDelete(this, 'onRequest') />
+			<cfset structDelete(variables, 'onRequest') />
+		</cfif>
+		<!--- allow child application.cfc to do stuff --->
+		<cfset requestStartEvent() />
+		<cfreturn true />
+	</cffunction>
 
 	<!--- :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: --->
 	<!--- :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: --->
@@ -192,6 +201,7 @@
 		<!--- automatically introspect mime types from cfc metadata of default representation class --->
 		<cfset inspectMimeTypes(application._taffy.settings.defaultRepresentationClass) />
 	</cffunction>
+
 	<cffunction name="parseRequest" access="private" output="false" returnType="struct">
 		<cfset var requestObj = {} />
 		<cfset var tmp = 0 />
@@ -261,6 +271,7 @@
 		</cfif>
 		<cfreturn requestObj />
 	</cffunction>
+
 	<cffunction name="convertURItoRegex" access="private" output="false">
 		<cfargument name="uri" type="string" required="true" hint="wants the uri mapping defined by the cfc endpoint" />
 		<cfset var local = StructNew() />
@@ -284,6 +295,7 @@
 
 		<cfreturn local.returnData />
 	</cffunction>
+
 	<cffunction name="matchURI" access="private" output="false" returnType="string">
 		<cfargument name="requestedURI" type="string" required="true" hint="probably just pass in cgi.path_info" />
 		<cfset var endpoint = '' />
@@ -297,10 +309,12 @@
 		<!--- nothing found --->
 		<cfreturn "" />
 	</cffunction>
+
 	<cffunction name="getPutParameters" access="private" output="false" returntype="String" hint="Gets PUT data into a string similar to cgi.query_string, which CF doesn't do automatically">
 		<!--- Special thanks to Jason Dean (@JasonPDean) and Ray Camden (@ColdFusionJedi) who helped me figure out how to do this --->
 		<cfreturn getHTTPRequestData().content />
 	</cffunction>
+
 	<cffunction name="buildRequestArguments" access="private" output="false" returnType="struct">
 		<cfargument name="regex" type="string" required="true" hint="regex that describes the request (including uri and query string parameters)" />
 		<cfargument name="tokenNamesArray" type="array" required="true" hint="array of token names associated with the matched uri" />
@@ -335,6 +349,7 @@
 		<!--- return --->
 		<cfreturn local.returnData />
 	</cffunction>
+
 	<cffunction name="throwError" access="private" output="false" returntype="void">
 		<cfargument name="statusCode" type="numeric" default="500" />
 		<cfargument name="msg" type="string" required="true" hint="message to return to api consumer" />
@@ -342,6 +357,7 @@
 		<cfheader statuscode="#arguments.statusCode#" statustext="#arguments.msg#" />
 		<cfabort />
 	</cffunction>
+
 	<cffunction name="cacheBeanMetaData" access="private" output="false" returnType="void">
 		<cfargument name="factory" required="true" />
 		<cfargument name="beanList" type="string" required="true" />
@@ -380,6 +396,7 @@
 			</cfif>
 		</cfloop>
 	</cffunction>
+
 	<cffunction name="resolveDependencies" access="private" output="false" returnType="void">
 		<cfset var local = StructNew() />
 		<cfloop list="#structKeyList(application._taffy.endpoints)#" index="local.endpoint">
@@ -396,6 +413,7 @@
 			</cfloop>
 		</cfloop>
 	</cffunction>
+
 	<cffunction name="getBeanListFromExternalFactory" output="false" access="private" returntype="String">
 		<cfset var beanFactoryMeta = getMetadata(application._taffy.externalBeanFactory) />
 		<cfif lcase(left(beanFactoryMeta.name, 10)) eq "coldspring">
@@ -408,6 +426,7 @@
 		</cfif>
 		<cfreturn "" />
 	</cffunction>
+
 	<cffunction name="getBeanListFromColdSpring" access="private" output="false" returntype="string">
 		<cfset var local = StructNew() />
 		<cfset local.beans = application._taffy.externalBeanFactory.getBeanDefinitionList() />
@@ -418,6 +437,7 @@
 		</cfloop>
 		<cfreturn local.beanList />
 	</cffunction>
+
 	<cffunction name="inspectMimeTypes" access="private" output="false" returntype="void">
 		<cfargument name="customClassDotPath" type="string" required="true" hint="dot-notation path of representation class" />
 		<cfif application._taffy.factory.beanExists(arguments.customClassDotPath)>
@@ -426,6 +446,7 @@
 			<cfset _recurse_inspectMimeTypes(getComponentMetadata(arguments.customClassDotPath)) />
 		</cfif>
 	</cffunction>
+
 	<cffunction name="_recurse_inspectMimeTypes" output="false" access="private" returntype="void">
 		<cfargument name="objMetaData" type="struct" required="true" />
 		<cfset var local = StructNew() />
@@ -458,6 +479,7 @@
 			</cfloop>
 		</cfif>
 	</cffunction>
+
 	<cffunction name="mimeSupported" output="false" access="private" returntype="boolean">
 		<cfargument name="mimeExt" type="string" required="true" />
 		<cfif structKeyExists(application._taffy.settings.mimeExtensions, arguments.mimeExt)>
@@ -465,6 +487,7 @@
 		</cfif>
 		<cfreturn false />
 	</cffunction>
+
 	<cffunction name="reFindNoSuck" output="false" access="private">
 		<cfargument name="pattern" required="true" type="string" />
 		<cfargument name="data" required="true" type="string" />
@@ -488,7 +511,9 @@
 		</cfscript>
 	</cffunction>
 
-	<!--- helper methods --->
+	<!---
+		helper methods: stuff used in Application.cfc
+	--->
 	<cffunction name="setBeanFactory" access="public" output="false" returntype="void">
 		<cfargument name="beanFactory" required="true" hint="Instance of bean factory object" />
 		<cfargument name="beanList" required="false" default="" />
@@ -498,44 +523,54 @@
 		</cfif>
 		<cfset cacheBeanMetaData(application._taffy.externalBeanFactory, arguments.beanList) />
 	</cffunction>
+
 	<cffunction name="setUnhandledPaths" access="public" output="false" returntype="void">
 		<cfargument name="unhandledPaths" type="string" required="true" hint="new list of unhandled paths, comma-delimited (commas may not be part of any list item)" />
 		<cfset application._taffy.settings.unhandledPaths = arguments.unhandledPaths />
 	</cffunction>
+
 	<cffunction name="setDefaultMime" access="public" output="false" returntype="void">
 		<cfargument name="DefaultMimeType" type="string" required="true" hint="mime time to set as default for this api" />
 		<cfset application._taffy.settings.defaultMime = arguments.DefaultMimeType />
 	</cffunction>
+
 	<cffunction name="setDebugKey" access="public" output="false" returnType="void">
 		<cfargument name="keyName" type="string" required="true" hint="url parameter you want to use to enable ColdFusion debug output" />
 		<cfset application._taffy.settings.debugKey = arguments.keyName />
 	</cffunction>
+
 	<cffunction name="setDashboardKey" access="public" output="false" returnType="void">
 		<cfargument name="keyName" type="string" required="true" hint="url parameter you want to use to show the Taffy dashboard" />
 		<cfset application._taffy.settings.dashboardKey = arguments.keyName />
 	</cffunction>
+
 	<cffunction name="enableDashboard" access="public" output="false" returntype="void" hint="Enable and disable usage of the dashboard via the dashboard key existing as a url parameter">
 		<cfargument name="enabled" type="boolean" required="true" />
 		<cfset application._taffy.settings.disableDashboard = !(arguments.enabled) />
 	</cffunction>
+
 	<cffunction name="setReloadKey" access="public" output="false" returnType="void">
 		<cfargument name="keyName" type="string" required="true" hint="url parameter you want to use to reload Taffy (clear cache, reset settings)" />
 		<cfset application._taffy.settings.reloadKey = arguments.keyName />
 	</cffunction>
+
 	<cffunction name="setReloadPassword" access="public" output="false" returnType="void">
 		<cfargument name="password" type="string" required="true" hint="value required for the reload key to initiate a reload. if it doesn't match, then the framework will not reload." />
 		<cfset application._taffy.settings.reloadPassword = arguments.password />
 	</cffunction>
+
 	<cffunction name="registerMimeType" access="public" output="false" returntype="void">
 		<cfargument name="extension" type="string" required="true" hint="ex: json" />
 		<cfargument name="mimeType" type="string" required="true" hint="ex: text/json" />
 		<cfset application._taffy.settings.mimeExtensions[arguments.extension] = arguments.mimeType />
 		<cfset application._taffy.settings.mimeTypes[arguments.mimeType] = arguments.extension />
 	</cffunction>
+
 	<cffunction name="setDefaultRepresentationClass" access="public" output="false" returnType="void" hint="Override the global default representation object with a custom class">
 		<cfargument name="customClassDotPath" type="string" required="true" hint="Dot-notation path to your custom class to use as the default" />
 		<cfset application._taffy.settings.defaultRepresentationClass = arguments.customClassDotPath />
 	</cffunction>
+
 	<cffunction name="newRepresentation" access="public" output="false">
 		<cfargument name="class" type="string" default="#application._taffy.settings.defaultRepresentationClass#" />
 		<cfif application._taffy.factory.beanExists(arguments.class)>
@@ -544,12 +579,15 @@
 			<cfreturn createObject("component", arguments.class) />
 		</cfif>
 	</cffunction>
+
 	<cfif NOT isDefined("getComponentMetadata")>
 		<cffunction name="getComponentMetadata">
 			<cfreturn getMetaData(createObject("component",arguments[1])) />
 		</cffunction>
 	</cfif>
+
 	<cffunction name="getPath" output="false" access="public" returntype="String" hint="This method returns just the URI portion of the URL, and makes it easier to port Taffy to other platforms by subclassing this method to match the way the platform works. The default behavior is tested and works on Adobe ColdFusion 9.0.1.">
 		<cfreturn cgi.path_info />
 	</cffunction>
+
 </cfcomponent>
