@@ -13,13 +13,16 @@
 		<cfset application.beanFactory = createObject("component", "coldspring.beans.DefaultXMLBeanFactory") />
 		<cfset application.beanFactory.loadBeans('/taffy/examples/ParentApplication/config/coldspring.xml') />
 
+		<cfparam name="application.init" default="#structNew()#" />
+		<cfset application.init.app = true />
+
 		<cfreturn true />
 	</cffunction>
 
 	<cffunction name="onRequestStart" returnType="boolean" output="false">
 		<cfargument name="thePage" type="string" required="true" />
 
-		<cfif structKeyExists(url, "reinit") or not structKeyExists(application, "beanFactory")>
+		<cfif not structKeyExists(application, "init") or not structKeyExists(application.init, "app")>
 			<cfset onApplicationStart() />
 		</cfif>
 
