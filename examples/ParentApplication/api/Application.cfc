@@ -3,15 +3,20 @@ component extends="taffy.core.api" {
 	this.name = "taffy_ParentAppExample";
 
 	//do your onApplicationStart stuff here
-	function applicationStartEvent(){}
+	function applicationStartEvent(){
+		application.beanFactory = createObject("component", "coldspring.beans.DefaultXMLBeanFactory");
+		application.beanFactory.loadBeans('/taffy/examples/ParentApplication/config/coldspring.xml');
+	}
 
 	//do your onRequestStart stuff here
-	function requestStartEvent(){}
+	function requestStartEvent(){
+		if (!structKeyExists(application, "beanFactory")){
+			onApplicationStart();
+		}
+	}
 
 	//this function is called after the request has been parsed and all request details are known
 	function onTaffyRequest(string verb, string cfc, struct requestArguments, string mimeExt){
-writeDump(application);
-abort;
 		//this would be a good place for you to check API key validity and other non-resource-specific validation
 		return true;
 	}

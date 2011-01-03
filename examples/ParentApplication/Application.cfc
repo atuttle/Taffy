@@ -19,7 +19,7 @@
 	<cffunction name="onRequestStart" returnType="boolean" output="false">
 		<cfargument name="thePage" type="string" required="true" />
 
-		<cfif structKeyExists(url, "reinit")>
+		<cfif structKeyExists(url, "reinit") or not structKeyExists(application, "beanFactory")>
 			<cfset onApplicationStart() />
 		</cfif>
 
