@@ -29,7 +29,7 @@
 	<!--- DO NOT OVERRIDE THIS FUNCTION - SEE requestStartEvent ABOVE --->
 	<cffunction name="onRequestStart">
 		<cfargument name="targetPath" />
-		<!--- this will probably happen if taffy is sharing an app name with an existing application so that you can use its bean factory --->
+		<!--- this will probably happen if taffy is sharing an app name with an existing application so that you can use its application context --->
 		<cfif not structKeyExists(application, "_taffy")>
 			<cfset onApplicationStart() />
 		</cfif>
@@ -250,7 +250,7 @@
 		<cfset structAppend(requestObj.requestArguments, form) />
 
 		<!--- use requested mime type or the default --->
-		<cfset requestObj.returnMimeExt = "" />
+		<cfset requestObj.returnMimeExt = application._taffy.settings.defaultMime />
 		<cfif structKeyExists(requestObj.requestArguments, "_taffy_mime")>
 			<cfset requestObj.returnMimeExt = requestObj.requestArguments["_taffy_mime"] />
 			<cfset structDelete(requestObj.requestArguments, "_taffy_mime") />
