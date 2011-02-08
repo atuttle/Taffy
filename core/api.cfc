@@ -138,6 +138,9 @@
 		<cfsetting enablecfoutputonly="true" />
 		<cfcontent reset="true" type="#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#" />
 		<cfheader statuscode="#_taffyRequest.resultStatus#"/>
+		<cfif application._taffy.settings.allowCrossDomain>
+			<cfheader name="Access-Control-Allow-Origin" value="*" />
+		</cfif>
 		<cfif not structIsEmpty(_taffyRequest.resultHeaders)>
 			<cfloop collection="#_taffyRequest.resultHeaders#" item="_taffyRequest.headerName">
 				<cfheader name="#_taffyRequest.headerName#" value="#_taffyRequest.resultHeaders[_taffyRequest.headerName]#" />
@@ -172,6 +175,7 @@
 		<cfset application._taffy.settings.dashboardKey = "dashboard"/>
 		<cfset application._taffy.settings.disableDashboard = false />
 		<cfset application._taffy.settings.unhandledPaths = "/flex2gateway" />
+		<cfset application._taffy.settings.allowCrossDomain = false />
 		<!--- allow setting overrides --->
 		<cfset configureTaffy()/>
 		<!--- translate unhandledPaths config to regex for easier matching (This is ripped off from FW/1. Thanks, Sean!) --->
@@ -578,6 +582,11 @@
 		<cfelse>
 			<cfreturn createObject("component", arguments.class) />
 		</cfif>
+	</cffunction>
+
+	<cffunction name="enableCrossDomainAccess" access="public" output="false" returntype="void">
+		<cfargument name="enabled" type="boolean" default="true" />
+		<cfset application._taffy.settings.allowCrossDomain = arguments.enabled />
 	</cffunction>
 
 	<cfif NOT isDefined("getComponentMetadata")>
