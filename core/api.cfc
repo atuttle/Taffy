@@ -225,7 +225,9 @@
 			<cfset requestObj.method = "" />
 		</cfif>
 
-		<cfif ucase(requestObj.verb) eq "PUT">
+		<!--- If mime type of request was "x-www-form-urlencoded" parse the request body for form parameters --->
+		<cfset requestObj.contentType = cgi.content_type />
+		<cfif ucase(requestObj.verb) eq "PUT" and requestObj.contentType eq "application/x-www-form-urlencoded">
 			<!--- if requestObj.method == "" then the PUT method is not allowed --->
 			<cfif len(requestObj.method)>
 				<cfset requestObj.queryString = getPutParameters() />
