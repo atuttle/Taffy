@@ -438,8 +438,7 @@
 				return type metadata on the factory method or find some other way to determine if
 				this is a Taffy bean.
 			 --->
-			<cfif not local.beans[local.beanName].isFactoryBean()
-					and local.beans[local.beanName].instanceOf('taffy.core.resource')>
+			<cfif local.beans[local.beanName].getBeanClass() NEQ "" and local.beans[local.beanName].instanceOf('taffy.core.resource')>
 				<cfset local.beanList = listAppend(local.beanList, local.beanName) />
 			</cfif>
 		</cfloop>
