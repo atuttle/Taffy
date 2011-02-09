@@ -449,7 +449,7 @@
 
 	<cffunction name="inspectMimeTypes" access="private" output="false" returntype="void">
 		<cfargument name="customClassDotPath" type="string" required="true" hint="dot-notation path of representation class" />
-		<cfif application._taffy.factory.beanExists(arguments.customClassDotPath)>
+		<cfif application._taffy.factory.containsBean(arguments.customClassDotPath)>
 			<cfset _recurse_inspectMimeTypes(getMetadata(application._taffy.factory.getBean(arguments.customClassDotPath))) />
 		<cfelse>
 			<cfset _recurse_inspectMimeTypes(getComponentMetadata(arguments.customClassDotPath)) />
