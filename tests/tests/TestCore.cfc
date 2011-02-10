@@ -40,6 +40,12 @@
 			assertEquals(true, structKeyExists(local.result.responseHeader, "x-dude"));
 		}
 
+		function global_headers_work(){
+			local.result = apiCall("get", "/echo/1.json", "");
+			debug(local.result);
+			assertEquals(true, structKeyExists(local.result.responseHeader, "x-foo-globalheader"));
+		}
+
 		function uri_regexes_are_correct(){
 			makePublic(variables.taffy, "convertURItoRegex");
 			assertEquals("{""uriregex"":""\/a\/([^\\\/\\.]+)\/b(\\.[^\\.\\?]+)?$"",""tokens"":[""abc""]}", serializeJson(taffy.convertURItoRegex("/a/{abc}/b")));

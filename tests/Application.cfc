@@ -4,6 +4,7 @@ component extends="taffy.core.api"{
 	public void function configureTaffy() output="false" {
 		enableDashboard(true);
 		setUnhandledPaths('/taffy/tests/someFolder');
+		setGlobalHeaders({"x-foo-globalheader"="snafu"});
 	}
 
 	public function onTaffyRequest(verb, cfc, requestArguments, mimeExt, headers){

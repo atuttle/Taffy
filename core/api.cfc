@@ -141,6 +141,12 @@
 		<cfif application._taffy.settings.allowCrossDomain>
 			<cfheader name="Access-Control-Allow-Origin" value="*" />
 		</cfif>
+		<cfif not structIsEmpty(getGlobalHeaders())>
+			<cfset _taffyRequest.tmpHeaders = getGlobalHeaders() />
+			<cfloop collection="#_taffyRequest.tmpHeaders#" item="_taffyRequest.headerName">
+				<cfheader name="#_taffyRequest.headerName#" value="#_taffyRequest.tmpHeaders[_taffyRequest.headerName]#" />
+			</cfloop>
+		</cfif>
 		<cfif not structIsEmpty(_taffyRequest.resultHeaders)>
 			<cfloop collection="#_taffyRequest.resultHeaders#" item="_taffyRequest.headerName">
 				<cfheader name="#_taffyRequest.headerName#" value="#_taffyRequest.resultHeaders[_taffyRequest.headerName]#" />
@@ -176,6 +182,7 @@
 		<cfset application._taffy.settings.disableDashboard = false />
 		<cfset application._taffy.settings.unhandledPaths = "/flex2gateway" />
 		<cfset application._taffy.settings.allowCrossDomain = false />
+		<cfset application._taffy.settings.globalHeaders = structNew() />
 		<!--- allow setting overrides --->
 		<cfset configureTaffy()/>
 		<!--- translate unhandledPaths config to regex for easier matching (This is ripped off from FW/1. Thanks, Sean!) --->
@@ -596,6 +603,15 @@
 	<cffunction name="enableCrossDomainAccess" access="public" output="false" returntype="void">
 		<cfargument name="enabled" type="boolean" default="true" />
 		<cfset application._taffy.settings.allowCrossDomain = arguments.enabled />
+	</cffunction>
+
+	<cffunction name="getGlobalHeaders" access="public" output="false" returntype="Struct">
+		<cfreturn application._taffy.settings.globalHeaders />
+	</cffunction>
+
+	<cffunction name="setGlobalHeaders" access="public" output="false" returntype="void">
+		<cfargument name="headers" type="struct" required="true" />
+		<cfset application._taffy.settings.globalHeaders = arguments.headers />
 	</cffunction>
 
 	<cfif NOT isDefined("getComponentMetadata")>
