@@ -543,6 +543,9 @@
 		</cfif>
 		<cfset cacheBeanMetaData(application._taffy.externalBeanFactory, arguments.beanList) />
 	</cffunction>
+	<cffunction name="getBeanFactory" access="public" output="false">
+		<cfreturn application._taffy.factory />
+	</cffunction>
 
 	<cffunction name="setUnhandledPaths" access="public" output="false" returntype="void">
 		<cfargument name="unhandledPaths" type="string" required="true" hint="new list of unhandled paths, comma-delimited (commas may not be part of any list item)" />
