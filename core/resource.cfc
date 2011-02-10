@@ -24,7 +24,7 @@
 	--->
 	<cffunction name="getRepInstance" access="private" output="false">
 		<cfargument name="repClass" type="string" />
-		<cfif application._taffy.factory.beanExists(arguments.repClass)>
+		<cfif application._taffy.factory.containsBean(arguments.repClass)>
 			<cfreturn application._taffy.factory.getBean(arguments.repClass) />
 		<cfelse>
 			<cfreturn createObject("component", arguments.repClass) />
