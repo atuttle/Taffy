@@ -1,4 +1,4 @@
-<cfcomponent extends="mxunit.framework.TestCase">
+<cfcomponent extends="baseTest">
 	<cfscript>
 
 		function beforeTests(){
