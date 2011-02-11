@@ -66,5 +66,9 @@
 			<cfset _recurse_ResolveDependencies(arguments.beanName, arguments.metaData.extends) />
 		</cfif>
 	</cffunction>
+	<!--- proxy function for CF8 compatibility --->
+	<cffunction name="throwError">
+		<cfthrow attributecollection="#arguments#" />
+	</cffunction>
 
 </cfcomponent>
