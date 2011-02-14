@@ -69,12 +69,31 @@
 				regex = '/echo/([^\/\.]+)(\.[^\.\?]+)?$',
 				tokenNamesArray = ["id"],
 				uri = '/echo/16',
-				queryString = 'foo=bar&bar=foo'
+				queryString = 'foo=bar&bar=foo',
+				headers = {}
 			);
 			debug(local.result);
 			assertEquals(true, structKeyExists(local.result, "foo") && local.result.foo == "bar");
 			assertEquals(true, structKeyExists(local.result, "bar") && local.result.bar == "foo");
 			assertEquals(true, structKeyExists(local.result, "id") && local.result.id == 16);
+		}
+
+		function properly_decodes_urlEncoded_put_request_body(){
+			local.result = apiCall("put", "/echo/99.json", "foo=bar&check=mate");
+			debug(local.result);
+		}
+
+		function properly_decodes_json_put_request_body(){
+			local.result = apiCall("put", "/echo/99.json", '{"data":{"foo":"bar"}}');
+			debug(local.result);
+			if (!isJson(local.result.fileContent)){
+				debug("expected json result but result was not json");
+				assertEquals("json", "not json");
+				return;
+			}
+			local.result = deserializeJSON(local.result.fileContent);
+			assertEquals(true, structKeyExists(local.result, "foo") && local.result.foo == "bar");
+			assertEquals(false, structKeyExists(local.result, "data"));
 		}
 
 		function returns_error_when_default_mime_not_supported(){
@@ -91,7 +110,7 @@
 		}
 
 		function returns_405_for_unimplemented_verbs(){
-			local.result = apiCall("put", "/echo/2.json", "foo=bar");
+			local.result = apiCall("delete", "/echo/2.json", "foo=bar");
 			debug(local.result);
 			assertEquals(405, local.result.responseHeader.status_code);
 		}
