@@ -17,7 +17,7 @@
 			if (beanExists(arguments.beanName)){
 				return this.beans[arguments.beanName];
 			}else{
-				throw ("Bean name '#arguments.beanName#' not found.", "TaffyFactory");
+				throwError ("Bean name '#arguments.beanName#' not found.", "TaffyFactory");
 			}
 		}
 		function getBeanList(){
