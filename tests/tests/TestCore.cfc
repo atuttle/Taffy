@@ -141,6 +141,29 @@
 			assertTrue(findNoCase('woot', local.result.fileContent), "Was not able to get the DMZ file.");
 		}
 
+		function tunnel_PUT_through_POST(){
+			variables.taffy.setDefaultMime("text/json");
+			var headers = { "X-HTTP-Method-Override" = "PUT", "Accept" = "text/json" };
+			local.result = apiCall("post","/echo/tunnel/12","",headers);
+			debug(local.result);
+			assertEquals(200,local.result.responseHeader.status_code);
+
+			local.deserializedContent = deserializeJSON( local.result.fileContent );
+			debug( local.deserializedContent );
+			assertEquals("put", local.deserializedContent.actualMethod);
+		}
+
+		function tunnel_DELETE_through_POST(){
+			variables.taffy.setDefaultMime("text/json");
+			var headers = { "X-HTTP-Method-Override" = "DELETE", "Accept" = "text/json" };
+			local.result = apiCall("post","/echo/tunnel/12","",headers);
+			debug(local.result);
+			assertEquals(200,local.result.responseHeader.status_code);
+
+			local.deserializedContent = deserializeJSON( local.result.fileContent );
+			debug( local.deserializedContent );
+			assertEquals("delete", local.deserializedContent.actualMethod);
+		}
 	</cfscript>
 
 </cfcomponent>
