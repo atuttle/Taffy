@@ -18,15 +18,6 @@
 		<cfreturn representationOf(echo).withStatus(200) />
 	</cffunction>
 	
-	<cffunction name="post">
-		<cfargument name="id" />
-		
-		<cfset var echo = {} />
-		<cfset echo.actualMethod = "post" />
-
-		<cfreturn representationOf(echo).withStatus(200) />
-	</cffunction>
-	
 	<cffunction name="delete">
 		<cfargument name="id" />
 		
