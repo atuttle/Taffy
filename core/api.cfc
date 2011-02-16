@@ -234,11 +234,11 @@
 
 		<!--- which verb is requested? --->
 		<cfset requestObj.verb = cgi.request_method />
-		
+
 		<!--- Should we override the actual method based on method tunnelling? --->
-    <cfif isDefined("httpMethodOverride")>
-        <cfset requestObj.verb = httpMethodOverride />
-    </cfif>
+		<cfif isDefined("httpMethodOverride")>
+		    <cfset requestObj.verb = httpMethodOverride />
+		</cfif>
 
 		<cfif structKeyExists(application._taffy.endpoints[requestObj.matchingRegex].methods, requestObj.verb)>
 			<cfset requestObj.method = application._taffy.endpoints[requestObj.matchingRegex].methods[requestObj.verb] />
