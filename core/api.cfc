@@ -360,6 +360,9 @@
 		</cfif>
 		<!--- also parse query string parameters into key-value pairs (support both json packet and query string as input) --->
 		<cfif structKeyExists(arguments.headers, "Content-Type") and findNoCase("/json", arguments.headers["Content-Type"]) neq 0>
+			<cfif not isJson(arguments.queryString)>
+				<cfset throwError(msg="Input JSON is not well formed: #arguments.queryString#") />
+			</cfif>
 			<!--- if input is json, deserialize it --->
 			<cfset local.tmp = deserializeJSON(arguments.queryString) />
 			<cfif structKeyExists(local.tmp, "data")>
