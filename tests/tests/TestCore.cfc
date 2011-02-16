@@ -140,7 +140,75 @@
 			debug(local.result);
 			assertTrue(findNoCase('woot', local.result.fileContent), "Was not able to get the DMZ file.");
 		}
+		
+		function tunnel_PUT_through_POST(){
+			variables.taffy.setDefaultMime("text/json");
+			var headers = { "X-HTTP-Method-Override" = "PUT", "Accept" = "text/json" };
+			local.result = apiCall("post","/echo/tunnel/12","",headers);
+			debug(local.result);
+			assertEquals(200,local.result.responseHeader.status_code);
 
+			local.deserializedContent = deserializeJSON( local.result.fileContent );
+			debug( local.deserializedContent );
+			assertEquals("put", local.deserializedContent.actualMethod);
+		}
+
+		function tunnel_DELETE_through_POST(){
+			variables.taffy.setDefaultMime("text/json");
+			var headers = { "X-HTTP-Method-Override" = "DELETE", "Accept" = "text/json" };
+			local.result = apiCall("post","/echo/tunnel/12","",headers);
+			debug(local.result);
+			assertEquals(200,local.result.responseHeader.status_code);
+
+			local.deserializedContent = deserializeJSON( local.result.fileContent );
+			debug( local.deserializedContent );
+			assertEquals("delete", local.deserializedContent.actualMethod);
+		}
+		
+		function put_body_is_mime_content(){
+			var local = {};
+
+			variables.taffy.setDefaultMime("text/json");
+			// Override body content type to send XML packet
+			local.headers = { "Accept" = "text/json", "Content-Type" = "application/xml" };
+			local.result = apiCall("put",
+									"/echo/12",
+									"<myXml><content>The quick brown fox jumped over the lazy dog.</content></myXml>",
+									local.headers);
+			debug(local.result);
+			assertEquals(200,local.result.responseHeader.status_code);
+
+			local.deserializedContent = deserializeJSON( local.result.fileContent );
+			debug( local.deserializedContent );
+			
+			// The service response should contain only the ID parameter, and not anything parsed from the body
+			assertEquals("id", structKeylist(local.deserializedContent));
+			assertEquals(12, local.deserializedContent["id"]);
+		}
+
+		function put_body_is_url_encoded_params(){
+			var local = {};
+			
+			variables.taffy.setDefaultMime("text/json");
+			// Default Content-Type is "application/x-www-form-urlencoded"
+			local.headers = { "Accept" = "text/json" };
+			local.result = apiCall("put",
+									"/echo/12",
+									"foo=yankee&bar=hotel&baz=foxtrot",
+									local.headers);
+			debug(local.result);
+			assertEquals(200,local.result.responseHeader.status_code);
+
+			local.deserializedContent = deserializeJSON( local.result.fileContent );
+			debug( local.deserializedContent );
+			
+			// The service response should contain the ID parameter and all parsed form fields from the body
+			assertEquals("baz,id,bar,foo", structKeylist(local.deserializedContent));
+			assertEquals(12, local.deserializedContent["id"]);
+			assertEquals("yankee", local.deserializedContent["foo"]);
+			assertEquals("hotel", local.deserializedContent["bar"]);
+			assertEquals("foxtrot", local.deserializedContent["baz"]);
+		}
 	</cfscript>
 
 </cfcomponent>

@@ -216,7 +216,11 @@
 	<cffunction name="parseRequest" access="private" output="false" returnType="struct">
 		<cfset var requestObj = {} />
 		<cfset var tmp = 0 />
-
+	
+		<!--- Check for method tunnelling by clients unable to send PUT/DELETE requests (e.g. Flash Player);
+					Actual desired method will be contained in a special header --->
+ 		<cfset var httpMethodOverride = GetPageContext().getRequest().getHeader("X-HTTP-Method-Override") />
+ 
 		<!--- attempt to find the cfc for the requested uri --->
 		<cfset requestObj.matchingRegex = matchURI(getPath()) />
 
@@ -230,13 +234,21 @@
 
 		<!--- which verb is requested? --->
 		<cfset requestObj.verb = cgi.request_method />
+		
+		<!--- Should we override the actual method based on method tunnelling? --->
+    <cfif isDefined("httpMethodOverride")>
+        <cfset requestObj.verb = httpMethodOverride />
+    </cfif>
+
 		<cfif structKeyExists(application._taffy.endpoints[requestObj.matchingRegex].methods, requestObj.verb)>
 			<cfset requestObj.method = application._taffy.endpoints[requestObj.matchingRegex].methods[requestObj.verb] />
 		<cfelse>
 			<cfset requestObj.method = "" />
 		</cfif>
 
-		<cfif ucase(requestObj.verb) eq "PUT">
+		<!--- If mime type of request was "x-www-form-urlencoded" parse the request body for form parameters --->
+		<cfset requestObj.contentType = cgi.content_type />
+		<cfif ucase(requestObj.verb) eq "PUT" and requestObj.contentType eq "application/x-www-form-urlencoded">
 			<!--- if requestObj.method == "" then the PUT method is not allowed --->
 			<cfif len(requestObj.method)>
 				<cfset requestObj.queryString = getPutParameters() />
