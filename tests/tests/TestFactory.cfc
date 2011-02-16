@@ -7,23 +7,15 @@
 		}
 
 		function throws_on_getBean_not_exists(){
+			var nonExistentBean = "does_not_exist";
+			
 			try{
-				var result = variables.factory.getBean("does_not_exist");
-				debug(result);
-				debug("Expected exception to be thrown, but none was.");
-			}catch (any e) {
-				if (findNoCase('not found', e.detail) gt 0){
-					debug(e);
-					assertEquals(true,true);
-					return;
-				}else{
-					debug("exception was thrown but not the one we were expecting!");
-					debug(e);
-					assertEquals(true,false);
-					return;
-				}
+				var result = variables.factory.getBean(nonExistentBean);
+				fail("Expected 'Bean Not Found' exception to be thrown, but none was.");
+			} catch (Taffy.Factory.BeanNotFound e) {
+				//debug(e);
+				assertTrue(findNoCase('not found', e.message) gt 0, "TaffyFactory exception message did not contain the words 'not found'.");
 			}
-			assertEquals('exception', false);
 		}
 
 	</cfscript>
