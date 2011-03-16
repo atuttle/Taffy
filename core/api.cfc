@@ -166,7 +166,7 @@
 
 		<cfelseif _taffyRequest.resultType eq "filename">
 
-			<cfcontent reset="true" file="#_taffyRequest.result.getFileName()#" type="image/jpeg" />
+			<cfcontent reset="true" file="#_taffyRequest.result.getFileName()#" type="#_taffyRequest.result.getFileMime()#" />
 
 		<cfelseif _taffyRequest.resultType eq "filedata">
 

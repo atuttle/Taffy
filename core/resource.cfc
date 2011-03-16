@@ -11,13 +11,13 @@
 		<cfreturn createObject("component", application._taffy.settings.defaultRepresentationClass).noData() />
 	</cffunction>
 
-	<cffunction name="streamFile" access="private" output="false" hint="use this function to specify a file name (eg c:\tmp\kitten.jpg) to be streamed to the client">
+	<cffunction name="streamFile" access="private" output="false" hint="Use this function to specify a file name (eg c:\tmp\kitten.jpg) to be streamed to the client. When you use this method it is *required* that you also use .withMime() to specify the mime type.">
 		<cfargument name="fileName" required="true" hint="fully qualified file path (eg c:\tmp\kitten.jpg)" />
 		<cfargument name="customRepresentationClass" type="string" required="false" default="" hint="pass in the dot.notation.cfc.path for your custom representation object" />
 		<cfreturn getRepInstance(arguments.customRepresentationClass).setFileName(arguments.fileName) />
 	</cffunction>
 
-	<cffunction name="streamBinary" access="private" output="false" hint="use this function to stream binary data, like a generated PDF object, to the client">
+	<cffunction name="streamBinary" access="private" output="false" hint="Use this function to stream binary data, like a generated PDF object, to the client. When you use this method it is *required* that you also use .withMime() to specify the mime type.">
 		<cfargument name="binaryData" required="true" hint="binary file data (eg a PDF object) that you want to return to the client" />
 		<cfargument name="customRepresentationClass" type="string" required="false" default="" hint="pass in the dot.notation.cfc.path for your custom representation object" />
 		<cfreturn getRepInstance(arguments.customRepresentationClass).setFileData(arguments.binaryData) />
@@ -32,6 +32,7 @@
 	<cffunction name="getRepInstance" access="private" output="false">
 		<cfargument name="repClass" type="string" />
 		<cfif repClass eq "">
+			<!--- recursion not the most efficient path here, but it's damn readable --->
 			<cfreturn getRepInstance(application._taffy.settings.defaultRepresentationClass) />
 		<cfelseif application._taffy.factory.containsBean(arguments.repClass)>
 			<cfreturn application._taffy.factory.getBean(arguments.repClass) />

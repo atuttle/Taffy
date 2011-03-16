@@ -2,6 +2,7 @@
 
 	<cfset variables.data = "" />
 	<cfset variables.fileName = "" />
+	<cfset variables.fileMime = "" />
 	<cfset variables.statusCode = 200 />
 	<cfset variables.miscHeaders = StructNew() />
 	<!--- 1= textual, 2= filename, 3= file data --->
@@ -50,6 +51,16 @@
 
 	<cffunction name="getFileData" access="public" output="false">
 		<cfreturn variables.fileData />
+	</cffunction>
+
+	<cffunction name="withMime" access="public" output="false" hint="Use this method in conjunction with streamFile and streamBinary in your resources to set the mime type of the file being returned. Ex: return streamFile('kittens/cuteness.jpg').withMime('image/jpeg');">
+		<cfargument name="mime" type="string" required="true" />
+		<cfset variables.fileMime = arguments.mime />
+		<cfreturn this />
+	</cffunction>
+
+	<cffunction name="getFileMime" access="public" output="false">
+		<cfreturn variables.fileMime />
 	</cffunction>
 
 	<cffunction name="withStatus" access="public" output="false" hint="used to set the http response code for the response">
