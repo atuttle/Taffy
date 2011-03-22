@@ -4,7 +4,7 @@
 	<cfset variables.dummyData.whatever = true />
 
 	<cffunction name="get" access="public" output="false" hint="Get some collection of art data">
-		<cfargument name="artistId" type="numeric" required="false" default="-1" hint="If included, filters the results to match the requested id. -1 (default) includes all." />
+		<cfargument name="artistId" type="numeric" required="true" />
 		<cfreturn representationOf(variables.dummyData).withStatus(200) />
 	</cffunction>
 
