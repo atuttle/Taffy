@@ -1,6 +1,6 @@
 <cfcomponent extends="taffy.core.api">
 	<cfscript>
-		this.name = hash(getCurrentTemplatePath()) & "2";
+		this.name = hash(getCurrentTemplatePath());
 
 		function applicationStartEvent(){
 			application.accessLog = queryNew('apiKey,accessTime','varchar,time');
