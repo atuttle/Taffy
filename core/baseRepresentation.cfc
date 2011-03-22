@@ -2,6 +2,7 @@
 
 	<cfset variables.data = "" />
 	<cfset variables.statusCode = 200 />
+	<cfset variables.statusText = "OK" />
 	<cfset variables.miscHeaders = StructNew() />
 
 	<cffunction name="setData" access="public" output="false" hint="setter for the data to be returned">
@@ -20,12 +21,20 @@
 
 	<cffunction name="withStatus" access="public" output="false" hint="used to set the http response code for the response">
 		<cfargument name="statusCode" type="numeric" required="true" hint="eg 200" />
+		<cfargument name="statusText" type="string" required="false" default="" />
 		<cfset variables.statusCode = arguments.statusCode />
+		<cfif len(arguments.statusText)>
+			<cfset variables.statusText = arguments.statusText />
+		</cfif>
 		<cfreturn this />
 	</cffunction>
 
 	<cffunction name="getStatus" access="public" output="false" returnType="numeric">
 		<cfreturn variables.statusCode />
+	</cffunction>
+
+	<cffunction name="getStatusText" access="public" output="false" returnType="string">
+		<cfreturn variables.statusText />
 	</cffunction>
 
 	<cffunction name="withHeaders" access="public" output="false" hint="used to set custom headers for the response">

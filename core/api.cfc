@@ -124,11 +124,9 @@
 			returnvariable="_taffyRequest.resultSerialized"
 		/>
 		<!--- get status code --->
-		<cfinvoke
-			component="#_taffyRequest.result#"
-			method="getStatus"
-			returnvariable="_taffyRequest.resultStatus"
-		/>
+		<cfset _taffyRequest.statusArgs = structNew() />
+		<cfset _taffyRequest.statusArgs.statusCode = _taffyRequest.result.getStatus() />
+		<cfset _taffyRequest.statusArgs.statusText = _taffyRequest.result.getStatusText() />
 		<!--- get custom headers --->
 		<cfinvoke
 			component="#_taffyRequest.result#"
@@ -138,7 +136,7 @@
 
 		<cfsetting enablecfoutputonly="true" />
 		<cfcontent reset="true" type="#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#" />
-		<cfheader statuscode="#_taffyRequest.resultStatus#"/>
+		<cfheader statuscode="#_taffyRequest.statusArgs.statusCode#" statustext="#_taffyRequest.statusArgs.statusText#" />
 		<cfif application._taffy.settings.allowCrossDomain>
 			<cfheader name="Access-Control-Allow-Origin" value="*" />
 		</cfif>
