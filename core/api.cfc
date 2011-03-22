@@ -35,6 +35,7 @@
 		</cfif>
 		<!--- allow reloading --->
 		<cfif structKeyExists(url, application._taffy.settings.reloadKey) and url[application._taffy.settings.reloadKey] eq application._taffy.settings.reloadPassword>
+			<cfset applicationStartEvent() />
 			<cfset setupFramework() />
 		</cfif>
 		<!--- allow pass-thru for selected paths --->
