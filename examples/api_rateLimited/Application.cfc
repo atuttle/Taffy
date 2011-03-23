@@ -4,9 +4,8 @@
 
 		function applicationStartEvent(){
 			application.accessLog = queryNew('apiKey,accessTime','varchar,time');
-			application.accessLimit = 20;
-			application.accessPeriod = 1; //seconds
-			application.pruneAfter = 10; //seconds
+			application.accessLimit = 100; //requests
+			application.accessPeriod = 60; //seconds
 		}
 
 		function onTaffyRequest(verb, cfc, requestArguments, mimeExt){
@@ -63,7 +62,7 @@
 			<cfquery name="application.accessLog" dbtype="query">
 				select *
 				from application.accessLog
-				where accessTime > <cfqueryparam cfsqltype="cf_sql_timestamp" value="#dateAdd("s",(-1 * application.pruneAfter),now())#" />
+				where accessTime > <cfqueryparam cfsqltype="cf_sql_timestamp" value="#dateAdd("s",(-1 * application.accessPeriod),now())#" />
 			</cfquery>
 		</cflock>
 	</cffunction>
