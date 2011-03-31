@@ -119,15 +119,9 @@
 		</cfif>
 		<!--- make sure the requested mime type is available --->
 		<cfif not mimeSupported(_taffyRequest.returnMimeExt)>
-			<cfset throwError(400, "Requested MIME type not available") />
+			<cfset throwError(400, "Requested format not available") />
 		</cfif>
 
-		<!--- serialize the representation's data into the requested mime type --->
-		<cfinvoke
-			component="#_taffyRequest.result#"
-			method="getAs#_taffyRequest.returnMimeExt#"
-			returnvariable="_taffyRequest.resultSerialized"
-		/>
 		<!--- get status code --->
 		<cfset _taffyRequest.statusArgs = structNew() />
 		<cfset _taffyRequest.statusArgs.statusCode = _taffyRequest.result.getStatus() />
@@ -145,24 +139,52 @@
 		<cfif application._taffy.settings.allowCrossDomain>
 			<cfheader name="Access-Control-Allow-Origin" value="*" />
 		</cfif>
+		<!--- headers --->
 		<cfif not structIsEmpty(getGlobalHeaders())>
 			<cfset _taffyRequest.tmpHeaders = getGlobalHeaders() />
 			<cfloop collection="#_taffyRequest.tmpHeaders#" item="_taffyRequest.headerName">
 				<cfheader name="#_taffyRequest.headerName#" value="#_taffyRequest.tmpHeaders[_taffyRequest.headerName]#" />
 			</cfloop>
 		</cfif>
+		<cfinvoke
+			component="#_taffyRequest.result#"
+			method="getHeaders"
+			returnvariable="_taffyRequest.resultHeaders"
+		/>
 		<cfif not structIsEmpty(_taffyRequest.resultHeaders)>
 			<cfloop collection="#_taffyRequest.resultHeaders#" item="_taffyRequest.headerName">
 				<cfheader name="#_taffyRequest.headerName#" value="#_taffyRequest.resultHeaders[_taffyRequest.headerName]#" />
 			</cfloop>
 			<cfset structDelete(_taffyRequest, "headerName")/>
 		</cfif>
-		<cfif _taffyRequest.resultSerialized neq ('"' & '"')>
-			<cfoutput>#_taffyRequest.resultSerialized#</cfoutput>
-		</cfif>
 
-		<cfif structKeyExists(url, application._taffy.settings.debugKey)>
-			<cfoutput><h3>Request Details:</h3><cfdump var="#_taffyRequest#"></cfoutput>
+		<!--- result data --->
+		<cfset _taffyRequest.resultType = _taffyRequest.result.getType() />
+		<cfif _taffyRequest.resultType eq "textual">
+
+			<!--- serialize the representation's data into the requested mime type --->
+			<cfinvoke
+				component="#_taffyRequest.result#"
+				method="getAs#_taffyRequest.returnMimeExt#"
+				returnvariable="_taffyRequest.resultSerialized"
+			/>
+			<cfcontent reset="true" type="#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#" />
+			<cfif _taffyRequest.resultSerialized neq ('"' & '"')>
+				<cfoutput>#_taffyRequest.resultSerialized#</cfoutput>
+			</cfif>
+			<!--- debug output --->
+			<cfif structKeyExists(url, application._taffy.settings.debugKey)>
+				<cfoutput><h3>Request Details:</h3><cfdump var="#_taffyRequest#"></cfoutput>
+			</cfif>
+
+		<cfelseif _taffyRequest.resultType eq "filename">
+
+			<cfcontent reset="true" file="#_taffyRequest.result.getFileName()#" type="#_taffyRequest.result.getFileMime()#" />
+
+		<cfelseif _taffyRequest.resultType eq "filedata">
+
+			<cfcontent reset="true" variable="#_taffyRequest.result.getFileData()#" type="application/pdf" />
+
 		</cfif>
 
 		<cfreturn true />
