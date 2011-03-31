@@ -29,6 +29,12 @@
 	<!--- DO NOT OVERRIDE THIS FUNCTION - SEE requestStartEvent ABOVE --->
 	<cffunction name="onRequestStart">
 		<cfargument name="targetPath" />
+		<cfset var local = structNew() />
+		<!--- if browsing to root of api, redirect to dashboard --->
+		<cfif !len(cgi.path_info) && !len(cgi.query_string)>
+			<cfset local.basePath = listDeleteAt(cgi.script_name,listLen(cgi.script_name,"/"),"/") />
+			<cflocation url="#local.basePath#?#application._taffy.settings.dashboardKey#" addtoken="false" />
+		</cfif>
 		<!--- this will probably happen if taffy is sharing an app name with an existing application so that you can use its application context --->
 		<cfif not structKeyExists(application, "_taffy")>
 			<cfset onApplicationStart() />
