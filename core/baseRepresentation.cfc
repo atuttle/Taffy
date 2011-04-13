@@ -12,6 +12,7 @@
 	<cfset variables.types[1] = "textual" />
 	<cfset variables.types[2] = "filename" />
 	<cfset variables.types[3] = "filedata" />
+	<cfset variables.types[4] = "imagedata" />
 
 	<cffunction name="getType" acces="public" output="false">
 		<cfreturn variables.types[variables.type] />
@@ -52,6 +53,20 @@
 
 	<cffunction name="getFileData" access="public" output="false">
 		<cfreturn variables.fileData />
+	</cffunction>
+
+	<cffunction name="setImageData" access="public" output="false" hint="Pass in image data (eg a generated image object) - NOT a Filename! - to have Taffy stream the content back to the client">
+		<cfargument name="data" required="true" />
+		<cfset variables.type = 4 />
+		<cfif not isBinary(arguments.data)>
+			<cfset data = toBinary(toBase64(arguments.data)) />
+		</cfif>
+		<cfset variables.fileData = data />
+		<cfreturn this />
+	</cffunction>
+
+	<cffunction name="getImageData" access="public" output="false">
+		<cfreturn getFileData() />
 	</cffunction>
 
 	<cffunction name="withMime" access="public" output="false" hint="Use this method in conjunction with streamFile and streamBinary in your resources to set the mime type of the file being returned. Ex: return streamFile('kittens/cuteness.jpg').withMime('image/jpeg');">

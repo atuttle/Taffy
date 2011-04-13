@@ -185,6 +185,10 @@
 
 			<cfcontent reset="true" variable="#_taffyRequest.result.getFileData()#" type="#_taffyRequest.result.getFileMime()#" />
 
+		<cfelseif _taffyRequest.resultType eq "imagedata">
+
+			<cfcontent reset="true" variable="#_taffyRequest.result.getImageData()#" type="#_taffyRequest.result.getFileMime()#" />
+
 		</cfif>
 
 		<cfreturn true />

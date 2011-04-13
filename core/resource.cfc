@@ -23,6 +23,12 @@
 		<cfreturn getRepInstance(arguments.customRepresentationClass).setFileData(arguments.binaryData) />
 	</cffunction>
 
+	<cffunction name="streamImage" access="private" output="false" hint="Use this function to stream binary data, like a generated PDF object, to the client. When you use this method it is *required* that you also use .withMime() to specify the mime type.">
+		<cfargument name="binaryData" required="true" hint="binary file data (eg a PDF object or image data) that you want to return to the client" />
+		<cfargument name="customRepresentationClass" type="string" required="false" default="" hint="pass in the dot.notation.cfc.path for your custom representation object" />
+		<cfreturn getRepInstance(arguments.customRepresentationClass).setImageData(arguments.binaryData) />
+	</cffunction>
+
 	<!---
 		function that gets the representation class instance
 		-- if the argument is blank, we use the default from taffy settings
