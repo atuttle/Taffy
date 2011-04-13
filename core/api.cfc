@@ -53,6 +53,36 @@
 		<cfreturn true />
 	</cffunction>
 
+	<!--- If you choose to override this function, consider calling super.onError(exception) --->
+	<cffunction name="onError">
+		<cfargument name="exception" />
+		<cfset var data = {} />
+		<cfset var root = '' />
+		<cftry>
+			<cfif structKeyExists(exception, "rootCause")>
+				<cfset root = exception.rootCause />
+			<cfelse>
+				<cfset root = exception />
+			</cfif>
+			<cfsetting enablecfoutputonly="true" showdebugoutput="false" />
+			<cfcontent reset="true" type="application/json" />
+			<cfif structKeyExists(root, "message")>
+				<cfset data.error = root.message />
+			</cfif>
+			<cfif structKeyExists(root, "detail")>
+				<cfset data.detail = root.detail />
+			</cfif>
+			<cfif structKeyExists(root,"tagContext")>
+				<cfset data.tagContext = root.tagContext[1].template & " [Line #root.tagContext[1].line#]" />
+			</cfif>
+			<cfoutput>#serializeJson(data)#</cfoutput>
+			<cfcatch>
+				<cfcontent reset="true" type="text/plain" />
+				<cfoutput>An unhandled exception occurred: <cfif structKeyExists(root,"message")>#root.message#</cfif> <cfif structKeyExists(root,"detail")>-- #root.detail#</cfif></cfoutput>
+			</cfcatch>
+		</cftry>
+	</cffunction>
+
 	<!--- :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: --->
 	<!--- :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: --->
 
