@@ -3,7 +3,9 @@
 		this.name = hash(getCurrentTemplatePath());
 
 		// do your onApplicationStart stuff here
-		function applicationStartEvent(){}
+		function applicationStartEvent(){
+			application.lastReset = now();
+		}
 
 		// do your onRequestStart stuff here
 		function requestStartEvent(){}

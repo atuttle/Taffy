@@ -7,24 +7,43 @@
 		<cfargument name="width" />
 		<cfargument name="height" />
 		<cfset var img = '' />
+		<cfset var filename = '' />
 
 		<!--- pick a file --->
 		<cfset var row = randRange(1,variables.images.recordCount) />
 		<cfset var file = variables.images.directory[row] & "/" & variables.images.name[row] />
 		<cfset var fileType = listLast(variables.images.name[row], '.') />
+		<cfset var w = '' />
+		<cfset var h = '' />
 
-		<!--- resize it on the fly to fit the requested dimensions, scaling as necessary --->
-		<cfif arguments.width gt arguments.height>
-			<cfimage action="resize" source="#file#" name="img" height="" width="#arguments.width#" />
-			<cfset imageCrop(img, 0, 0, arguments.width, arguments.height) />
-		<cfelse>
-			<cfimage action="resize" source="#file#" name="img" height="#arguments.height#" width="" />
-			<cfset imageCrop(img, 0, 0, arguments.width, arguments.height) />
+		<cfset filename = hash(file & arguments.width & arguments.height & application.lastReset) & "." & fileType />
+		<cfif not fileExists("ram:///#fileName#")>
+			<!--- resize it on the fly to fit the requested dimensions, scaling as necessary --->
+			<cfif arguments.width gt arguments.height>
+				<cfimage action="resize" source="#file#" name="img" height="" width="#arguments.width#" />
+				<cfset imageCrop(img, 0, 0, arguments.width, arguments.height) />
+			<cfelseif arguments.width lt arguments.height>
+				<cfimage action="resize" source="#file#" name="img" height="#arguments.height#" width="" />
+				<cfset imageCrop(img, 0, 0, arguments.width, arguments.height) />
+			<cfelse>
+				<cfimage action="read" name="img" source="#file#" />
+				<cfset w = imageGetWidth(img) />
+				<cfset h = imageGetHeight(img) />
+				<cfif w gt h>
+					<cfimage action="resize" source="#file#" name="img" height="#arguments.height#" width="" />
+				<cfelseif h gt w>
+					<cfimage action="resize" source="#file#" name="img" height="" width="#arguments.width#" />
+				<cfelse>
+					<cfimage action="resize" source="#file#" name="img" height="#arguments.height#" width="#arguments.width#" />
+				</cfif>
+				<cfset imageCrop(img, 0, 0, arguments.width, arguments.height) />
+			</cfif>
+			<!--- store it in ramdisk --->
+			<cfimage action="write" destination="ram:///#filename#" source="#img#" overwrite="yes" />
 		</cfif>
 
-		<cfimage action="write" destination="ram://#arguments.width#_#arguments.height#.#fileType#" source="#img#" overwrite="yes" />
+		<cfreturn streamFile("ram:///#filename#").withStatus(200).withMime(fileTypes[fileType]) />
 
-		<cfreturn streamFile("ram://#arguments.width#_#arguments.height#.#fileType#").withStatus(200).withMime(fileTypes[fileType]) />
 	</cffunction>
 
 </cfcomponent>
