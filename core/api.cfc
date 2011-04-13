@@ -183,7 +183,7 @@
 
 		<cfelseif _taffyRequest.resultType eq "filedata">
 
-			<cfcontent reset="true" variable="#_taffyRequest.result.getFileData()#" type="application/pdf" />
+			<cfcontent reset="true" variable="#_taffyRequest.result.getFileData()#" type="#_taffyRequest.result.getFileMime()#" />
 
 		</cfif>
 
