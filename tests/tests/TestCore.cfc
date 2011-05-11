@@ -48,21 +48,22 @@
 
 		function uri_regexes_are_correct(){
 			makePublic(variables.taffy, "convertURItoRegex");
-			assertEquals("{""uriregex"":""\/a\/([^\\\/\\.]+)\/b(\\.[^\\.\\?]+)?$"",""tokens"":[""abc""]}", serializeJson(taffy.convertURItoRegex("/a/{abc}/b")), "The expected result of the conversion did not match the actual result.");
+			assertEquals("{""uriregex"":""\/a\/([^\\\/]+)\/b(\\.[^\\.\\?]+)?$"",""tokens"":[""abc""]}", serializeJson(taffy.convertURItoRegex("/a/{abc}/b")), "The expected result of the conversion did not match the actual result.");
+			assertEquals("{""uriregex"":""\/a\/([^\\\/]+)(\\.[^\\.\\?]+)?$"",""tokens"":[""abc""]}", serializeJson(taffy.convertURItoRegex("/a/{abc}")), "The expected result of the conversion did not match the actual result.");
 		}
 
 		function uri_matching_works_with_extension(){
 			makePublic(variables.taffy, "matchURI");
 			local.result = variables.taffy.matchURI("/echo/3.json");
 			debug(local.result);
-			assertEquals('/echo/([^\/\.]+)(\.[^\.\?]+)?$', local.result);
+			assertEquals('/echo/([^\/]+)(\.[^\.\?]+)?$', local.result);
 		}
 
 		function uri_matching_works_without_extension(){
 			makePublic(variables.taffy, "matchURI");
 			local.result = variables.taffy.matchURI("/echo/3");
 			debug(local.result);
-			assertEquals('/echo/([^\/\.]+)(\.[^\.\?]+)?$', local.result);
+			assertEquals('/echo/([^\/]+)(\.[^\.\?]+)?$', local.result);
 		}
 
 		function request_parsing_works(){
@@ -140,7 +141,7 @@
 			debug(local.result);
 			assertTrue(findNoCase('woot', local.result.fileContent), "Was not able to get the DMZ file.");
 		}
-		
+
 		function tunnel_PUT_through_POST(){
 			variables.taffy.setDefaultMime("text/json");
 			var headers = { "X-HTTP-Method-Override" = "PUT", "Accept" = "text/json" };
@@ -164,7 +165,7 @@
 			debug( local.deserializedContent );
 			assertEquals("delete", local.deserializedContent.actualMethod);
 		}
-		
+
 		function put_body_is_mime_content(){
 			var local = {};
 
@@ -180,7 +181,7 @@
 
 			local.deserializedContent = deserializeJSON( local.result.fileContent );
 			debug( local.deserializedContent );
-			
+
 			// The service response should contain only the ID parameter, and not anything parsed from the body
 			assertEquals("id", structKeylist(local.deserializedContent));
 			assertEquals(12, local.deserializedContent["id"]);
@@ -188,7 +189,7 @@
 
 		function put_body_is_url_encoded_params(){
 			var local = {};
-			
+
 			variables.taffy.setDefaultMime("text/json");
 			// Default Content-Type is "application/x-www-form-urlencoded"
 			local.headers = { "Accept" = "text/json" };
@@ -201,7 +202,7 @@
 
 			local.deserializedContent = deserializeJSON( local.result.fileContent );
 			debug( local.deserializedContent );
-			
+
 			// The service response should contain the ID parameter and all parsed form fields from the body
 			assertEquals("baz,id,bar,foo", structKeylist(local.deserializedContent));
 			assertEquals(12, local.deserializedContent["id"]);
