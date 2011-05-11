@@ -369,7 +369,7 @@
 		<cfset local.uriRegex = arguments.uri />
 		<cfloop array="#local.almostTokens#" index="local.token">
 			<cfset arrayAppend(local.returnData.tokens, replaceList(local.token, "{,}", ",")) />
-			<cfset local.uriRegex = rereplaceNoCase(local.uriRegex,"{[^}]+}", "([^\/\.]+)") />
+			<cfset local.uriRegex = rereplaceNoCase(local.uriRegex,"{[^}]+}", "([^\/]+)") />
 		</cfloop>
 
 		<!--- require the uri to terminate after specified content --->
@@ -437,10 +437,13 @@
 			</cfloop>
 		</cfif>
 		<!--- if a mime type is requested as part of the url ("whatever.json"), then extract that so taffy can use it --->
-		<cfif local.numTokenValues gt local.numTokenNames>
-			<cfset local.mime = local.tokenValues[local.numTokenValues] /><!--- the last token represents ".json"/etc --->
+		<cfif listContainsNoCase(structKeyList(application._taffy.settings.mimeExtensions), listLast(arguments.uri,"."))>
+			<!--- the last token has a format after it --->
+			<cfset local.mime = listLast(local.returnData[arguments.tokenNamesArray[local.numTokenNames]], ".") />
 			<cfset local.mimeLen = len(local.mime) />
-			<cfset local.returnData["_taffy_mime"] = right(local.mime, local.mimeLen - 1) />
+			<cfset local.returnData["_taffy_mime"] = local.mime />
+			<!--- remove format from last token value --->
+			<cfset local.returnData[arguments.tokenNamesArray[local.numTokenNames]] = left(local.returnData[arguments.tokenNamesArray[local.numTokenNames]], len(local.returnData[arguments.tokenNamesArray[local.numTokenNames]])-local.mimeLen-1) /><!--- extra -1 for the dot --->
 		</cfif>
 		<!--- return --->
 		<cfreturn local.returnData />
