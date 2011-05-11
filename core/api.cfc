@@ -76,6 +76,7 @@
 				<cfset data.tagContext = root.tagContext[1].template & " [Line #root.tagContext[1].line#]" />
 			</cfif>
 			<cfoutput>#serializeJson(data)#</cfoutput>
+			<cfheader statuscode="500" statustext="Error" />
 			<cfcatch>
 				<cfcontent reset="true" type="text/plain" />
 				<cfoutput>An unhandled exception occurred: <cfif structKeyExists(root,"message")>#root.message#</cfif> <cfif structKeyExists(root,"detail")>-- #root.detail#</cfif></cfoutput>
