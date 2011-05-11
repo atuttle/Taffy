@@ -33,7 +33,7 @@
 		<!--- if browsing to root of api, redirect to dashboard --->
 		<cfif len(cgi.path_info) lte 1 and len(cgi.query_string) eq 0 and listLast(cgi.script_name, "/") eq "index.cfm">
 			<cfset local.basePath = listDeleteAt(cgi.script_name,listLen(cgi.script_name,"/"),"/") />
-			<cflocation url="#local.basePath#?#application._taffy.settings.dashboardKey#" addtoken="false" />
+			<cflocation url="#local.basePath#/?#application._taffy.settings.dashboardKey#" addtoken="false" />
 		</cfif>
 		<!--- this will probably happen if taffy is sharing an app name with an existing application so that you can use its application context --->
 		<cfif not structKeyExists(application, "_taffy")>
