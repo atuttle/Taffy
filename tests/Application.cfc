@@ -13,6 +13,10 @@
 			enableDashboard(true);
 			setReloadKey("reload");
 			setUnhandledPaths('/taffy/tests/someFolder');
+			
+			// Don't try to handle the Unit Test Suite files
+			setUnhandledPaths('/taffy/tests/tests');
+			
 			setGlobalHeaders(local.headers);
 			//setDefaultRepresentationClass("customJsonRepresentation");
 		}
