@@ -69,10 +69,10 @@
 			makePublic(variables.taffy,"buildRequestArguments");
 			local.result = variables.taffy.buildRequestArguments(
 				regex = '/echo/([^\/\.]+)(\.[^\.\?]+)?$',
-				tokenNamesArray = ["id"],
+				tokenNamesArray = listToArray("id"),
 				uri = '/echo/16',
 				queryString = 'foo=bar&bar=foo',
-				headers = {}
+				headers = structNew()
 			);
 			debug(local.result);
 			assertTrue(structKeyExists(local.result, "foo") && local.result.foo == "bar", "Missing or incorrect value for key `foo`.");
@@ -142,9 +142,12 @@
 		}
 		
 		function tunnel_PUT_through_POST(){
+			var local = {};
+
 			variables.taffy.setDefaultMime("text/json");
-			var headers = { "X-HTTP-Method-Override" = "PUT", "Accept" = "text/json" };
-			local.result = apiCall("post","/echo/tunnel/12","",headers);
+			local.headers["X-HTTP-Method-Override"] = "PUT";
+			local.headers["Accept"] = "text/json";
+			local.result = apiCall("post","/echo/tunnel/12","", local.headers);
 			debug(local.result);
 			assertEquals(200,local.result.responseHeader.status_code);
 
@@ -154,9 +157,12 @@
 		}
 
 		function tunnel_DELETE_through_POST(){
+			var local = {};
+
 			variables.taffy.setDefaultMime("text/json");
-			var headers = { "X-HTTP-Method-Override" = "DELETE", "Accept" = "text/json" };
-			local.result = apiCall("post","/echo/tunnel/12","",headers);
+			local.headers["X-HTTP-Method-Override"] = "DELETE";
+			local.headers["Accept"] = "text/json";
+			local.result = apiCall("post","/echo/tunnel/12","", local.headers);
 			debug(local.result);
 			assertEquals(200,local.result.responseHeader.status_code);
 
@@ -170,7 +176,8 @@
 
 			variables.taffy.setDefaultMime("text/json");
 			// Override body content type to send XML packet
-			local.headers = { "Accept" = "text/json", "Content-Type" = "application/xml" };
+			local.headers["Accept"] = "text/json";
+			local.headers["Content-Type"] = "application/xml";
 			local.result = apiCall("put",
 									"/echo/12",
 									"<myXml><content>The quick brown fox jumped over the lazy dog.</content></myXml>",
@@ -191,7 +198,7 @@
 			
 			variables.taffy.setDefaultMime("text/json");
 			// Default Content-Type is "application/x-www-form-urlencoded"
-			local.headers = { "Accept" = "text/json" };
+			local.headers["Accept"] = "text/json";
 			local.result = apiCall("put",
 									"/echo/12",
 									"foo=yankee&bar=hotel&baz=foxtrot",
