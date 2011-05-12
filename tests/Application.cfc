@@ -4,7 +4,6 @@
 		
 		this.mappings = {};
 		this.mappings["/"] = ExpandPath(".");
-		this.mappings["/taffy"] = ExpandPath("..");
 
 		function configureTaffy() {
 			var local = {};
