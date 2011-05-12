@@ -48,9 +48,15 @@
 
 		function uri_regexes_are_correct(){
 			makePublic(variables.taffy, "convertURItoRegex");
-			assertEquals("{""uriregex"":""\/a\/([^\\\/\\.]+)\/b(\\.[^\\.\\?]+)?$"",""tokens"":[""abc""]}", serializeJson(taffy.convertURItoRegex("/a/{abc}/b")), "The expected result of the conversion did not match the actual result.");
+			local.result = taffy.convertURItoRegex("/a/{abc}/b");
+			debug(local.result);
+			/*assertEquals("{""uriregex"":""\/a\/([^\\\/\\.]+)\/b(\\.[^\\.\\?]+)?$"",""tokens"":[""abc""]}",
+							serializeJson(local.result),
+							"The expected result of the conversion did not match the actual result.");*/
+			assertEquals( "/a/([^\/\.]+)/b(\.[^\.\?]+)?$", local.result["uriregex"], "Resulted regex did not match expected.");
+			assertEquals( 1, arrayLen(local.result["tokens"]) );
+			assertEquals( "abc", local.result["tokens"][1] );
 		}
-
 		function uri_matching_works_with_extension(){
 			makePublic(variables.taffy, "matchURI");
 			local.result = variables.taffy.matchURI("/echo/3.json");
