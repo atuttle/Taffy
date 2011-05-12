@@ -316,7 +316,7 @@
 			<cfelse>
 				<cfset requestObj.queryString = "" />
 			</cfif>
-		<cfelseif ucase(requestObj.verb) eq "PUT" and (requestObj.contentType eq "application/json" or requestObj.contentType eq "text/json")>
+		<cfelseif (ucase(requestObj.verb) eq "PUT" or ucase(requestObj.verb) eq "POST") and (requestObj.contentType eq "application/json" or requestObj.contentType eq "text/json")>
 			<cfset requestObj.queryString = getPutParameters() />
 		<cfelse>
 			<cfset requestObj.queryString = cgi.query_string />
