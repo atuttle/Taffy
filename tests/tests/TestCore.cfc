@@ -210,7 +210,7 @@
 			debug( local.deserializedContent );
 			
 			// The service response should contain the ID parameter and all parsed form fields from the body
-			assertEquals("baz,id,bar,foo", structKeylist(local.deserializedContent));
+			assertEquals("bar,baz,foo,id", listSort(structKeylist(local.deserializedContent), "textnocase"));
 			assertEquals(12, local.deserializedContent["id"]);
 			assertEquals("yankee", local.deserializedContent["foo"]);
 			assertEquals("hotel", local.deserializedContent["bar"]);
