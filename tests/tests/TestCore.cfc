@@ -136,7 +136,7 @@
 		}
 
 		function external_file_request_passes_through(){
-			local.result = getUrl('http://localhost/taffy/tests/someFolder/someOtherFile.cfm');
+			local.result = getUrl('http://#CGI.SERVER_NAME#:#CGI.SERVER_PORT#/taffy/tests/someFolder/someOtherFile.cfm');
 			debug(local.result);
 			assertTrue(findNoCase('woot', local.result.fileContent), "Was not able to get the DMZ file.");
 		}
