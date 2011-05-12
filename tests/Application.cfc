@@ -16,7 +16,7 @@
 			setUnhandledPaths('/taffy/tests/someFolder,/taffy/tests/tests');
 			
 			setGlobalHeaders(local.headers);
-			//setDefaultRepresentationClass("customJsonRepresentation");
+			setDefaultRepresentationClass("customJsonRepresentation");
 		}
 	
 		function onTaffyRequest(verb, cfc, requestArguments, mimeExt, headers) {
