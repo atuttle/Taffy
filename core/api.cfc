@@ -248,7 +248,7 @@
 		<cfset configureTaffy()/>
 		<!--- translate unhandledPaths config to regex for easier matching (This is ripped off from FW/1. Thanks, Sean!) --->
 		<cfset application._taffy.settings.unhandledPathsRegex = replaceNoCase(
-				REReplace(application._taffy.settings.unhandledPaths, '(\+|\*|\?|\.|\[|\^|\$|\(|\)|\{|\||\\)', '\\\1', 'all' ), <!---escape regex-special characters--->
+			REReplace(application._taffy.settings.unhandledPaths, '(\+|\*|\?|\.|\[|\^|\$|\(|\)|\{|\||\\)', '\\\1', 'all' ), <!---escape regex-special characters--->
 			',', '|', 'all' ) <!---convert commas to pipes (or's)--->
 		/>
 		<!--- if resources folder exists, use internal bean factory --->
@@ -440,11 +440,14 @@
 		<!--- if a mime type is requested as part of the url ("whatever.json"), then extract that so taffy can use it --->
 		<cfif listContainsNoCase(structKeyList(application._taffy.settings.mimeExtensions), listLast(arguments.uri,"."))>
 			<!--- the last token has a format after it --->
-			<cfset local.mime = listLast(local.returnData[arguments.tokenNamesArray[local.numTokenNames]], ".") />
-			<cfset local.mimeLen = len(local.mime) />
+			<cfif local.numTokenNames gt 0>
+				<cfset local.mime = listLast(local.returnData[arguments.tokenNamesArray[local.numTokenNames]], ".") />
+				<cfset local.returnData[arguments.tokenNamesArray[local.numTokenNames]] = left(local.returnData[arguments.tokenNamesArray[local.numTokenNames]], len(local.returnData[arguments.tokenNamesArray[local.numTokenNames]])-len(local.mime)-1) /><!--- extra -1 for the dot --->
+			<cfelse>
+				<cfset local.mime = listLast(arguments.uri, ".") />
+			</cfif>
 			<cfset local.returnData["_taffy_mime"] = local.mime />
 			<!--- remove format from last token value --->
-			<cfset local.returnData[arguments.tokenNamesArray[local.numTokenNames]] = left(local.returnData[arguments.tokenNamesArray[local.numTokenNames]], len(local.returnData[arguments.tokenNamesArray[local.numTokenNames]])-local.mimeLen-1) /><!--- extra -1 for the dot --->
 		</cfif>
 		<!--- return --->
 		<cfreturn local.returnData />
