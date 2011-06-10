@@ -118,6 +118,18 @@
 			assertFalse(structKeyExists(local.result, "data"), "DATA element was not supposed to be included in arguments, but was included.");
 		}
 
+		function properly_decodes_json_post_request_body(){
+			local.result = apiCall("post", "/echo/99.json", '{"data":{"foo":"bar"}}');
+			debug(local.result);
+			if (!isJson(local.result.fileContent)){
+				fail("Result was not JSON");
+				return;
+			}
+			local.result = deserializeJSON(local.result.fileContent);
+			assertTrue(structKeyExists(local.result, "foo") && local.result.foo == "bar", "Missing or incorrect value for key `foo`.");
+			assertFalse(structKeyExists(local.result, "data"), "DATA element was not supposed to be included in arguments, but was included.");
+		}
+
 		function returns_error_when_default_mime_not_supported(){
 			variables.taffy.setDefaultMime("DoesNotExist");
 			local.result = apiCall("get", "/echo/2", "foo=bar");

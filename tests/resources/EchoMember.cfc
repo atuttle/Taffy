@@ -12,4 +12,9 @@
 		<cfreturn representationOf(arguments).withStatus(200) />
 	</cffunction>
 
+	<cffunction name="post">
+		<cfargument name="id" />
+		<cfreturn representationOf(arguments).withStatus(200) />
+	</cffunction>
+
 </cfcomponent>
