@@ -30,11 +30,6 @@
 	<cffunction name="onRequestStart">
 		<cfargument name="targetPath" />
 		<cfset var local = structNew() />
-		<!--- if browsing to root of api, redirect to dashboard --->
-		<cfif len(cgi.path_info) lte 1 and len(cgi.query_string) eq 0 and listLast(cgi.script_name, "/") eq "index.cfm">
-			<cfset local.basePath = listDeleteAt(cgi.script_name,listLen(cgi.script_name,"/"),"/") />
-			<cflocation url="#local.basePath#/?#application._taffy.settings.dashboardKey#" addtoken="false" />
-		</cfif>
 		<!--- this will probably happen if taffy is sharing an app name with an existing application so that you can use its application context --->
 		<cfif not structKeyExists(application, "_taffy")>
 			<cfset onApplicationStart() />
@@ -42,6 +37,11 @@
 		<!--- allow reloading --->
 		<cfif structKeyExists(url, application._taffy.settings.reloadKey) and url[application._taffy.settings.reloadKey] eq application._taffy.settings.reloadPassword>
 			<cfset onApplicationStart() />
+		</cfif>
+		<!--- if browsing to root of api, redirect to dashboard --->
+		<cfif len(cgi.path_info) lte 1 and len(cgi.query_string) eq 0 and listLast(cgi.script_name, "/") eq "index.cfm" and not application._taffy.settings.disableDashboard>
+			<cfset local.basePath = listDeleteAt(cgi.script_name,listLen(cgi.script_name,"/"),"/") />
+			<cflocation url="#local.basePath#/?#application._taffy.settings.dashboardKey#" addtoken="false" />
 		</cfif>
 		<!--- allow pass-thru for selected paths --->
 		<cfif REFindNoCase( "^(" & application._taffy.settings.unhandledPathsRegex & ")", arguments.targetPath )>
