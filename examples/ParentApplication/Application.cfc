@@ -10,7 +10,7 @@
 
 	<cffunction name="onApplicationStart" returnType="boolean" output="false">
 
-		<cfset structDelete(application, "_taffy") />
+		<!---<cfset structDelete(application, "_taffy") />--->
 
 		<cfset application.beanFactory = createObject("component", "coldspring.beans.DefaultXMLBeanFactory") />
 		<cfset application.beanFactory.loadBeans('/taffy/examples/ParentApplication/config/coldspring.xml') />
