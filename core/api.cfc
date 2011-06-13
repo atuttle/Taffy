@@ -310,10 +310,10 @@
 
 		<cfset requestObj.body = getRequestBody() />
 		<cfset requestObj.contentType = cgi.content_type />
-		<cfif requestObj.contentType eq "application/x-www-form-urlencoded" and len(requestObj.body)>
+		<cfif len(requestObj.body) and findNoCase("application/x-www-form-urlencoded", requestObj.contentType)>
 			<!--- url-encoded body --->
 			<cfset requestObj.queryString = requestObj.body />
-		<cfelseif (requestObj.contentType eq "application/json" or requestObj.contentType eq "text/json") and len(requestObj.body)>
+		<cfelseif len(requestObj.body) and findNoCase("application/json", requestObj.contentType) or findNoCase("text/json", requestObj.contentType)>
 			<!--- json-encoded body --->
 			<cfif not isJson(requestObj.body)>
 				<cfset throwError(msg="Input JSON is not well formed: #requestObj.body#") />
