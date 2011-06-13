@@ -411,7 +411,12 @@
 
 	<cffunction name="getRequestBody" access="private" output="false" returntype="String" hint="Gets PUT data into a string similar to cgi.query_string, which CF doesn't do automatically">
 		<!--- Special thanks to Jason Dean (@JasonPDean) and Ray Camden (@ColdFusionJedi) who helped me figure out how to do this --->
-		<cfreturn getHTTPRequestData().content />
+		<cfset var body = getHTTPRequestData().content />
+		<!--- on input with content-type "application/json" CF seems to expose it as binary data. Here we convert it back to plain text --->
+		<cfif isBinary(body)>
+			<cfset body = charsetEncode(body, "UTF-8") />
+		</cfif>
+		<cfreturn body />
 	</cffunction>
 
 	<cffunction name="buildRequestArguments" access="private" output="false" returnType="struct">
