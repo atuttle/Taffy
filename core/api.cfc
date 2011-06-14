@@ -230,6 +230,7 @@
 
 	<!--- internal methods --->
 	<cffunction name="setupFramework" access="private" output="false" returntype="void">
+		<cfset var local = structNew() />
 		<cfset application._taffy = structNew() />
 		<cfset application._taffy.endpoints = structNew() />
 		<!--- default settings --->
@@ -244,6 +245,10 @@
 		<cfset application._taffy.settings.unhandledPaths = "/flex2gateway" />
 		<cfset application._taffy.settings.allowCrossDomain = false />
 		<cfset application._taffy.settings.globalHeaders = structNew() />
+		<!--- status --->
+		<cfset application._taffy.status = structNew() />
+		<cfset application._taffy.status.internalBeanFactoryUsed = false />
+		<cfset application._taffy.status.externalBeanFactoryUsed = false />
 		<!--- allow setting overrides --->
 		<cfset configureTaffy()/>
 		<!--- translate unhandledPaths config to regex for easier matching (This is ripped off from FW/1. Thanks, Sean!) --->
@@ -259,16 +264,23 @@
 			<cfset application._taffy.factory.loadBeansFromPath(_taffyRequest.resourcePath) />
 			<cfset application._taffy.beanList = application._taffy.factory.getBeanList() />
 			<cfset cacheBeanMetaData(application._taffy.factory, application._taffy.beanList) />
+			<cfset application._taffy.status.internalBeanFactoryUsed = true />
 			<!---
 				if both an external bean factory and the internal factory are in use (because of /resources folder),
 				resolve dependencies for each bean of internal factory with the external factory's resources
 			--->
-			<cfif structKeyExists(application._taffy, "externalBeanFactory")>
+			<cfif application._taffy.status.externalBeanFactoryUsed>
 				<cfset resolveDependencies() />
 			</cfif>
-		<cfelseif structKeyExists(application._taffy, "externalBeanFactory")>
+		<cfelseif application._taffy.status.externalBeanFactoryUsed>
 			<!--- only using external factory, so create a pointer to it --->
 			<cfset application._taffy.factory = application._taffy.externalBeanFactory />
+			<!--- since external factory is only factory, check it for taffy resources --->
+			<cfset local.beanList = getBeanListFromExternalFactory() />
+			<cfset cacheBeanMetaData(application._taffy.externalBeanFactory, local.beanList) />
+
+		<cfelse>
+			<cfset throwError(500, "You must either set an external bean factory or use the internal factory by creating a `/resources` folder.") />
 		</cfif>
 		<!--- automatically introspect mime types from cfc metadata of default representation class --->
 		<cfset inspectMimeTypes(application._taffy.settings.defaultRepresentationClass) />
@@ -505,10 +517,19 @@
 		</cfloop>
 	</cffunction>
 
+	<!--- this method is only called to resolve dependencies of internal beans using external bean factory --->
 	<cffunction name="resolveDependencies" access="private" output="false" returnType="void">
 		<cfset var local = StructNew() />
 		<cfloop list="#structKeyList(application._taffy.endpoints)#" index="local.endpoint">
-			<cfloop list="#structKeyList(application._taffy.endpoints[endpoint].methods)#" index="local.method">
+			<cfset local.md = getMetadata( application._taffy.factory.getBean(application._taffy.endpoints[local.endpoint].beanName) ) />
+			<cfset local.methods = local.md.functions />
+			<!--- get list of method names --->
+			<cfset local.methodNames = "" />
+			<cfloop from="1" to="#arrayLen(local.methods)#" index="local.m">
+				<cfset local.methodNames = listAppend(local.methodNames, local.methods[local.m].name) />
+			</cfloop>
+			<!--- look for setters --->
+			<cfloop list="#local.methodNames#" index="local.method">
 				<cfif left(local.method, 3) eq "set" and len(local.method) gt 3>
 					<!--- we've found a dependency, try to resolve it --->
 					<cfset local.beanName = right(local.method, len(local.method) - 3) />
@@ -635,10 +656,7 @@
 		<cfargument name="beanFactory" required="true" hint="Instance of bean factory object" />
 		<cfargument name="beanList" required="false" default="" />
 		<cfset application._taffy.externalBeanFactory = arguments.beanFactory />
-		<cfif len(arguments.beanList) eq 0>
-			<cfset arguments.beanList = getBeanListFromExternalFactory() />
-		</cfif>
-		<cfset cacheBeanMetaData(application._taffy.externalBeanFactory, arguments.beanList) />
+		<cfset application._taffy.status.externalBeanFactoryUsed = true />
 	</cffunction>
 	<cffunction name="getBeanFactory" access="public" output="false">
 		<cfreturn application._taffy.factory />
