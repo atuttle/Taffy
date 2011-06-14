@@ -509,7 +509,7 @@
 		<cfset var local = StructNew() />
 		<cfloop list="#structKeyList(application._taffy.endpoints)#" index="local.endpoint">
 			<cfloop list="#structKeyList(application._taffy.endpoints[endpoint].methods)#" index="local.method">
-				<cfif left(local.method, 3) eq "set">
+				<cfif left(local.method, 3) eq "set" and len(local.method) gt 3>
 					<!--- we've found a dependency, try to resolve it --->
 					<cfset local.beanName = right(local.method, len(local.method) - 3) />
 					<cfif application._taffy.externalBeanFactory.containsBean(local.beanName)>
