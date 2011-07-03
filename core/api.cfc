@@ -407,6 +407,13 @@
 			<cfelseif structKeyExists(local.cfcMetadata, "taffy:uri")>
 				<cfset local.uri = local.cfcMetadata["taffy:uri"] />
 			</cfif>
+			
+			<cfif structKeyExists(local.cfcMetaData, "taffy:aopbean")>
+				<cfset local.cachedBeanName = local.cfcMetaData["taffy:aopbean"] />
+			<cfelse>
+				<cfset local.cachedBeanName = local.beanName />
+			</cfif>
+			
 			<!--- if it doesn't have a uri, then it's not a resource --->
 			<cfif len(local.uri)>
 				<cfset local.metaInfo = convertURItoRegex(local.uri) />
@@ -417,7 +424,7 @@
 						errorcode="taffy.resources.DuplicateUriPattern"
 					/>
 				</cfif>
-				<cfset application._taffy.endpoints[local.metaInfo.uriRegex] = { beanName = local.beanName, tokens = local.metaInfo.tokens, methods = structNew(), srcURI = local.uri } />
+				<cfset application._taffy.endpoints[local.metaInfo.uriRegex] = { beanName = local.cachedBeanName, tokens = local.metaInfo.tokens, methods = structNew(), srcURI = local.uri } />
 				<cfloop array="#local.cfcMetadata.functions#" index="local.f">
 					<cfif local.f.name eq "get" or local.f.name eq "post" or local.f.name eq "put" or local.f.name eq "delete">
 						<cfset application._taffy.endpoints[local.metaInfo.uriRegex].methods[local.f.name] = local.f.name />
