@@ -26,6 +26,7 @@
 	</cfscript>
 	<cffunction name="loadBeansFromPath" access="public" output="false" returnType="void">
 		<cfargument name="beanPath" type="string" required="true" hint="Absolute path to folder containing beans" />
+		<cfargument name="resourcesPath" type="string" default="resources" />
 		<cfset var local = StructNew() />
 		<!--- if the folder doesn't exist, do nothing --->
 		<cfif not directoryExists(arguments.beanPath)>
@@ -36,7 +37,7 @@
 		<!--- cache all of the beans --->
 		<cfloop query="local.beanQuery">
 			<cfset local.beanName = left(local.beanQuery.name, len(local.beanQuery.name)-4) /><!--- drop the ".cfc" --->
-			<cfset this.beans[local.beanName] = createObject("component", "resources." & local.beanName) />
+			<cfset this.beans[local.beanName] = createObject("component", arguments.resourcesPath & "." & local.beanName) />
 		</cfloop>
 		<!--- resolve dependencies --->
 		<cfloop list="#structKeyList(this.beans)#" index="local.b">

@@ -257,11 +257,11 @@
 			',', '|', 'all' ) <!---convert commas to pipes (or's)--->
 		/>
 		<!--- if resources folder exists, use internal bean factory --->
-		<cfset _taffyRequest.resourcePath = getDirectoryFromPath(getBaseTemplatePath()) & '/resources' />
+		<cfset _taffyRequest.resourcePath = guessResourcesFullPath() />
 		<cfif directoryExists(_taffyRequest.resourcePath)>
 			<!--- setup internal bean factory --->
 			<cfset application._taffy.factory = createObject("component", "taffy.core.factory").init() />
-			<cfset application._taffy.factory.loadBeansFromPath(_taffyRequest.resourcePath) />
+			<cfset application._taffy.factory.loadBeansFromPath(_taffyRequest.resourcePath, guessResourcesCFCPath()) />
 			<cfset application._taffy.beanList = application._taffy.factory.getBeanList() />
 			<cfset cacheBeanMetaData(application._taffy.factory, application._taffy.beanList) />
 			<cfset application._taffy.status.internalBeanFactoryUsed = true />
@@ -468,6 +468,22 @@
 		</cfif>
 		<!--- return --->
 		<cfreturn local.returnData />
+	</cffunction>
+
+	<cffunction name="guessResourcesPath" access="private" output="false" returntype="string">
+		<cfset local.indexcfmpath = cgi.script_name />
+		<cfset local.resourcesPath = listDeleteAt(local.indexcfmpath, listLen(local.indexcfmpath, "/"), "/") & "/resources" />
+		<cfreturn local.resourcesPath />
+	</cffunction>
+
+	<cffunction name="guessResourcesFullPath" access="private" output="false" returntype="string">
+		<cfreturn expandPath(guessResourcesPath()) />
+	</cffunction>
+
+	<cffunction name="guessResourcesCFCPath" access="private" output="false" returntype="string">
+		<cfset var path = guessResourcesPath() />
+		<cfset path = right(path, len(path)-1) />
+		<cfreturn reReplace(path, "\/", ".", "all") />
 	</cffunction>
 
 	<cffunction name="throwError" access="private" output="false" returntype="void">
