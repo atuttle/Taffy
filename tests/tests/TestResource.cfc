@@ -1,4 +1,4 @@
-<cfcomponent extends="baseTest">
+<cfcomponent extends="base">
 	<cfscript>
 	function beforeTests(){
 		variables.taffy = createObject("component","taffy.tests.Application");

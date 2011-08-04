@@ -1,4 +1,4 @@
-<cfcomponent extends="baseTest">
+<cfcomponent extends="base">
 	<cfscript>
 	function beforeTests(){
 		variables.representation = createObject("component", "taffy.core.baseRepresentation");
