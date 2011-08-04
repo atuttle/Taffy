@@ -456,15 +456,8 @@
 		</cfloop>
 		<!--- if a mime type is requested as part of the url ("whatever.json"), then extract that so taffy can use it --->
 		<cfif listContainsNoCase(structKeyList(application._taffy.settings.mimeExtensions), listLast(arguments.uri,"."))>
-			<!--- the last token has a format after it --->
-			<cfif local.numTokenNames gt 0>
-				<cfset local.mime = listLast(local.returnData[arguments.tokenNamesArray[local.numTokenNames]], ".") />
-				<cfset local.returnData[arguments.tokenNamesArray[local.numTokenNames]] = left(local.returnData[arguments.tokenNamesArray[local.numTokenNames]], len(local.returnData[arguments.tokenNamesArray[local.numTokenNames]])-len(local.mime)-1) /><!--- extra -1 for the dot --->
-			<cfelse>
-				<cfset local.mime = listLast(arguments.uri, ".") />
-			</cfif>
+			<cfset local.mime = listLast(arguments.uri, ".") />
 			<cfset local.returnData["_taffy_mime"] = local.mime />
-			<!--- remove format from last token value --->
 		</cfif>
 		<!--- return --->
 		<cfreturn local.returnData />
