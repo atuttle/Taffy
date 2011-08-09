@@ -98,7 +98,7 @@
 			local.result = apiCall("put", "/echo/99.json", "foo=bar&check=mate");
 			debug(local.result);
 			if (!isJson(local.result.fileContent)){
-				fail("Result was not JSON");
+				fail("Result was not JSON (#local.result.fileContent#)");
 				return;
 			}
 			local.result = deserializeJSON(local.result.fileContent);
