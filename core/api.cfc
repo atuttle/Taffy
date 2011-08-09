@@ -326,21 +326,32 @@
 
 		<cfset requestObj.body = getRequestBody() />
 		<cfset requestObj.contentType = cgi.content_type />
-		<cfif len(requestObj.body) and findNoCase("application/x-www-form-urlencoded", requestObj.contentType)>
-			<!--- url-encoded body --->
-			<cfset requestObj.queryString = requestObj.body />
-		<cfelseif len(requestObj.body) and findNoCase("application/json", requestObj.contentType) or findNoCase("text/json", requestObj.contentType)>
-			<!--- json-encoded body --->
-			<cfif not isJson(requestObj.body)>
-				<cfset throwError(msg="Input JSON is not well formed: #requestObj.body#") />
-			</cfif>
-			<cfset local.tmp = deserializeJSON(requestObj.body) />
-			<cfif structKeyExists(local.tmp, "data")>
-				<cfset requestObj.bodyArgs = local.tmp.data />
+		<cfif len(requestObj.body)>
+			<cfif findNoCase("application/x-www-form-urlencoded", requestObj.contentType)>
+				<cfif not find('=', requestObj.body)>
+					<cfset throwError(400, "You've indicated that you're sending form-encoded data but it doesn't appear to be valid. Aborting request.") />
+				</cfif>
+				<!--- url-encoded body --->
+				<cfset requestObj.queryString = requestObj.body />
+			<cfelseif findNoCase("application/json", requestObj.contentType) or findNoCase("text/json", requestObj.contentType)>
+				<!--- json-encoded body --->
+				<cfif not isJson(requestObj.body)>
+					<cfset throwError(msg="Input JSON is not well formed: #requestObj.body#") />
+				</cfif>
+				<cfset local.tmp = deserializeJSON(requestObj.body) />
+				<cfif structKeyExists(local.tmp, "data")>
+					<cfset requestObj.bodyArgs = local.tmp.data />
+				<cfelse>
+					<cfset requestObj.bodyArgs = local.tmp />
+				</cfif>
+				<cfset requestObj.queryString = cgi.query_string />
 			<cfelse>
-				<cfset requestObj.bodyArgs = local.tmp />
+				<cfif isJson(requestObj.body)>
+					<cfset throwError(400, "Looks like you're sending JSON data, but you haven't specified a content type. Aborting request.") />
+				<cfelse>
+					<cfset throwError(400, "You must specify a content-type. Aborting request.") />
+				</cfif>
 			</cfif>
-			<cfset requestObj.queryString = cgi.query_string />
 		<cfelse>
 			<!--- actual query parameters --->
 			<cfset requestObj.queryString = cgi.query_string />
