@@ -69,14 +69,14 @@
 			makePublic(variables.taffy, "matchURI");
 			local.result = variables.taffy.matchURI("/echo/3.json");
 			debug(local.result);
-			assertEquals('/echo/([^\/\.]+)(\.[^\.\?]+)?$', local.result);
+			assertEquals('/echo/([^\/]+)(\.[^\.\?]+)?$', local.result);
 		}
 
 		function uri_matching_works_without_extension(){
 			makePublic(variables.taffy, "matchURI");
 			local.result = variables.taffy.matchURI("/echo/3");
 			debug(local.result);
-			assertEquals('/echo/([^\/\.]+)(\.[^\.\?]+)?$', local.result);
+			assertEquals('/echo/([^\/]+)(\.[^\.\?]+)?$', local.result);
 		}
 
 		function request_parsing_works(){
