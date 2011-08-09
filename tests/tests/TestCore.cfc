@@ -203,11 +203,13 @@
 			variables.taffy.setDefaultMime("text/json");
 			// Override body content type to send XML packet
 			local.headers["Accept"] = "text/json";
-			local.headers["Content-Type"] = "application/xml";
-			local.result = apiCall("put",
-									"/echo/12",
-									"<myXml><content>The quick brown fox jumped over the lazy dog.</content></myXml>",
-									local.headers);
+			local.headers["Content-Type"] = "application/json";
+			local.result = apiCall(
+				"put",
+				"/echo/12",
+				'{"foo":"The quick brown fox jumped over the lazy dog."}',
+				local.headers
+			);
 			debug(local.result);
 			assertEquals(200,local.result.responseHeader.status_code);
 
@@ -215,8 +217,9 @@
 			debug( local.deserializedContent );
 
 			// The service response should contain only the ID parameter, and not anything parsed from the body
-			assertEquals("id", structKeylist(local.deserializedContent));
+			assertEquals("id,foo", structKeylist(local.deserializedContent));
 			assertEquals(12, local.deserializedContent["id"]);
+			assertEquals("The quick brown fox jumped over the lazy dog.", local.deserializedContent["foo"]);
 		}
 
 		function put_body_is_url_encoded_params(){
