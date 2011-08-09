@@ -2,9 +2,6 @@
 	<cfscript>
 		this.name = "Taffy_testSuite";
 
-		this.mappings = {};
-		this.mappings["/"] = ExpandPath(".");
-
 		function configureTaffy() {
 			var local = {};
 			local.headers["x-foo-globalheader"] = "snafu";
