@@ -284,6 +284,10 @@
 		</cfif>
 		<!--- automatically introspect mime types from cfc metadata of default representation class --->
 		<cfset inspectMimeTypes(application._taffy.settings.defaultRepresentationClass) />
+		<!--- check to make sure a default mime type is set --->
+		<cfif application._taffy.settings.defaultMime eq "DoesNotExist">
+			<cfset throwError(400, "You have not specified a default mime type!") />
+		</cfif>
 	</cffunction>
 
 	<cffunction name="parseRequest" access="private" output="false" returnType="struct">
@@ -380,6 +384,9 @@
 				</cfloop>
 			<cfelse>
 				<!--- no mime at all specified, go with taffy default --->
+				<cfif application._taffy.settings.defaultMime eq "DoesNotExist">
+					<cfset throwError(400, "You have not specified a default mime type!") />
+				</cfif>
 				<cfset requestObj.returnMimeExt = application._taffy.settings.mimeTypes[application._taffy.settings.defaultMime] />
 			</cfif>
 		</cfif>
