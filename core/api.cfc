@@ -473,7 +473,11 @@
 		</cfif>
 		<!--- query_string input is also key-value pairs --->
 		<cfloop list="#arguments.queryString#" delimiters="&" index="local.t">
-			<cfset local.returnData[listFirst(local.t,'=')] = urlDecode(listLast(local.t,'=')) />
+			<cfif listLen(local.t,'=') eq 2>
+				<cfset local.returnData[listFirst(local.t,'=')] = urlDecode(listLast(local.t,'=')) />
+			<cfelse>
+				<cfset local.returnData[listFirst(local.t,'=')] = "" />
+			</cfif>
 		</cfloop>
 		<!--- if a mime type is requested as part of the url ("whatever.json"), then extract that so taffy can use it --->
 		<cfif listContainsNoCase(structKeyList(application._taffy.settings.mimeExtensions), listLast(arguments.uri,"."))>
