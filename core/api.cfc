@@ -390,7 +390,7 @@
 					<cfif structKeyExists(application._taffy.settings.mimeTypes, tmp)>
 						<cfset requestObj.returnMimeExt = application._taffy.settings.mimeTypes[tmp] />
 					<cfelse>
-						<cfset requestObj.returnMimeExt = application._taffy.settings.mimeTypes[application._taffy.settings.defaultMime] />
+						<cfset requestObj.returnMimeExt = application._taffy.settings.mimeExtensions[application._taffy.settings.defaultMime] />
 					</cfif>
 				</cfloop>
 			<cfelse>
