@@ -98,8 +98,9 @@
 			local.result = apiCall("put", "/echo/99.json", "foo=bar&check=mate");
 			debug(local.result);
 			if (!isJson(local.result.fileContent)){
-				fail("Result was not JSON (#local.result.fileContent#)");
-				return;
+				debug(local.result.fileContent);
+				fail("Result was not JSON");
+				return local.result.fileContent;
 			}
 			local.result = deserializeJSON(local.result.fileContent);
 			assertTrue(structKeyExists(local.result, "foo") && local.result.foo == "bar", "Missing or incorrect value for key `foo`.");
