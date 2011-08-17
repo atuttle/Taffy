@@ -1,6 +1,6 @@
 <cfcomponent extends="base">
 	<cfscript>
-	function beforeTests(){
+	function setup(){
 		variables.representation = createObject("component", "taffy.core.baseRepresentation");
 	}
 
@@ -13,7 +13,9 @@
 		local.result = variables.representation.noData();
 		local.meta = getMetaData(local.result);
 		debug(local.meta);
-		assertEquals(true, 'taffy.core.baseRepresentation' eq local.meta.fullname and local.result.getData() eq "");
+		debug(local.result.getData());
+		assertEquals('taffy.core.baseRepresentation', local.meta.fullname);
+		assertEquals("", local.result.getData());
 	}
 
 	function test_withStatus_getStatus(){
