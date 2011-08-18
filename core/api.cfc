@@ -38,13 +38,14 @@
 		<cfif structKeyExists(url, application._taffy.settings.reloadKey) and url[application._taffy.settings.reloadKey] eq application._taffy.settings.reloadPassword>
 			<cfset onApplicationStart() />
 		</cfif>
-		<!--- if browsing to root of api, redirect to dashboard --->
-		<cfif len(cgi.path_info) lte 1 and len(cgi.query_string) eq 0 and listLast(cgi.script_name, "/") eq "index.cfm" and not application._taffy.settings.disableDashboard>
-			<cfset local.basePath = listDeleteAt(cgi.script_name,listLen(cgi.script_name,"/"),"/") />
-			<cflocation url="#local.basePath#/?#application._taffy.settings.dashboardKey#" addtoken="false" />
-		</cfif>
-		<!--- allow pass-thru for selected paths --->
-		<cfif REFindNoCase( "^(" & application._taffy.settings.unhandledPathsRegex & ")", arguments.targetPath )>
+		<cfif !isUnhandledPathRequest(arguments.targetPath)>
+			<!--- if browsing to root of api, redirect to dashboard --->
+			<cfif len(cgi.path_info) lte 1 and len(cgi.query_string) eq 0 and listLast(cgi.script_name, "/") eq "index.cfm" and not application._taffy.settings.disableDashboard>
+				<cfset local.basePath = listDeleteAt(cgi.script_name,listLen(cgi.script_name,"/"),"/") />
+				<cflocation url="#local.basePath#/?#application._taffy.settings.dashboardKey#" addtoken="false" />
+			</cfif>
+		<cfelse>
+			<!--- allow pass-thru for selected paths --->
 			<cfset structDelete(this, 'onRequest') />
 			<cfset structDelete(variables, 'onRequest') />
 		</cfif>
@@ -771,6 +772,11 @@
 
 	<cffunction name="getPath" output="false" access="public" returntype="String" hint="This method returns just the URI portion of the URL, and makes it easier to port Taffy to other platforms by subclassing this method to match the way the platform works. The default behavior is tested and works on Adobe ColdFusion 9.0.1.">
 		<cfreturn cgi.path_info />
+	</cffunction>
+
+	<cffunction name="isUnhandledPathRequest">
+		<cfargument name="targetPath" />
+		<cfreturn REFindNoCase( "^(" & application._taffy.settings.unhandledPathsRegex & ")", arguments.targetPath ) />
 	</cffunction>
 
 </cfcomponent>
