@@ -45,11 +45,16 @@
 	function submitRequest( verb, resource, representation ){
 		var endpoint = 'http://<cfoutput>#cgi.server_name#<cfif cgi.SERVER_PORT neq 80>:#cgi.SERVER_PORT#</cfif>#cgi.SCRIPT_NAME#</cfoutput>';
 		var url = endpoint + resource;
+		var dType = null;
+		if (representation && representation.indexOf("{") == 0){
+			dType = "application/json";
+		}
 		$("#rest_body").hide();
 		$.ajax({
 			type: verb,
 			url: url,
 			data: representation,
+			contentType: dType,
 			success: function(data, status, xhr){
 				$("#headers").val(xhr.getAllResponseHeaders());
 				$("#statuscode").val(xhr.status + " " + xhr.statusText).removeClass("statusError").addClass("statusSuccess");
@@ -78,12 +83,7 @@
 			submitRequest("DELETE", $("#uri").val(), null);
 		});
 		$("#submit_post").click(function(){
-			//Seems like POST requests can't accept a JSON packet as the data attribute, so let's first convert it to a query string
-			var data = $("#content").val();
-			try {
-			    data = $.param($.parseJSON(data));
-			} catch (e) {}
-			submitRequest("POST", $("#uri").val(), data);
+			submitRequest("POST", $("#uri").val(), $("#content").val());
 		});
 	});
 </script>

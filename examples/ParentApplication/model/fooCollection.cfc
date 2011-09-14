@@ -1,4 +1,4 @@
-<cfcomponent extends="taffy.core.resource" taffy_uri="/artfarts">
+<cfcomponent extends="taffy.core.resource" taffy_uri="/foo">
 
 	<cffunction name="get" access="public" output="false">
 		<cfreturn representationOf(variables.fakeData.getData()).withStatus(200) />

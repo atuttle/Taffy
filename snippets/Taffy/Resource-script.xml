@@ -2,7 +2,7 @@
 <snippet filetemplate="false" extension="">
 <name>Resource-script</name>
 <help>Creates a Taffy Resource CFC using cfscript syntax</help>
-<starttext><![CDATA[component extends="taffy.core.resource" taffy:uri="]]></starttext>
+<starttext><![CDATA[component extends="taffy.core.resource" taffy_uri="]]></starttext>
 <endtext><![CDATA["
 {
 	

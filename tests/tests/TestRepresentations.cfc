@@ -1,7 +1,7 @@
-component extends="baseTest" {
-
-	function beforeTests(){
-		variables.representation = createObject("taffy.core.baseRepresentation");
+<cfcomponent extends="base">
+	<cfscript>
+	function setup(){
+		variables.representation = createObject("component", "taffy.core.baseRepresentation");
 	}
 
 	function test_setData_getData(){
@@ -13,7 +13,9 @@ component extends="baseTest" {
 		local.result = variables.representation.noData();
 		local.meta = getMetaData(local.result);
 		debug(local.meta);
-		assertEquals(true, 'taffy.core.baseRepresentation' eq local.meta.fullname and local.result.getData() eq "");
+		debug(local.result.getData());
+		assertEquals('taffy.core.baseRepresentation', local.meta.fullname);
+		assertEquals("", local.result.getData());
 	}
 
 	function test_withStatus_getStatus(){
@@ -22,9 +24,10 @@ component extends="baseTest" {
 	}
 
 	function test_withHeaders_getHeaders(){
-		local.h = { 'x-dude'='dude!'};
+		local.h = {};
+		local.h['x-dude'] = 'dude!';
 		variables.representation.withHeaders(local.h);
 		assertEquals(true, structKeyExists(variables.representation.getHeaders(), "x-dude"));
 	}
-
-}
+	</cfscript>
+</cfcomponent>

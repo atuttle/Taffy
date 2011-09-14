@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans>
+<beans default-autowire="byName">
 	
 	<bean id="fakeData" class="taffy.examples.shared.fakeData" />
 	

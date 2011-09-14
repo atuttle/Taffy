@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans>
+<beans default-autowire="byName">
 	
 	<bean id="fakeData" class="taffy.examples.shared.fakeData" />
-	<bean id="artfartCollection" class="taffy.examples.api_coldspring.stuff.artfartCollection" autowire="byname" />
+	<bean id="artfartCollection" class="taffy.examples.api_coldspring.stuff.artfartCollection" />
 	
 </beans>
