@@ -65,6 +65,7 @@
 			assertEquals( 1, arrayLen(local.result2["tokens"]) );
 			assertEquals( "abc", local.result2["tokens"][1] );
 		}
+
 		function uri_matching_works_with_extension(){
 			makePublic(variables.taffy, "matchURI");
 			local.result = variables.taffy.matchURI("/echo/3.json");
@@ -131,7 +132,7 @@
 			assertFalse(structKeyExists(local.result, "data"), "DATA element was not supposed to be included in arguments, but was included.");
 		}
 
-		function returns_error_when_default_mime_not_supported(){
+		function returns_error_when_default_mime_not_implemented(){
 			variables.taffy.setDefaultMime("DoesNotExist");
 			local.result = apiCall("get", "/echo/2", "foo=bar");
 			debug(local.result);
@@ -139,9 +140,21 @@
 		}
 
 		function returns_error_when_requested_mime_not_supported(){
-			local.result = apiCall ("get","/echo/2.negatory","foo=bar");
+			local.result = apiCall("get","/echo/2.negatory","foo=bar");
 			debug(local.result);
 			assertEquals(400, local.result.responseHeader.status_code);
+		}
+
+		function allows_email_as_final_url_value(){
+			//this test illustrates the issue with the current codebase:
+			//-- it's hard (impossible?) to distinguish between foo.json and ex@ex.com
+			local.headers = structNew();
+			local.headers.Accept = "text/json";
+			local.result = apiCall("get", "/echo/test@example.com", "", local.headers);
+			debug(local.result);
+			assertEquals(200, local.result.responseHeader.status_code);
+			local.oResult = deserializeJson(local.result.fileContent);
+			assertEquals("test@example.com", local.oResult.id);
 		}
 
 		function returns_405_for_unimplemented_verbs(){
