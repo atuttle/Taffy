@@ -377,30 +377,29 @@
 		<cfset structAppend(requestObj.requestArguments, form) />
 
 		<!--- use requested mime type or the default --->
-		<cfset requestObj.returnMimeExt = application._taffy.settings.defaultMime />
+		<cfset requestObj.returnMimeExt = "" />
 		<cfif structKeyExists(requestObj.requestArguments, "_taffy_mime")>
 			<cfset requestObj.returnMimeExt = requestObj.requestArguments["_taffy_mime"] />
 			<cfset structDelete(requestObj.requestArguments, "_taffy_mime") />
-		<cfelse>
-			<cfif structKeyExists(cgi, "http_accept") and len(cgi.http_accept)>
-				<cfloop list="#cgi.HTTP_ACCEPT#" index="tmp">
-					<!--- deal with that q=0 stuff (just ignore it) --->
-					<cfif listLen(tmp, ";") gt 1>
-						<cfset tmp = listFirst(tmp, ";") />
-					</cfif>
-					<cfif structKeyExists(application._taffy.settings.mimeTypes, tmp)>
-						<cfset requestObj.returnMimeExt = application._taffy.settings.mimeTypes[tmp] />
-					<cfelse>
-						<cfset requestObj.returnMimeExt = application._taffy.settings.mimeExtensions[application._taffy.settings.defaultMime] />
-					</cfif>
-				</cfloop>
-			<cfelse>
-				<!--- no mime at all specified, go with taffy default --->
-				<cfif application._taffy.settings.defaultMime eq "DoesNotExist">
-					<cfset throwError(400, "You have not specified a default mime type!") />
+		</cfif>
+		<!--- if an "accept" header is provided, it takes precedence over url mime --->
+		<cfif structKeyExists(cgi, "http_accept") and len(cgi.http_accept)>
+			<cfloop list="#cgi.HTTP_ACCEPT#" index="tmp">
+				<!--- deal with that q=0 stuff (just ignore it) --->
+				<cfif listLen(tmp, ";") gt 1>
+					<cfset tmp = listFirst(tmp, ";") />
 				</cfif>
-				<cfset requestObj.returnMimeExt = application._taffy.settings.mimeTypes[application._taffy.settings.defaultMime] />
+				<cfif structKeyExists(application._taffy.settings.mimeTypes, tmp)>
+					<cfset requestObj.returnMimeExt = application._taffy.settings.mimeTypes[tmp] />
+				</cfif>
+			</cfloop>
+		</cfif>
+		<cfif requestObj.returnMimeExt eq "">
+			<!--- no mime at all specified, go with taffy default --->
+			<cfif application._taffy.settings.defaultMime eq "DoesNotExist">
+				<cfset throwError(400, "You have not specified a default mime type!") />
 			</cfif>
+			<cfset requestObj.returnMimeExt = application._taffy.settings.defaultMime />
 		</cfif>
 		<cfreturn requestObj />
 	</cffunction>
@@ -477,7 +476,7 @@
 			<cfset local.returnData[listFirst(local.t,'=')] = urlDecode(listLast(local.t,'=')) />
 		</cfloop>
 		<!--- if a mime type is requested as part of the url ("whatever.json"), then extract that so taffy can use it --->
-		<cfif listContainsNoCase(structKeyList(application._taffy.settings.mimeExtensions), listLast(arguments.uri,"."))>
+		<cfif listlen(arguments.uri,".") gt 1>
 			<cfset local.mime = listLast(arguments.uri, ".") />
 			<cfset local.returnData["_taffy_mime"] = local.mime />
 		</cfif>
