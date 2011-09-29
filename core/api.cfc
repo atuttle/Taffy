@@ -412,7 +412,7 @@
 		<cfset local.returnData.tokens = ArrayNew(1) />
 
 		<!--- extract token names and values from requested uri --->
-		<cfset local.uriRegex = arguments.uri />
+		<cfset local.uriRegex = "^" & arguments.uri />
 		<cfloop array="#local.almostTokens#" index="local.token">
 			<cfset arrayAppend(local.returnData.tokens, replaceList(local.token, "{,}", ",")) />
 			<cfset local.uriRegex = rereplaceNoCase(local.uriRegex,"{[^}]+}", "([^\/]+)") />
