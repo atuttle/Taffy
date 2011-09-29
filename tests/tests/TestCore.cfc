@@ -246,18 +246,18 @@
 			assertEquals("hotel", local.deserializedContent["bar"]);
 			assertEquals("foxtrot", local.deserializedContent["baz"]);
 		}
-		
+
 		function get_queryString_keys_without_values_returns_empty_string() {
 			makePublic(variables.taffy, "buildRequestArguments");
-			
+
 			var returnedArguments = variables.taffy.buildRequestArguments(
-				regex = "/testResource/(\.[^\.\?]+)?$",
+				regex = "^/testResource/(\.[^\.\?]+)?$",
 				tokenNamesArray = [],
 				uri = "/testResource/",
 				queryString = "keyOne=valueOne&keyTwo=&keyThree=valueThree",
 				headers = {}
 			);
-			
+
 			assertEquals("", returnedArguments["keyTwo"]);
 		}
 	</cfscript>
