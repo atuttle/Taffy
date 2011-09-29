@@ -55,13 +55,13 @@
 			assertEquals("{""uriregex"":""\/a\/([^\\\/\\.]+)\/b(\\.[^\\.\\?]+)?$"",""tokens"":[""abc""]}",
 							serializeJson(local.result),
 							"The expected result of the conversion did not match the actual result.");*/
-			assertEquals( "/a/([^\/]+)/b(\.[^\.\?]+)?$", local.result["uriregex"], "Resulted regex did not match expected.");
+			assertEquals( "^/a/([^\/]+)/b(\.[^\.\?]+)?$", local.result["uriregex"], "Resulted regex did not match expected.");
 			assertEquals( 1, arrayLen(local.result["tokens"]) );
 			assertEquals( "abc", local.result["tokens"][1] );
 
 			local.result2 = taffy.convertURItoRegex("/a/{abc}");
 			debug(local.result2);
-			assertEquals( "/a/([^\/]+)(\.[^\.\?]+)?$", local.result2["uriregex"], "Resulted regex did not match expected.");
+			assertEquals( "^/a/([^\/]+)(\.[^\.\?]+)?$", local.result2["uriregex"], "Resulted regex did not match expected.");
 			assertEquals( 1, arrayLen(local.result2["tokens"]) );
 			assertEquals( "abc", local.result2["tokens"][1] );
 		}
@@ -69,14 +69,14 @@
 			makePublic(variables.taffy, "matchURI");
 			local.result = variables.taffy.matchURI("/echo/3.json");
 			debug(local.result);
-			assertEquals('/echo/([^\/]+)(\.[^\.\?]+)?$', local.result);
+			assertEquals('^/echo/([^\/]+)(\.[^\.\?]+)?$', local.result);
 		}
 
 		function uri_matching_works_without_extension(){
 			makePublic(variables.taffy, "matchURI");
 			local.result = variables.taffy.matchURI("/echo/3");
 			debug(local.result);
-			assertEquals('/echo/([^\/]+)(\.[^\.\?]+)?$', local.result);
+			assertEquals('^/echo/([^\/]+)(\.[^\.\?]+)?$', local.result);
 		}
 
 		function request_parsing_works(){
