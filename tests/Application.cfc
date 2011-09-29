@@ -10,7 +10,7 @@
 			setReloadKey("reload");
 
 			// Don't try to handle the Unit Test Suite files
-			setUnhandledPaths('/Taffy/tests/someFolder,/Taffy/tests/tests');
+			setUnhandledPaths('/Taffy/tests/someFolder,/Taffy/tests/tests,/tests/someFolder,/tests/tests');
 
 			setGlobalHeaders(local.headers);
 			setDefaultRepresentationClass("customJsonRepresentation");
