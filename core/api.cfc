@@ -30,13 +30,17 @@
 	<cffunction name="onRequestStart">
 		<cfargument name="targetPath" />
 		<cfset var local = structNew() />
+		<cfset local.reloadedInThisRequest = false />
 		<!--- this will probably happen if taffy is sharing an app name with an existing application so that you can use its application context --->
 		<cfif not structKeyExists(application, "_taffy")>
 			<cfset onApplicationStart() />
+			<cfset local.reloadedInThisRequest = true />
 		</cfif>
 		<!--- allow reloading --->
 		<cfif structKeyExists(url, application._taffy.settings.reloadKey) and url[application._taffy.settings.reloadKey] eq application._taffy.settings.reloadPassword>
-			<cfset onApplicationStart() />
+			<cfif !reloadedInThisRequest><!--- prevent double reloads --->
+				<cfset onApplicationStart() />
+			</cfif>
 		</cfif>
 		<cfif !isUnhandledPathRequest(arguments.targetPath)>
 			<!--- if browsing to root of api, redirect to dashboard --->
