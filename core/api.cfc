@@ -555,7 +555,8 @@
 	<cffunction name="resolveDependencies" access="private" output="false" returnType="void" hint="used to resolve dependencies of internal beans using external bean factory">
 		<cfset var local = StructNew() />
 		<cfloop list="#structKeyList(application._taffy.endpoints)#" index="local.endpoint">
-			<cfset local.md = getMetadata( application._taffy.factory.getBean(application._taffy.endpoints[local.endpoint].beanName) ) />
+			<cfset local.beanName = application._taffy.factory.getBean(application._taffy.endpoints[local.endpoint].beanName) />
+			<cfset local.md = getMetadata( local.beanName ) />
 			<cfset local.methods = local.md.functions />
 			<!--- get list of method names --->
 			<cfset local.methodNames = "" />
