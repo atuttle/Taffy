@@ -54,13 +54,22 @@
 			if (StructKeyExists(arguments.metaData,"taffy:cache")) {
 				local.stCacheSettings["toCache"] = arguments.metaData["taffy:cache"];
 			}
+			else if (StructKeyExists(arguments.metaData,"taffy_cache")) {
+				local.stCacheSettings["toCache"] = arguments.metaData["taffy_cache"];
+			}
 			
 			if (StructKeyExists(arguments.metaData,"taffy:cachetimeout")) {
+				local.stCacheSettings["cacheTimeout"] = arguments.metaData["taffy:cachetimeout"];
+			}
+			else if (StructKeyExists(arguments.metaData,"taffy_cachetimeout")) {
 				local.stCacheSettings["cacheTimeout"] = arguments.metaData["taffy:cachetimeout"];
 			}
 			
 			if (StructKeyExists(arguments.metaData,"taffy:cacheunit")) {
 				local.stCacheSettings["unit"] = arguments.metaData["taffy:cacheunit"];
+			}
+			else if (StructKeyExists(arguments.metaData,"taffy_cacheunit")) {
+				local.stCacheSettings["unit"] = arguments.metaData["taffy:_acheunit"];
 			}
 			else {
 				local.stCacheSettings["unit"] = "minutes";
@@ -81,13 +90,22 @@
 			if (StructKeyExists(local.activeMethod,"taffy:cache")) {
 				local.stCacheSettings["toCache"] = local.activeMethod['taffy:cache'];
 			}
+			else if (StructKeyExists(local.activeMethod,"taffy_cache")) {
+				local.stCacheSettings["toCache"] = local.activeMethod['taffy_cache'];
+			}
 			
 			if (StructKeyExists(local.activeMethod,"taffy:cachetimeout")) {
 				local.stCacheSettings["cacheTimeout"] = local.activeMethod["taffy:cachetimeout"];
 			}
+			else if (StructKeyExists(local.activeMethod,"taffy_cachetimeout")) {
+				local.stCacheSettings["cacheTimeout"] = local.activeMethod["taffy_cachetimeout"];
+			}
 			
 			if (StructKeyExists(local.activeMethod,"taffy:cacheunit")) {
 				local.stCacheSettings["unit"] = local.activeMethod["taffy:cacheunit"];
+			}
+			else if (StructKeyExists(local.activeMethod,"taffy_cacheunit")) {
+				local.stCacheSettings["unit"] = local.activeMethod["taffy_cacheunit"];
 			}
 			
 			// Determine if we're doing any caching at all
