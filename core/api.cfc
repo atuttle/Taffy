@@ -30,13 +30,17 @@
 	<cffunction name="onRequestStart">
 		<cfargument name="targetPath" />
 		<cfset var local = structNew() />
+		<cfset local.reloadedInThisRequest = false />
 		<!--- this will probably happen if taffy is sharing an app name with an existing application so that you can use its application context --->
 		<cfif not structKeyExists(application, "_taffy")>
 			<cfset onApplicationStart() />
+			<cfset local.reloadedInThisRequest = true />
 		</cfif>
 		<!--- allow reloading --->
 		<cfif structKeyExists(url, application._taffy.settings.reloadKey) and url[application._taffy.settings.reloadKey] eq application._taffy.settings.reloadPassword>
-			<cfset onApplicationStart() />
+			<cfif !reloadedInThisRequest><!--- prevent double reloads --->
+				<cfset onApplicationStart() />
+			</cfif>
 		</cfif>
 		<cfif !isUnhandledPathRequest(arguments.targetPath)>
 			<!--- if browsing to root of api, redirect to dashboard --->
@@ -442,7 +446,7 @@
 		<cfreturn "" />
 	</cffunction>
 
-	<cffunction name="getRequestBody" access="private" output="false" returntype="String" hint="Gets PUT data into a string similar to cgi.query_string, which CF doesn't do automatically">
+	<cffunction name="getRequestBody" access="private" output="false" returntype="String" hint="Gets request body data, which CF doesn't do automatically for some verbs">
 		<!--- Special thanks to Jason Dean (@JasonPDean) and Ray Camden (@ColdFusionJedi) who helped me figure out how to do this --->
 		<cfset var body = getHTTPRequestData().content />
 		<!--- on input with content-type "application/json" CF seems to expose it as binary data. Here we convert it back to plain text --->
@@ -488,7 +492,7 @@
 		<cfreturn local.returnData />
 	</cffunction>
 
-	<cffunction name="guessResourcesPath" access="private" output="false" returntype="string">
+	<cffunction name="guessResourcesPath" access="private" output="false" returntype="string" hint="used to try and figure out the absolute path of the /resources folder even though this file may not be in the web root">
 		<cfset local.indexcfmpath = cgi.script_name />
 		<cfset local.resourcesPath = listDeleteAt(local.indexcfmpath, listLen(local.indexcfmpath, "/"), "/") & "/resources" />
 		<cfreturn local.resourcesPath />
@@ -551,11 +555,11 @@
 		</cfloop>
 	</cffunction>
 
-	<!--- this method is only called to resolve dependencies of internal beans using external bean factory --->
-	<cffunction name="resolveDependencies" access="private" output="false" returnType="void">
+	<cffunction name="resolveDependencies" access="private" output="false" returnType="void" hint="used to resolve dependencies of internal beans using external bean factory">
 		<cfset var local = StructNew() />
 		<cfloop list="#structKeyList(application._taffy.endpoints)#" index="local.endpoint">
-			<cfset local.md = getMetadata( application._taffy.factory.getBean(application._taffy.endpoints[local.endpoint].beanName) ) />
+			<cfset local.beanName = application._taffy.factory.getBean(application._taffy.endpoints[local.endpoint].beanName) />
+			<cfset local.md = getMetadata( local.beanName ) />
 			<cfset local.methods = local.md.functions />
 			<!--- get list of method names --->
 			<cfset local.methodNames = "" />
@@ -660,7 +664,7 @@
 		<cfreturn false />
 	</cffunction>
 
-	<cffunction name="reFindNoSuck" output="false" access="private">
+	<cffunction name="reFindNoSuck" output="false" access="private" hint="I wrote this wrapper for reFindNoCase because the way it returns matches is god awful.">
 		<cfargument name="pattern" required="true" type="string" />
 		<cfargument name="data" required="true" type="string" />
 		<cfargument name="startPos" required="false" default="1" />
@@ -701,7 +705,7 @@
 		<cfset application._taffy.settings.unhandledPaths = arguments.unhandledPaths />
 	</cffunction>
 
-	<cffunction name="setDefaultMime" access="public" output="false" returntype="void">
+	<cffunction name="setDefaultMime" access="public" output="false" returntype="void" hint="deprecated-1.1">
 		<cfargument name="DefaultMimeType" type="string" required="true" hint="mime time to set as default for this api" />
 		<cfset application._taffy.settings.defaultMime = arguments.DefaultMimeType />
 	</cffunction>
@@ -731,7 +735,7 @@
 		<cfset application._taffy.settings.reloadPassword = arguments.password />
 	</cffunction>
 
-	<cffunction name="registerMimeType" access="public" output="false" returntype="void">
+	<cffunction name="registerMimeType" access="public" output="false" returntype="void" hint="deprecated-1.1">
 		<cfargument name="extension" type="string" required="true" hint="ex: json" />
 		<cfargument name="mimeType" type="string" required="true" hint="ex: text/json" />
 		<cfset application._taffy.settings.mimeExtensions[arguments.extension] = arguments.mimeType />
@@ -767,6 +771,7 @@
 	</cffunction>
 
 	<cfif NOT isDefined("getComponentMetadata")>
+		<!--- workaround for platforms where getComponentMetadata doesn't exist --->
 		<cffunction name="tmp">
 			<cfreturn getMetaData(createObject("component",arguments[1])) />
 		</cffunction>
@@ -777,7 +782,7 @@
 		<cfreturn cgi.path_info />
 	</cffunction>
 
-	<cffunction name="isUnhandledPathRequest">
+	<cffunction name="isUnhandledPathRequest" access="private" returntype="boolean">
 		<cfargument name="targetPath" />
 		<cfreturn REFindNoCase( "^(" & application._taffy.settings.unhandledPathsRegex & ")", arguments.targetPath ) />
 	</cffunction>
