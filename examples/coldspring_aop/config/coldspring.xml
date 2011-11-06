@@ -1,0 +1,57 @@
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans default-autowire="byName">
+	
+	<bean id="taffyResource" class="taffy.core.resource" />
+	
+	<bean id="cachingSample" class="endpoints.SamplesCaching" />
+	<bean id="cachingAdvice" class="com.aspects.CachingAroundAdvice" />
+
+	<bean id="cachingAdvisor" class="coldspring.aop.support.NamedMethodPointcutAdvisor">
+		<property name="advice">
+			<ref bean="cachingAdvice" />
+		</property>
+		<property name="mappedNames">
+			<value>*</value>
+		</property>
+	</bean>
+	
+	<bean id="sampleWithCachingAdvice" class="coldspring.aop.framework.ProxyFactoryBean">
+		<property name="target">
+			<ref bean="cachingSample" />
+		</property>
+		<property name="interceptorNames">
+			<list>
+				<value>cachingAdvisor</value>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="formattingSample" class="endpoints.SamplesFormatting" />
+	<bean id="formattingAdvice" class="com.aspects.FormattingAroundAdvice">
+		<property name="taffyResourceObject">
+			<ref bean="taffyResource" />
+		</property>
+	</bean>
+	
+	<bean id="formattingAdvisor" class="coldspring.aop.support.NamedMethodPointcutAdvisor">
+		<property name="advice">
+			<ref bean="formattingAdvice" />
+		</property>
+		<property name="mappedNames">
+			<value>*</value>
+		</property>
+	</bean>
+	
+	<bean id="sampleWithFormattingAdvice" class="coldspring.aop.framework.ProxyFactoryBean">
+		<property name="target">
+			<ref bean="formattingSample" />
+		</property>
+		<property name="interceptorNames">
+			<list>
+				<value>formattingAdvisor</value>
+			</list>
+		</property>
+	</bean>
+	
+</beans>
