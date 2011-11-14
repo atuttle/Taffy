@@ -136,12 +136,25 @@
 			local.result = apiCall("get", "/echo/2", "foo=bar");
 			debug(local.result);
 			assertEquals(400, local.result.responseHeader.status_code);
+			assertEquals("Your default mime type is not implemented", local.result.responseHeader.explanation);
 		}
 
 		function returns_error_when_requested_mime_not_supported(){
+			variables.taffy.setDefaultMime("application/json");
 			local.result = apiCall ("get","/echo/2.negatory","foo=bar");
 			debug(local.result);
 			assertEquals(400, local.result.responseHeader.status_code);
+			assertEquals("Requested mime type is not supported", local.result.responseHeader.explanation);
+		}
+
+		function accept_header_takes_precedence_over_extension(){
+			variables.taffy.setDefaultMime("application/yml");
+			local.headers = structNew();
+			local.headers["Accept"] = "text/json";
+			local.result = apiCall ("get","/echo/2.xml","foo=bar",local.headers);
+			debug(local.result);
+			assertEquals(999, local.result.responseHeader.status_code);
+			assertTrue(isJson(local.result.fileContent));
 		}
 
 		function returns_405_for_unimplemented_verbs(){

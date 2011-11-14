@@ -290,7 +290,7 @@
 		<!--- automatically introspect mime types from cfc metadata of default representation class --->
 		<cfset inspectMimeTypes(application._taffy.settings.defaultRepresentationClass) />
 		<!--- check to make sure a default mime type is set --->
-		<cfif application._taffy.settings.defaultMime eq "DoesNotExist">
+		<cfif application._taffy.settings.defaultMime eq "">
 			<cfset throwError(400, "You have not specified a default mime type!") />
 		</cfif>
 	</cffunction>
@@ -383,27 +383,17 @@
 		<!--- use requested mime type or the default --->
 		<cfset requestObj.returnMimeExt = application._taffy.settings.defaultMime />
 		<cfif structKeyExists(requestObj.requestArguments, "_taffy_mime")>
-			<cfset requestObj.returnMimeExt = requestObj.requestArguments["_taffy_mime"] />
+			<cfset requestObj.returnMimeExt = requestObj.requestArguments._taffy_mime />
 			<cfset structDelete(requestObj.requestArguments, "_taffy_mime") />
+			<cfif not structKeyExists(application._taffy.settings.mimeExtensions, requestObj.returnMimeExt)>
+				<cfset throwError(400, "Requested mime type is not supported") />
+			</cfif>
 		<cfelse>
-			<cfif structKeyExists(cgi, "http_accept") and len(cgi.http_accept)>
-				<cfloop list="#cgi.HTTP_ACCEPT#" index="tmp">
-					<!--- deal with that q=0 stuff (just ignore it) --->
-					<cfif listLen(tmp, ";") gt 1>
-						<cfset tmp = listFirst(tmp, ";") />
-					</cfif>
-					<cfif structKeyExists(application._taffy.settings.mimeTypes, tmp)>
-						<cfset requestObj.returnMimeExt = application._taffy.settings.mimeTypes[tmp] />
-					<cfelse>
-						<cfset requestObj.returnMimeExt = application._taffy.settings.mimeExtensions[application._taffy.settings.defaultMime] />
-					</cfif>
-				</cfloop>
-			<cfelse>
-				<!--- no mime at all specified, go with taffy default --->
-				<cfif application._taffy.settings.defaultMime eq "DoesNotExist">
-					<cfset throwError(400, "You have not specified a default mime type!") />
-				</cfif>
-				<cfset requestObj.returnMimeExt = application._taffy.settings.mimeTypes[application._taffy.settings.defaultMime] />
+			<!--- run some checks on the default --->
+			<cfif application._taffy.settings.defaultMime eq "">
+				<cfset throwError(400, "You have not specified a default mime type") />
+			<cfelseif not structKeyExists(application._taffy.settings.mimeTypes, application._taffy.settings.defaultMime)>
+				<cfset throwError(400, "Your default mime type is not implemented") />
 			</cfif>
 		</cfif>
 		<cfreturn requestObj />
@@ -465,6 +455,7 @@
 		<cfargument name="headers" type="struct" required="true" hint="any headers included in the request" />
 
 		<cfset var local = StructNew() />
+		<cfset var tmp = "" />
 		<cfset local.returnData = StructNew() /><!--- this will be used as an argumentCollection for the method that ultimately gets called --->
 
 		<!--- parse path_info data into key-value pairs --->
@@ -485,9 +476,22 @@
 			</cfif>
 		</cfloop>
 		<!--- if a mime type is requested as part of the url ("whatever.json"), then extract that so taffy can use it --->
-		<cfif listContainsNoCase(structKeyList(application._taffy.settings.mimeExtensions), listLast(arguments.uri,"."))>
+		<cfif listLen(arguments.uri,".") gt 1>
 			<cfset local.mime = listLast(arguments.uri, ".") />
 			<cfset local.returnData["_taffy_mime"] = local.mime />
+			<cfheader name="x-deprecation-warning" value="Specifying return format as '.#local.mime#' is deprecated. Please use the HTTP Accept header when possible." />
+		</cfif>
+		<cfif structKeyExists(cgi, "http_accept") and len(cgi.http_accept)>
+			<cfloop list="#cgi.HTTP_ACCEPT#" index="tmp">
+				<!--- deal with that q=0 stuff (just ignore it) --->
+				<cfif listLen(tmp, ";") gt 1>
+					<cfset tmp = listFirst(tmp, ";") />
+				</cfif>
+				<cfif structKeyExists(application._taffy.settings.mimeTypes, tmp)>
+					<cfset local.returnData["_taffy_mime"] = application._taffy.settings.mimeTypes[tmp] />
+					<cfbreak /><!--- exit loop --->
+				</cfif>
+			</cfloop>
 		</cfif>
 		<!--- return --->
 		<cfreturn local.returnData />

@@ -23,7 +23,12 @@
 				</cfloop>
 			</cfhttp>
 		<cfelse>
-			<cfhttp method="#arguments.method#" url="http://#CGI.SERVER_NAME#:#CGI.SERVER_PORT#/taffy/tests/index.cfm#arguments.uri#?#arguments.query#" result="local.result"/>
+			<cfhttp method="#arguments.method#" url="http://#CGI.SERVER_NAME#:#CGI.SERVER_PORT#/taffy/tests/index.cfm#arguments.uri#?#arguments.query#" result="local.result">
+				<!--- Add arbitrary headers to request --->
+				<cfloop item="local.header" collection="#arguments.headers#">
+					<cfhttpparam type="header" name="#local.header#" value="#arguments.headers[local.header]#" />
+				</cfloop>
+			</cfhttp>
 		</cfif>
 		<cfreturn local.result />
 	</cffunction>
