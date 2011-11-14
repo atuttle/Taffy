@@ -5,9 +5,9 @@
 		<cfargument name="uri" type="string"/>
 		<cfargument name="query" type="string"/>
 		<cfargument name="headers" type="struct" default="#structNew()#" />
-		
+
 		<cfset var local = structNew() />
-		
+
 		<cfif lcase(arguments.method) eq "put" or lcase(arguments.method) eq "post">
 			<cfhttp method="#arguments.method#" url="http://#CGI.SERVER_NAME#:#CGI.SERVER_PORT#/taffy/tests/index.cfm#arguments.uri#" result="local.result" charset="utf-8">
 				<cfif isJson(query)>

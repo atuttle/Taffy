@@ -306,7 +306,7 @@
 
 		<!--- attempt to find the cfc for the requested uri --->
 		<cfset requestObj.matchingRegex = matchURI(getPath()) />
-		
+
 		<!--- uri doesn't map to any known resources --->
 		<cfif not len(requestObj.matchingRegex)>
 			<cfset throwError(404, "Not Found") />
@@ -314,7 +314,7 @@
 
 		<!--- get the cfc name and token array for the matching regex --->
 		<cfset requestObj.matchDetails = application._taffy.endpoints[requestObj.matchingRegex] />
-		
+
 		<!--- which verb is requested? --->
 		<cfset requestObj.verb = cgi.request_method />
 
@@ -530,7 +530,7 @@
 			<cfelseif structKeyExists(local.cfcMetadata, "taffy:uri")>
 				<cfset local.uri = local.cfcMetadata["taffy:uri"] />
 			</cfif>
-			
+
 			<cfif structKeyExists(local.cfcMetaData, "taffy:aopbean")>
 				<cfset local.cachedBeanName = local.cfcMetaData["taffy:aopbean"] />
 			<cfelseif structKeyExists(local.cfcMetaData, "taffy_aopbean")>
@@ -538,7 +538,7 @@
 			<cfelse>
 				<cfset local.cachedBeanName = local.beanName />
 			</cfif>
-			
+
 			<!--- if it doesn't have a uri, then it's not a resource --->
 			<cfif len(local.uri)>
 				<cfset local.metaInfo = convertURItoRegex(local.uri) />
@@ -707,7 +707,7 @@
 		<cfset application._taffy.externalBeanFactory = arguments.beanFactory />
 		<cfset application._taffy.status.externalBeanFactoryUsed = true />
 	</cffunction>
-	
+
 	<cffunction name="getBeanFactory" access="public" output="false">
 		<cfreturn application._taffy.factory />
 	</cffunction>
@@ -753,7 +753,7 @@
 		<cfset application._taffy.settings.mimeExtensions[arguments.extension] = arguments.mimeType />
 		<cfset application._taffy.settings.mimeTypes[arguments.mimeType] = arguments.extension />
 	</cffunction>
-	
+
 	<cffunction name="registerExtensionRepresentation" access="public" output="false" returntype="void">
 		<cfargument name="extensionList" type="string" required="true" hint="ex: json" />
 		<cfargument name="representation" type="string" required="true" hint="ex: cfc.SomeRep" />
@@ -761,7 +761,6 @@
 			<cfset application._taffy.settings.extensionRepresentations["#ListGetAt(arguments.extensionList,i)#"] = arguments.representation />
 		</cfloop>
 	</cffunction>
-	
 
 	<cffunction name="setDefaultRepresentationClass" access="public" output="false" returnType="void" hint="Override the global default representation object with a custom class">
 		<cfargument name="customClassDotPath" type="string" required="true" hint="Dot-notation path to your custom class to use as the default" />
