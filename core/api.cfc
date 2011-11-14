@@ -143,6 +143,7 @@
 
 			<!--- if the verb is not implemented, refuse the request --->
 			<cfif not structKeyExists(_taffyRequest.matchDetails.methods, _taffyRequest.verb)>
+				<cfheader name="ALLOW" value="#ucase(structKeyList(_taffyRequest.matchDetails.methods))#" />
 				<cfset throwError(405, "Method Not Allowed") />
 			</cfif>
 			<!--- returns a representation-object --->
@@ -193,6 +194,9 @@
 			</cfloop>
 			<cfset structDelete(_taffyRequest, "headerName")/>
 		</cfif>
+
+		<!--- add ALLOW header for current resource --->
+		<cfheader name="ALLOW" value="#ucase(structKeyList(_taffyRequest.matchDetails.methods))#" />
 
 		<!--- result data --->
 		<cfset _taffyRequest.resultType = _taffyRequest.result.getType() />

@@ -273,6 +273,41 @@
 
 			assertEquals("", returnedArguments["keyTwo"]);
 		}
+
+		function returns_allow_header_for_405(){
+			local.result = apiCall("delete","/echo/12.json","");
+			debug(local.result);
+			assertEquals(405,local.result.responseHeader.status_code);
+			assertTrue(structKeyExists(local.result.responseHeader, "allow"),"Expected ALLOW header, but couldn't find it");
+		}
+
+		function returns_allow_header_for_get_200(){
+			local.result = apiCall("get","/echo/tunnel/12.json","");
+			debug(local.result);
+			assertEquals(200,local.result.responseHeader.status_code);
+			assertTrue(structKeyExists(local.result.responseHeader, "allow"),"Expected ALLOW header, but couldn't find it");
+		}
+
+		function returns_allow_header_for_post_201(){
+			local.result = apiCall("post","/echo/tunnel/12.json","");
+			debug(local.result);
+			assertEquals(201,local.result.responseHeader.status_code);
+			assertTrue(structKeyExists(local.result.responseHeader, "allow"),"Expected ALLOW header, but couldn't find it");
+		}
+
+		function returns_allow_header_for_put_200(){
+			local.result = apiCall("put","/echo/tunnel/12.json","");
+			debug(local.result);
+			assertEquals(200,local.result.responseHeader.status_code);
+			assertTrue(structKeyExists(local.result.responseHeader, "allow"),"Expected ALLOW header, but couldn't find it");
+		}
+
+		function returns_allow_header_for_delete_200(){
+			local.result = apiCall("delete","/echo/tunnel/12.json","");
+			debug(local.result);
+			assertEquals(200,local.result.responseHeader.status_code);
+			assertTrue(structKeyExists(local.result.responseHeader, "allow"),"Expected ALLOW header, but couldn't find it");
+		}
 	</cfscript>
 
 </cfcomponent>
