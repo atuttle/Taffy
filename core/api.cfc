@@ -396,7 +396,7 @@
 			<!--- run some checks on the default --->
 			<cfif application._taffy.settings.defaultMime eq "">
 				<cfset throwError(400, "You have not specified a default mime type") />
-			<cfelseif not structKeyExists(application._taffy.settings.mimeTypes, application._taffy.settings.defaultMime)>
+			<cfelseif not structKeyExists(application._taffy.settings.mimeExtensions, application._taffy.settings.defaultMime)>
 				<cfset throwError(400, "Your default mime type is not implemented") />
 			</cfif>
 		</cfif>
