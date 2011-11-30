@@ -177,25 +177,15 @@
 			<cfheader name="Access-Control-Allow-Origin" value="*" />
 		</cfif>
 		<!--- headers --->
-		<cfif not structIsEmpty(getGlobalHeaders())>
-			<cfset _taffyRequest.tmpHeaders = getGlobalHeaders() />
-			<cfloop collection="#_taffyRequest.tmpHeaders#" item="_taffyRequest.headerName">
-				<cfheader name="#_taffyRequest.headerName#" value="#_taffyRequest.tmpHeaders[_taffyRequest.headerName]#" />
-			</cfloop>
-		</cfif>
+		<cfset addHeaders(getGlobalHeaders()) />
 		<cfinvoke
 			component="#_taffyRequest.result#"
 			method="getHeaders"
 			returnvariable="_taffyRequest.resultHeaders"
 		/>
-		<cfif not structIsEmpty(_taffyRequest.resultHeaders)>
-			<cfloop collection="#_taffyRequest.resultHeaders#" item="_taffyRequest.headerName">
-				<cfheader name="#_taffyRequest.headerName#" value="#_taffyRequest.resultHeaders[_taffyRequest.headerName]#" />
-			</cfloop>
-			<cfset structDelete(_taffyRequest, "headerName")/>
-		</cfif>
+		<cfset addHeaders(_taffyRequest.resultHeaders) />
 
-		<!--- add ALLOW header for current resource --->
+		<!--- add ALLOW header for current resource, which describes available verbs --->
 		<cfheader name="ALLOW" value="#ucase(structKeyList(_taffyRequest.matchDetails.methods))#" />
 
 		<!--- result data --->
@@ -521,13 +511,8 @@
 		<cfargument name="statusCode" type="numeric" default="500" />
 		<cfargument name="msg" type="string" required="true" hint="message to return to api consumer" />
 		<cfargument name="headers" type="struct" required="false" default="#structNew()#" />
-		<cfset var h = '' />
 		<cfcontent reset="true" />
-		<cfif !structIsEmpty(arguments.headers)>
-			<cfloop list="#structKeyList(arguments.headers)#" index="h">
-				<cfheader name="#h#" value="#arguments.headers#" />
-			</cfloop>
-		</cfif>
+		<cfset addHeaders(arguments.headers) />
 		<cfheader statuscode="#arguments.statusCode#" statustext="#arguments.msg#" />
 		<cfabort />
 	</cffunction>
