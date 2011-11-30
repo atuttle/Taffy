@@ -520,7 +520,14 @@
 	<cffunction name="throwError" access="private" output="false" returntype="void">
 		<cfargument name="statusCode" type="numeric" default="500" />
 		<cfargument name="msg" type="string" required="true" hint="message to return to api consumer" />
+		<cfargument name="headers" type="struct" required="false" default="#structNew()#" />
+		<cfset var h = '' />
 		<cfcontent reset="true" />
+		<cfif !structIsEmpty(arguments.headers)>
+			<cfloop list="#structKeyList(arguments.headers)#" index="h">
+				<cfheader name="#h#" value="#arguments.headers#" />
+			</cfloop>
+		</cfif>
 		<cfheader statuscode="#arguments.statusCode#" statustext="#arguments.msg#" />
 		<cfabort />
 	</cffunction>
