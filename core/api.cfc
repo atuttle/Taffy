@@ -817,6 +817,16 @@
 		<cfreturn cgi.path_info />
 	</cffunction>
 
+	<cffunction name="addHeaders" access="public" output="false" returntype="void">
+		<cfargument name="headers" type="struct" required="true" />
+		<cfset var h = '' />
+		<cfif !structIsEmpty(arguments.headers)>
+			<cfloop list="#structKeyList(arguments.headers)#" index="h">
+				<cfheader name="#h#" value="#arguments.headers[h]#" />
+			</cfloop>
+		</cfif>
+	</cffunction>
+
 	<cffunction name="isUnhandledPathRequest" access="private" returntype="boolean">
 		<cfargument name="targetPath" />
 		<cfreturn REFindNoCase( "^(" & application._taffy.settings.unhandledPathsRegex & ")", arguments.targetPath ) />
