@@ -675,6 +675,11 @@
 		<cfreturn false />
 	</cffunction>
 
+	<cffunction name="isUnhandledPathRequest" access="private" returntype="boolean">
+		<cfargument name="targetPath" />
+		<cfreturn REFindNoCase( "^(" & application._taffy.settings.unhandledPathsRegex & ")", arguments.targetPath ) />
+	</cffunction>
+
 	<cffunction name="reFindNoSuck" output="false" access="private" hint="I wrote this wrapper for reFindNoCase because the way it returns matches is god awful.">
 		<cfargument name="pattern" required="true" type="string" />
 		<cfargument name="data" required="true" type="string" />
@@ -810,11 +815,6 @@
 				<cfheader name="#h#" value="#arguments.headers[h]#" />
 			</cfloop>
 		</cfif>
-	</cffunction>
-
-	<cffunction name="isUnhandledPathRequest" access="private" returntype="boolean">
-		<cfargument name="targetPath" />
-		<cfreturn REFindNoCase( "^(" & application._taffy.settings.unhandledPathsRegex & ")", arguments.targetPath ) />
 	</cffunction>
 
 </cfcomponent>
