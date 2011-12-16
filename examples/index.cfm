@@ -2,7 +2,7 @@
 <cfoutput>
 <ul>
 <cfloop query="them">
-	<cfif NOT name.startsWith('.') AND name NEQ 'WEB-INF' AND name NEQ 'Application.cfm' AND name NEQ 'Application.cfc' AND name NEQ 'index.cfm'>
+	<cfif NOT left(name, 1) eq '.' AND name NEQ 'WEB-INF' AND name NEQ 'Application.cfm' AND name NEQ 'Application.cfc' AND name NEQ 'index.cfm'>
 		<li><a href="#name#<cfif type EQ 'dir'>/</cfif>">#name#<cfif type EQ 'dir'>/</cfif></a>
 	</cfif>
 </cfloop>

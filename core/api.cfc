@@ -143,6 +143,7 @@
 
 			<!--- if the verb is not implemented, refuse the request --->
 			<cfif not structKeyExists(_taffyRequest.matchDetails.methods, _taffyRequest.verb)>
+				<cfheader name="ALLOW" value="#ucase(structKeyList(_taffyRequest.matchDetails.methods))#" />
 				<cfset throwError(405, "Method Not Allowed") />
 			</cfif>
 			<!--- returns a representation-object --->
@@ -176,23 +177,16 @@
 			<cfheader name="Access-Control-Allow-Origin" value="*" />
 		</cfif>
 		<!--- headers --->
-		<cfif not structIsEmpty(getGlobalHeaders())>
-			<cfset _taffyRequest.tmpHeaders = getGlobalHeaders() />
-			<cfloop collection="#_taffyRequest.tmpHeaders#" item="_taffyRequest.headerName">
-				<cfheader name="#_taffyRequest.headerName#" value="#_taffyRequest.tmpHeaders[_taffyRequest.headerName]#" />
-			</cfloop>
-		</cfif>
+		<cfset addHeaders(getGlobalHeaders()) />
 		<cfinvoke
 			component="#_taffyRequest.result#"
 			method="getHeaders"
 			returnvariable="_taffyRequest.resultHeaders"
 		/>
-		<cfif not structIsEmpty(_taffyRequest.resultHeaders)>
-			<cfloop collection="#_taffyRequest.resultHeaders#" item="_taffyRequest.headerName">
-				<cfheader name="#_taffyRequest.headerName#" value="#_taffyRequest.resultHeaders[_taffyRequest.headerName]#" />
-			</cfloop>
-			<cfset structDelete(_taffyRequest, "headerName")/>
-		</cfif>
+		<cfset addHeaders(_taffyRequest.resultHeaders) />
+
+		<!--- add ALLOW header for current resource, which describes available verbs --->
+		<cfheader name="ALLOW" value="#ucase(structKeyList(_taffyRequest.matchDetails.methods))#" />
 
 		<!--- result data --->
 		<cfset _taffyRequest.resultType = _taffyRequest.result.getType() />
@@ -290,7 +284,7 @@
 		<!--- automatically introspect mime types from cfc metadata of default representation class --->
 		<cfset inspectMimeTypes(application._taffy.settings.defaultRepresentationClass) />
 		<!--- check to make sure a default mime type is set --->
-		<cfif application._taffy.settings.defaultMime eq "DoesNotExist">
+		<cfif application._taffy.settings.defaultMime eq "">
 			<cfset throwError(400, "You have not specified a default mime type!") />
 		</cfif>
 	</cffunction>
@@ -306,7 +300,7 @@
 
 		<!--- attempt to find the cfc for the requested uri --->
 		<cfset requestObj.matchingRegex = matchURI(getPath()) />
-		
+
 		<!--- uri doesn't map to any known resources --->
 		<cfif not len(requestObj.matchingRegex)>
 			<cfset throwError(404, "Not Found") />
@@ -314,7 +308,7 @@
 
 		<!--- get the cfc name and token array for the matching regex --->
 		<cfset requestObj.matchDetails = application._taffy.endpoints[requestObj.matchingRegex] />
-		
+
 		<!--- which verb is requested? --->
 		<cfset requestObj.verb = cgi.request_method />
 
@@ -383,25 +377,17 @@
 		<!--- use requested mime type or the default --->
 		<cfset requestObj.returnMimeExt = "" />
 		<cfif structKeyExists(requestObj.requestArguments, "_taffy_mime")>
-			<cfset requestObj.returnMimeExt = requestObj.requestArguments["_taffy_mime"] />
+			<cfset requestObj.returnMimeExt = requestObj.requestArguments._taffy_mime />
 			<cfset structDelete(requestObj.requestArguments, "_taffy_mime") />
-		</cfif>
-		<!--- if an "accept" header is provided, it takes precedence over url mime --->
-		<cfif structKeyExists(cgi, "http_accept") and len(cgi.http_accept)>
-			<cfloop list="#cgi.HTTP_ACCEPT#" index="tmp">
-				<!--- deal with that q=0 stuff (just ignore it) --->
-				<cfif listLen(tmp, ";") gt 1>
-					<cfset tmp = listFirst(tmp, ";") />
-				</cfif>
-				<cfif structKeyExists(application._taffy.settings.mimeTypes, tmp)>
-					<cfset requestObj.returnMimeExt = application._taffy.settings.mimeTypes[tmp] />
-				</cfif>
-			</cfloop>
-		</cfif>
-		<cfif requestObj.returnMimeExt eq "">
-			<!--- no mime at all specified, go with taffy default --->
-			<cfif application._taffy.settings.defaultMime eq "DoesNotExist">
-				<cfset throwError(400, "You have not specified a default mime type!") />
+			<cfif not structKeyExists(application._taffy.settings.mimeExtensions, requestObj.returnMimeExt)>
+				<cfset throwError(400, "Requested mime type is not supported") />
+			</cfif>
+		<cfelse>
+			<!--- run some checks on the default --->
+			<cfif application._taffy.settings.defaultMime eq "">
+				<cfset throwError(400, "You have not specified a default mime type") />
+			<cfelseif not structKeyExists(application._taffy.settings.mimeExtensions, application._taffy.settings.defaultMime)>
+				<cfset throwError(400, "Your default mime type is not implemented") />
 			</cfif>
 			<cfset requestObj.returnMimeExt = application._taffy.settings.defaultMime />
 		</cfif>
@@ -464,6 +450,7 @@
 		<cfargument name="headers" type="struct" required="true" hint="any headers included in the request" />
 
 		<cfset var local = StructNew() />
+		<cfset var tmp = "" />
 		<cfset local.returnData = StructNew() /><!--- this will be used as an argumentCollection for the method that ultimately gets called --->
 
 		<!--- parse path_info data into key-value pairs --->
@@ -484,9 +471,26 @@
 			</cfif>
 		</cfloop>
 		<!--- if a mime type is requested as part of the url ("whatever.json"), then extract that so taffy can use it --->
+<<<<<<< HEAD
 		<cfif listlen(arguments.uri,".") gt 1>
+=======
+		<cfif listLen(arguments.uri,".") gt 1>
+>>>>>>> 1.1-rc
 			<cfset local.mime = listLast(arguments.uri, ".") />
 			<cfset local.returnData["_taffy_mime"] = local.mime />
+			<cfheader name="x-deprecation-warning" value="Specifying return format as '.#local.mime#' is deprecated. Please use the HTTP Accept header when possible." />
+		</cfif>
+		<cfif structKeyExists(cgi, "http_accept") and len(cgi.http_accept)>
+			<cfloop list="#cgi.HTTP_ACCEPT#" index="tmp">
+				<!--- deal with that q=0 stuff (just ignore it) --->
+				<cfif listLen(tmp, ";") gt 1>
+					<cfset tmp = listFirst(tmp, ";") />
+				</cfif>
+				<cfif structKeyExists(application._taffy.settings.mimeTypes, tmp)>
+					<cfset local.returnData["_taffy_mime"] = application._taffy.settings.mimeTypes[tmp] />
+					<cfbreak /><!--- exit loop --->
+				</cfif>
+			</cfloop>
 		</cfif>
 		<!--- return --->
 		<cfreturn local.returnData />
@@ -511,7 +515,9 @@
 	<cffunction name="throwError" access="private" output="false" returntype="void">
 		<cfargument name="statusCode" type="numeric" default="500" />
 		<cfargument name="msg" type="string" required="true" hint="message to return to api consumer" />
+		<cfargument name="headers" type="struct" required="false" default="#structNew()#" />
 		<cfcontent reset="true" />
+		<cfset addHeaders(arguments.headers) />
 		<cfheader statuscode="#arguments.statusCode#" statustext="#arguments.msg#" />
 		<cfabort />
 	</cffunction>
@@ -529,7 +535,7 @@
 			<cfelseif structKeyExists(local.cfcMetadata, "taffy:uri")>
 				<cfset local.uri = local.cfcMetadata["taffy:uri"] />
 			</cfif>
-			
+
 			<cfif structKeyExists(local.cfcMetaData, "taffy:aopbean")>
 				<cfset local.cachedBeanName = local.cfcMetaData["taffy:aopbean"] />
 			<cfelseif structKeyExists(local.cfcMetaData, "taffy_aopbean")>
@@ -537,7 +543,7 @@
 			<cfelse>
 				<cfset local.cachedBeanName = local.beanName />
 			</cfif>
-			
+
 			<!--- if it doesn't have a uri, then it's not a resource --->
 			<cfif len(local.uri)>
 				<cfset local.metaInfo = convertURItoRegex(local.uri) />
@@ -674,6 +680,11 @@
 		<cfreturn false />
 	</cffunction>
 
+	<cffunction name="isUnhandledPathRequest" access="private" returntype="boolean">
+		<cfargument name="targetPath" />
+		<cfreturn REFindNoCase( "^(" & application._taffy.settings.unhandledPathsRegex & ")", arguments.targetPath ) />
+	</cffunction>
+
 	<cffunction name="reFindNoSuck" output="false" access="private" hint="I wrote this wrapper for reFindNoCase because the way it returns matches is god awful.">
 		<cfargument name="pattern" required="true" type="string" />
 		<cfargument name="data" required="true" type="string" />
@@ -706,7 +717,7 @@
 		<cfset application._taffy.externalBeanFactory = arguments.beanFactory />
 		<cfset application._taffy.status.externalBeanFactoryUsed = true />
 	</cffunction>
-	
+
 	<cffunction name="getBeanFactory" access="public" output="false">
 		<cfreturn application._taffy.factory />
 	</cffunction>
@@ -752,7 +763,7 @@
 		<cfset application._taffy.settings.mimeExtensions[arguments.extension] = arguments.mimeType />
 		<cfset application._taffy.settings.mimeTypes[arguments.mimeType] = arguments.extension />
 	</cffunction>
-	
+
 	<cffunction name="registerExtensionRepresentation" access="public" output="false" returntype="void">
 		<cfargument name="extensionList" type="string" required="true" hint="ex: json" />
 		<cfargument name="representation" type="string" required="true" hint="ex: cfc.SomeRep" />
@@ -760,7 +771,6 @@
 			<cfset application._taffy.settings.extensionRepresentations["#ListGetAt(arguments.extensionList,i)#"] = arguments.representation />
 		</cfloop>
 	</cffunction>
-	
 
 	<cffunction name="setDefaultRepresentationClass" access="public" output="false" returnType="void" hint="Override the global default representation object with a custom class">
 		<cfargument name="customClassDotPath" type="string" required="true" hint="Dot-notation path to your custom class to use as the default" />
@@ -802,9 +812,14 @@
 		<cfreturn cgi.path_info />
 	</cffunction>
 
-	<cffunction name="isUnhandledPathRequest" access="private" returntype="boolean">
-		<cfargument name="targetPath" />
-		<cfreturn REFindNoCase( "^(" & application._taffy.settings.unhandledPathsRegex & ")", arguments.targetPath ) />
+	<cffunction name="addHeaders" access="public" output="false" returntype="void">
+		<cfargument name="headers" type="struct" required="true" />
+		<cfset var h = '' />
+		<cfif !structIsEmpty(arguments.headers)>
+			<cfloop list="#structKeyList(arguments.headers)#" index="h">
+				<cfheader name="#h#" value="#arguments.headers[h]#" />
+			</cfloop>
+		</cfif>
 	</cffunction>
 
 </cfcomponent>

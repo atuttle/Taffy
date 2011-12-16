@@ -137,12 +137,25 @@
 			local.result = apiCall("get", "/echo/2", "foo=bar");
 			debug(local.result);
 			assertEquals(400, local.result.responseHeader.status_code);
+			assertEquals("Your default mime type is not implemented", local.result.responseHeader.explanation);
 		}
 
 		function returns_error_when_requested_mime_not_supported(){
-			local.result = apiCall("get","/echo/2.negatory","foo=bar");
+			variables.taffy.setDefaultMime("application/json");
+			local.result = apiCall ("get","/echo/2.negatory","foo=bar");
 			debug(local.result);
 			assertEquals(400, local.result.responseHeader.status_code);
+			assertEquals("Requested mime type is not supported", local.result.responseHeader.explanation);
+		}
+
+		function accept_header_takes_precedence_over_extension(){
+			variables.taffy.setDefaultMime("application/yml");
+			local.headers = structNew();
+			local.headers["Accept"] = "text/json";
+			local.result = apiCall ("get","/echo/2.xml","foo=bar",local.headers);
+			debug(local.result);
+			assertEquals(999, local.result.responseHeader.status_code);
+			assertTrue(isJson(local.result.fileContent));
 		}
 
 		function allows_email_as_final_url_value(){
@@ -272,6 +285,41 @@
 			);
 
 			assertEquals("", returnedArguments["keyTwo"]);
+		}
+
+		function returns_allow_header_for_405(){
+			local.result = apiCall("delete","/echo/12.json","");
+			debug(local.result);
+			assertEquals(405,local.result.responseHeader.status_code);
+			assertTrue(structKeyExists(local.result.responseHeader, "allow"),"Expected ALLOW header, but couldn't find it");
+		}
+
+		function returns_allow_header_for_get_200(){
+			local.result = apiCall("get","/echo/tunnel/12.json","");
+			debug(local.result);
+			assertEquals(200,local.result.responseHeader.status_code);
+			assertTrue(structKeyExists(local.result.responseHeader, "allow"),"Expected ALLOW header, but couldn't find it");
+		}
+
+		function returns_allow_header_for_post_201(){
+			local.result = apiCall("post","/echo/tunnel/12.json","");
+			debug(local.result);
+			assertEquals(201,local.result.responseHeader.status_code);
+			assertTrue(structKeyExists(local.result.responseHeader, "allow"),"Expected ALLOW header, but couldn't find it");
+		}
+
+		function returns_allow_header_for_put_200(){
+			local.result = apiCall("put","/echo/tunnel/12.json","");
+			debug(local.result);
+			assertEquals(200,local.result.responseHeader.status_code);
+			assertTrue(structKeyExists(local.result.responseHeader, "allow"),"Expected ALLOW header, but couldn't find it");
+		}
+
+		function returns_allow_header_for_delete_200(){
+			local.result = apiCall("delete","/echo/tunnel/12.json","");
+			debug(local.result);
+			assertEquals(200,local.result.responseHeader.status_code);
+			assertTrue(structKeyExists(local.result.responseHeader, "allow"),"Expected ALLOW header, but couldn't find it");
 		}
 	</cfscript>
 
