@@ -53,6 +53,7 @@
 		$.ajax({
 			type: verb,
 			url: url,
+			cache: false,
 			data: representation,
 			contentType: dType,
 			success: function(data, status, xhr){
