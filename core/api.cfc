@@ -30,12 +30,16 @@
 	<cffunction name="onRequestStart">
 		<cfargument name="targetPath" />
 		<!--- this will probably happen if taffy is sharing an app name with an existing application so that you can use its application context --->
+		<cfset var do_restart = false />
 		<cfif not structKeyExists(application, "_taffy")>
-			<cfset onApplicationStart() />
+			<cfset do_restart = true />
 		</cfif>
 		<!--- allow reloading --->
 		<cfif structKeyExists(url, application._taffy.settings.reloadKey) and url[application._taffy.settings.reloadKey] eq application._taffy.settings.reloadPassword>
-			<cfset setupFramework() />
+			<cfset do_restart = true />
+		</cfif>
+		<cfif do_restart>
+			<cfset onApplicationStart()/>
 		</cfif>
 		<!--- allow pass-thru for selected paths --->
 		<cfif REFindNoCase( "^(" & application._taffy.settings.unhandledPathsRegex & ")", arguments.targetPath )>
