@@ -552,7 +552,7 @@
 				<cfset application._taffy.endpoints[local.metaInfo.uriRegex] = { beanName = local.cachedBeanName, tokens = local.metaInfo.tokens, methods = structNew(), srcURI = local.uri } />
 				<cfif structKeyExists(local.cfcMetadata, "functions")>
 					<cfloop array="#local.cfcMetadata.functions#" index="local.f">
-						<cfif local.f.name eq "get" or local.f.name eq "post" or local.f.name eq "put" or local.f.name eq "delete">
+						<cfif local.f.name eq "get" or local.f.name eq "post" or local.f.name eq "put" or local.f.name eq "delete" or local.f.name eq "head" or local.f.name eq "options">
 							<cfset application._taffy.endpoints[local.metaInfo.uriRegex].methods[local.f.name] = local.f.name />
 
 						<!--- also support future/misc verbs via metadata --->
