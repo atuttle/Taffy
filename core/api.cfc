@@ -230,6 +230,7 @@
 	<!--- internal methods --->
 	<cffunction name="setupFramework" access="private" output="false" returntype="void">
 		<cfset var local = structNew() />
+		<cfheader name="X-TAFFY-RELOAD" value="true" />
 		<cfset application._taffy = structNew() />
 		<cfset application._taffy.endpoints = structNew() />
 		<!--- default settings --->
