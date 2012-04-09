@@ -495,6 +495,9 @@
 	<cffunction name="guessResourcesPath" access="private" output="false" returntype="string" hint="used to try and figure out the absolute path of the /resources folder even though this file may not be in the web root">
 		<cfset local.indexcfmpath = cgi.script_name />
 		<cfset local.resourcesPath = listDeleteAt(local.indexcfmpath, listLen(local.indexcfmpath, "/"), "/") & "/resources" />
+                <cfif GetContextRoot() NEQ "">
+                        <cfset local.resourcesPath = ReReplace(local.resourcesPath,"^#GetContextRoot()#","")>
+                </cfif>
 		<cfreturn local.resourcesPath />
 	</cffunction>
 
