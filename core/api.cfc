@@ -171,7 +171,7 @@
 		/>
 
 		<cfsetting enablecfoutputonly="true" />
-		<cfcontent reset="true" type="#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#" />
+		<cfcontent reset="true" type="#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#; charset=utf-8" />
 		<cfheader statuscode="#_taffyRequest.statusArgs.statusCode#" statustext="#_taffyRequest.statusArgs.statusText#" />
 		<cfif application._taffy.settings.allowCrossDomain>
 			<cfheader name="Access-Control-Allow-Origin" value="*" />
@@ -230,6 +230,7 @@
 	<!--- internal methods --->
 	<cffunction name="setupFramework" access="private" output="false" returntype="void">
 		<cfset var local = structNew() />
+		<cfheader name="X-TAFFY-RELOAD" value="true" />
 		<cfset application._taffy = structNew() />
 		<cfset application._taffy.endpoints = structNew() />
 		<!--- default settings --->
@@ -499,6 +500,9 @@
 	<cffunction name="guessResourcesPath" access="private" output="false" returntype="string" hint="used to try and figure out the absolute path of the /resources folder even though this file may not be in the web root">
 		<cfset local.indexcfmpath = cgi.script_name />
 		<cfset local.resourcesPath = listDeleteAt(local.indexcfmpath, listLen(local.indexcfmpath, "/"), "/") & "/resources" />
+                <cfif GetContextRoot() NEQ "">
+                        <cfset local.resourcesPath = ReReplace(local.resourcesPath,"^#GetContextRoot()#","")>
+                </cfif>
 		<cfreturn local.resourcesPath />
 	</cffunction>
 
@@ -555,17 +559,19 @@
 					/>
 				</cfif>
 				<cfset application._taffy.endpoints[local.metaInfo.uriRegex] = { beanName = local.cachedBeanName, tokens = local.metaInfo.tokens, methods = structNew(), srcURI = local.uri } />
-				<cfloop array="#local.cfcMetadata.functions#" index="local.f">
-					<cfif local.f.name eq "get" or local.f.name eq "post" or local.f.name eq "put" or local.f.name eq "delete">
-						<cfset application._taffy.endpoints[local.metaInfo.uriRegex].methods[local.f.name] = local.f.name />
+				<cfif structKeyExists(local.cfcMetadata, "functions")>
+					<cfloop array="#local.cfcMetadata.functions#" index="local.f">
+						<cfif local.f.name eq "get" or local.f.name eq "post" or local.f.name eq "put" or local.f.name eq "delete" or local.f.name eq "head" or local.f.name eq "options">
+							<cfset application._taffy.endpoints[local.metaInfo.uriRegex].methods[local.f.name] = local.f.name />
 
-					<!--- also support future/misc verbs via metadata --->
-					<cfelseif structKeyExists(local.f,"taffy:verb")>
-						<cfset  application._taffy.endpoints[local.metaInfo.uriRegex].methods[local.f["taffy:verb"]] = local.f.name />
-					<cfelseif structKeyExists(local.f,"taffy_verb")>
-						<cfset  application._taffy.endpoints[local.metaInfo.uriRegex].methods[local.f["taffy_verb"]] = local.f.name />
-					</cfif>
-				</cfloop>
+						<!--- also support future/misc verbs via metadata --->
+						<cfelseif structKeyExists(local.f,"taffy:verb")>
+							<cfset  application._taffy.endpoints[local.metaInfo.uriRegex].methods[local.f["taffy:verb"]] = local.f.name />
+						<cfelseif structKeyExists(local.f,"taffy_verb")>
+							<cfset  application._taffy.endpoints[local.metaInfo.uriRegex].methods[local.f["taffy_verb"]] = local.f.name />
+						</cfif>
+					</cfloop>
+				</cfif>
 			</cfif>
 		</cfloop>
 	</cffunction>

@@ -43,7 +43,11 @@
 
 <script type="text/javascript">
 	function submitRequest( verb, resource, representation ){
-		var endpoint = 'http://<cfoutput>#cgi.server_name#<cfif cgi.SERVER_PORT neq 80>:#cgi.SERVER_PORT#</cfif>#cgi.SCRIPT_NAME#</cfoutput>';
+		var endpoint = window.location.protocol + '//<cfoutput>#cgi.server_name#</cfoutput>';
+		if (window.location.port != 80){
+			endpoint += ':' + window.location.port;
+		}
+		endpoint += '<cfoutput>#cgi.SCRIPT_NAME#</cfoutput>';
 		var url = endpoint + resource;
 		var dType = null;
 		if (representation && representation.indexOf("{") == 0){
@@ -53,6 +57,7 @@
 		$.ajax({
 			type: verb,
 			url: url,
+			cache: false,
 			data: representation,
 			contentType: dType,
 			success: function(data, status, xhr){
