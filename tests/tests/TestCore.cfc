@@ -165,7 +165,7 @@
 			local.headers.Accept = "text/json";
 			local.result = apiCall("get", "/echo/test@example.com", "", local.headers);
 			debug(local.result);
-			assertEquals(200, local.result.responseHeader.status_code);
+			assertEquals(999, local.result.responseHeader.status_code);
 			local.oResult = deserializeJson(local.result.fileContent);
 			assertEquals("test@example.com", local.oResult.id);
 		}
