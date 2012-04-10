@@ -472,11 +472,7 @@
 			</cfif>
 		</cfloop>
 		<!--- if a mime type is requested as part of the url ("whatever.json"), then extract that so taffy can use it --->
-<<<<<<< HEAD
 		<cfif listlen(arguments.uri,".") gt 1>
-=======
-		<cfif listLen(arguments.uri,".") gt 1>
->>>>>>> 1.1-rc
 			<cfset local.mime = listLast(arguments.uri, ".") />
 			<cfset local.returnData["_taffy_mime"] = local.mime />
 			<cfheader name="x-deprecation-warning" value="Specifying return format as '.#local.mime#' is deprecated. Please use the HTTP Accept header when possible." />
