@@ -433,7 +433,7 @@
 		<cfreturn "" />
 	</cffunction>
 
-	<cffunction name="getRequestBody" access="private" output="false" returntype="String" hint="Gets request body data, which CF doesn't do automatically for some verbs">
+	<cffunction name="getRequestBody" access="private" output="false" hint="Gets request body data, which CF doesn't do automatically for some verbs">
 		<!--- Special thanks to Jason Dean (@JasonPDean) and Ray Camden (@ColdFusionJedi) who helped me figure out how to do this --->
 		<cfset var body = getHTTPRequestData().content />
 		<!--- on input with content-type "application/json" CF seems to expose it as binary data. Here we convert it back to plain text --->
