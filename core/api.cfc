@@ -781,7 +781,7 @@
 
 	<cffunction name="newRepresentation" access="public" output="false">
 		<cfargument name="class" type="string" default="#application._taffy.settings.defaultRepresentationClass#" />
-		<cfif application._taffy.factory.beanExists(arguments.class)>
+		<cfif application._taffy.factory.containsBean(arguments.class)>
 			<cfreturn application._taffy.factory.getBean(arguments.class) />
 		<cfelse>
 			<cfreturn createObject("component", arguments.class) />
