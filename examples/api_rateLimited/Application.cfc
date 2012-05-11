@@ -1,6 +1,6 @@
 <cfcomponent extends="taffy.core.api">
 	<cfscript>
-		this.name = hash(getCurrentTemplatePath());
+		this.name = "rate_limiting_example";
 
 		function applicationStartEvent(){
 			application.accessLog = queryNew('apiKey,accessTime','varchar,time');
@@ -13,7 +13,7 @@
 
 			//require some api key
 			if (!structKeyExists(requestArguments, "apiKey")){
-				return newRepresentation().noData().withStatus(401);
+				return newRepresentation().noData().withStatus(401, "API Key Required");
 			}
 
 			//check usage
@@ -27,7 +27,6 @@
 
 			return true;
 		}
-
 	</cfscript>
 
 	<cffunction name="getAccessRate" access="private" output="false">
@@ -60,9 +59,9 @@
 	<cffunction name="pruneAccessLog" access="private" output="false">
 		<cflock timeout="10" type="readonly" name="logging">
 			<cfquery name="application.accessLog" dbtype="query">
-				select *
+				delete
 				from application.accessLog
-				where accessTime > <cfqueryparam cfsqltype="cf_sql_timestamp" value="#dateAdd("s",(-1 * application.accessPeriod),now())#" />
+				where accessTime < <cfqueryparam cfsqltype="cf_sql_timestamp" value="#dateAdd("s",(-1 * application.accessPeriod),now())#" />
 			</cfquery>
 		</cflock>
 	</cffunction>
