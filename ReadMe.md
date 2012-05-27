@@ -4,13 +4,15 @@ Taffy is a ColdFusion framework that helps you build RESTful web services with v
 
 ## Documentation
 
-Documentation is provided via [the wiki](https://github.com/atuttle/Taffy/wiki).
+Documentation is provided via [the wiki][3].
+
+### You can contribute to the documentation
+
+If you would like to contribute to [the wiki][3] documentation, [please read this blog post][2]. If you still have questions, [ask them on our mailing list][1]. :)
 
 ## Community
 
-In addition to this GitHub project, we have [a mailing list for Taffy Users][1]. Feel free to ask for help, discuss potential bugs, and share new ideas there.
-
-We're currently looking for users with production Railo setups to help test and refactor Taffy to be 100% Railo compatible.
+We have [a mailing list for Taffy Users][1]. Feel free to ask for help, discuss potential bugs, and share new ideas there.
 
 ## Open Source!
 
@@ -30,6 +32,8 @@ Part of the beauty of open source is that _you can affect change_. You can help 
 
 **What does that mean?**
 
-It means you can use Taffy pretty much any way you like. You can fork it. You can include it in a proprietary product, sell it, and not give us a dime. Pretty much the only thing you can't do is hold us accountable if anything goes wrong.
+It means you can use Taffy pretty much any way you like. You can fork it. You can include it in a proprietary product, sell it, and not give us a dime. (Legal, if a bit rude.) Pretty much the only thing you can't do is hold us accountable if anything goes wrong.
 
 [1]:https://groups.google.com/forum/#!forum/taffy-users
+[2]:http://fusiongrokker.com/post/how-you-can-contribute-to-taffy-documentation
+[3]:https://github.com/atuttle/Taffy/wiki/_pages
