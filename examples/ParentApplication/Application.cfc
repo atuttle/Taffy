@@ -9,23 +9,15 @@
 	</cfscript>
 
 	<cffunction name="onApplicationStart" returnType="boolean" output="false">
-
-		<cfset application.beanFactory = createObject("component", "coldspring.beans.DefaultXMLBeanFactory") />
-		<cfset application.beanFactory.loadBeans('/taffy/examples/ParentApplication/config/coldspring.xml') />
-
-		<cfparam name="application.parentInit" default="true" />
-
+		<cfinclude template="mixin/appInit.cfm" />
 		<cfreturn true />
 	</cffunction>
 
 	<cffunction name="onRequestStart" returnType="boolean" output="false">
 		<cfargument name="thePage" type="string" required="true" />
 
-		<!--- if the PARENT application has not been initialized, or if user is requesting reinit... --->
-		<cfif
-			not structKeyExists(application, "parentInit")
-			or structKeyExists(url, "reinit")>
-				<cfset onApplicationStart() />
+		<cfif structKeyExists(url, "reinit")>
+			<cfset onApplicationStart() />
 		</cfif>
 
 		<cfreturn true />
