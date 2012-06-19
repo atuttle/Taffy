@@ -70,7 +70,7 @@
 				<cfset root = exception />
 			</cfif>
 			<cfsetting enablecfoutputonly="true" showdebugoutput="false" />
-			<cfcontent reset="true" type="application/json" />
+			<cfcontent reset="true" type="application/json; charset=utf-8" />
 			<cfif structKeyExists(root, "message")>
 				<cfset data.error = root.message />
 			</cfif>
@@ -83,7 +83,7 @@
 			<cfoutput>#serializeJson(data)#</cfoutput>
 			<cfheader statuscode="500" statustext="Error" />
 			<cfcatch>
-				<cfcontent reset="true" type="text/plain" />
+				<cfcontent reset="true" type="text/plain; charset=utf-8" />
 				<cfoutput>An unhandled exception occurred: <cfif structKeyExists(root,"message")>#root.message#</cfif> <cfif structKeyExists(root,"detail")>-- #root.detail#</cfif></cfoutput>
 			</cfcatch>
 		</cftry>
@@ -198,7 +198,7 @@
 				method="getAs#_taffyRequest.returnMimeExt#"
 				returnvariable="_taffyRequest.resultSerialized"
 			/>
-			<cfcontent reset="true" type="#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#" />
+			<cfcontent reset="true" type="#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#; charset=utf-8" />
 			<cfif _taffyRequest.resultSerialized neq ('"' & '"')>
 				<cfoutput>#_taffyRequest.resultSerialized#</cfoutput>
 			</cfif>
