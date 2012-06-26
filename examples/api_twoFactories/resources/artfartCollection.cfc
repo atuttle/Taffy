@@ -1,7 +1,7 @@
 <cfcomponent extends="taffy.core.resource" taffy_uri="/artfarts">
 
 	<cffunction name="get" access="public" output="false">
-		<cfreturn representationOf(variables.fakeData.getData()).withStatus(200) />
+		<cfreturn representationOf(variables.fakeData.getData()) />
 	</cffunction>
 
 	<!--- this will be called by the bean factory's autowire functionality --->

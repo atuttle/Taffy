@@ -5,11 +5,11 @@
 		<cfargument name="uri" type="string"/>
 		<cfargument name="query" type="string"/>
 		<cfargument name="headers" type="struct" default="#structNew()#" />
-		
+
 		<cfset var local = structNew() />
-		
+
 		<cfif lcase(arguments.method) eq "put" or lcase(arguments.method) eq "post">
-			<cfhttp method="#arguments.method#" url="http://localhost/taffy/tests/index.cfm#arguments.uri#" result="local.result" charset="utf-8">
+			<cfhttp method="#arguments.method#" url="http://#CGI.SERVER_NAME#:#CGI.SERVER_PORT#/taffy/tests/index.cfm#arguments.uri#" result="local.result" charset="utf-8">
 				<cfif isJson(query)>
 					<cfhttpparam type="header" name="Content-Type" value="text/json" />
 				<cfelse>
@@ -23,7 +23,12 @@
 				</cfloop>
 			</cfhttp>
 		<cfelse>
-			<cfhttp method="#arguments.method#" url="http://localhost/taffy/tests/index.cfm#arguments.uri#?#arguments.query#" result="local.result"/>
+			<cfhttp method="#arguments.method#" url="http://#CGI.SERVER_NAME#:#CGI.SERVER_PORT#/taffy/tests/index.cfm#arguments.uri#?#arguments.query#" result="local.result">
+				<!--- Add arbitrary headers to request --->
+				<cfloop item="local.header" collection="#arguments.headers#">
+					<cfhttpparam type="header" name="#local.header#" value="#arguments.headers[local.header]#" />
+				</cfloop>
+			</cfhttp>
 		</cfif>
 		<cfreturn local.result />
 	</cffunction>

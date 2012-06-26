@@ -1,0 +1,6 @@
+RewriteEngine On
+
+#if we've already been rewritten to use index.cfm/* format, don't make a circular request
+RewriteRule ^(index\.cfm[/.]?+|images/.*) - [L]
+
+RewriteRule ^(.*)$ index.cfm/$1
