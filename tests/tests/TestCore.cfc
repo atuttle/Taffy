@@ -321,6 +321,15 @@
 			assertEquals(200,local.result.responseHeader.status_code);
 			assertTrue(structKeyExists(local.result.responseHeader, "allow"),"Expected ALLOW header, but couldn't find it");
 		}
+
+		function can_pass_data_from_onTaffyRequest_to_resource(){
+			local.result = apiCall("get", "/echo/dude.json", "hulk=smash");
+			debug(local.result);
+			local.body = deserializeJSON(local.result.fileContent);
+			assertTrue(structKeyExists(local.body, "dataFromOTR"));
+			assertTrue(local.body.dataFromOTR eq "who let the hulk out?!");
+		}
+
 	</cfscript>
 
 </cfcomponent>

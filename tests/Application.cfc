@@ -17,6 +17,11 @@
 		}
 
 		function onTaffyRequest(verb, cfc, requestArguments, mimeExt, headers) {
+			//pass data into a resource by modifying requestArguments
+			if (structKeyExists(arguments.requestArguments, "hulk") and arguments.requestArguments.hulk eq "smash"){
+				arguments.requestArguments.dataFromOTR = "who let the hulk out?!";
+			}
+
 			if (structKeyExists(arguments.requestArguments, "refuse") and arguments.requestArguments.refuse)
 			{
 				return newRepresentation().withStatus(405);
