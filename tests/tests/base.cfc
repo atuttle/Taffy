@@ -9,6 +9,8 @@
 		<cfset var local = structNew() />
 
 		<cfif lcase(arguments.method) eq "put" or lcase(arguments.method) eq "post">
+			<!--- always reload the api before making a request --->
+			<cfhttp method="GET" url="http://#CGI.SERVER_NAME#:#CGI.SERVER_PORT#/taffy/tests/index.cfm/dashboard?reload=true" />
 			<cfhttp method="#arguments.method#" url="http://#CGI.SERVER_NAME#:#CGI.SERVER_PORT#/taffy/tests/index.cfm#arguments.uri#" result="local.result" charset="utf-8">
 				<cfif isJson(query)>
 					<cfhttpparam type="header" name="Content-Type" value="text/json" />
