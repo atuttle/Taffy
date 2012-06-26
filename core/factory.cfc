@@ -35,9 +35,19 @@
 		<!--- get list of beans to load --->
 		<cfdirectory action="list" directory="#arguments.beanPath#" filter="*.cfc" name="local.beanQuery" />
 		<!--- cache all of the beans --->
+		<cfset application._taffy.status.skippedResources = arrayNew(1) /> <!--- empty out the array on factory reloads --->
 		<cfloop query="local.beanQuery">
 			<cfset local.beanName = left(local.beanQuery.name, len(local.beanQuery.name)-4) /><!--- drop the ".cfc" --->
-			<cfset this.beans[local.beanName] = createObject("component", arguments.resourcesPath & "." & local.beanName) />
+			<cftry>
+				<cfset this.beans[local.beanName] = createObject("component", arguments.resourcesPath & "." & local.beanName) />
+				<cfcatch>
+					<!--- skip cfc's with errors, but save info about them for display in the dashboard --->
+					<cfset local.err = structNew() />
+					<cfset local.err.resource = local.beanName />
+					<cfset local.err.exception = cfcatch />
+					<cfset arrayAppend(application._taffy.status.skippedResources, local.err) />
+				</cfcatch>
+			</cftry>
 		</cfloop>
 		<!--- resolve dependencies --->
 		<cfloop list="#structKeyList(this.beans)#" index="local.b">
