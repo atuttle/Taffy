@@ -299,8 +299,15 @@
 					Actual desired method will be contained in a special header --->
  		<cfset var httpMethodOverride = GetPageContext().getRequest().getHeader("X-HTTP-Method-Override") />
 
+ 		<!--- check for format in the URI --->
+ 		<cfset requestObj.uri = getPath() />
+ 		<cfset requestObj.uriFormat = formatFromURI(requestObj.uri) />
+ 		<cfif requestObj.uriFormat neq "">
+ 			<cfset requestObj.uri = left(requestObj.uri, len(requestObj.uri) - len(requestObj.uriFormat) - 1) />
+ 		</cfif>
+
 		<!--- attempt to find the cfc for the requested uri --->
-		<cfset requestObj.matchingRegex = matchURI(getPath()) />
+		<cfset requestObj.matchingRegex = matchURI(requestObj.uri) />
 
 		<!--- uri doesn't map to any known resources --->
 		<cfif not len(requestObj.matchingRegex)>
@@ -364,7 +371,7 @@
 		<cfset requestObj.requestArguments = buildRequestArguments(
 			requestObj.matchingRegex,
 			requestObj.matchDetails.tokens,
-			getPath(),
+			requestObj.uri,
 			requestObj.queryString,
 			requestObj.headers
 		) />
@@ -379,10 +386,13 @@
 		<cfset requestObj.returnMimeExt = "" />
 		<cfif structKeyExists(requestObj.requestArguments, "_taffy_mime")>
 			<cfset requestObj.returnMimeExt = requestObj.requestArguments._taffy_mime />
-			<cfset structDelete(requestObj.requestArguments, "_taffy_mime") />
-			<cfif not structKeyExists(application._taffy.settings.mimeExtensions, requestObj.returnMimeExt)>
-				<cfset throwError(400, "Requested mime type is not supported") />
+			<cfif not structKeyExists(application._taffy.settings.mimeTypes, requestObj.returnMimeExt)>
+				<cfset throwError(400, "Requested mime type is not supported (#requestObj.returnMimeExt#)") />
+			<cfelse>
+				<cfset requestObj.returnMimeExt = application._taffy.settings.mimeTypes[requestObj.returnMimeExt] />
 			</cfif>
+		<cfelseif requestObj.uriFormat neq "">
+			<cfset requestObj.returnMimeExt = requestObj.uriFormat />
 		<cfelse>
 			<!--- run some checks on the default --->
 			<cfif application._taffy.settings.defaultMime eq "">
@@ -392,30 +402,50 @@
 			</cfif>
 			<cfset requestObj.returnMimeExt = application._taffy.settings.defaultMime />
 		</cfif>
+		<cfset structDelete(requestObj.requestArguments, "_taffy_mime") />
 		<cfreturn requestObj />
+	</cffunction>
+
+	<cffunction name="formatFromURI" access="private" output="false">
+		<cfargument name="uri" />
+		<cfset var local = structNew() />
+		<cfloop collection="#application._taffy.settings.mimeExtensions#" item="local.mime">
+			<cfif right(arguments.uri, len(local.mime)+1) eq "." & local.mime>
+				<cfreturn local.mime />
+			</cfif>
+		</cfloop>
+		<cfreturn "" />
 	</cffunction>
 
 	<cffunction name="convertURItoRegex" access="private" output="false">
 		<cfargument name="uri" type="string" required="true" hint="wants the uri mapping defined by the cfc endpoint" />
 		<cfset var local = StructNew() />
-		<cfset local.almostTokens = rematch("{([^}]+)}", arguments.uri)/>
+
+		<cfset local.uriChunks = listToArray(arguments.uri, '/') />
 		<cfset local.returnData = StructNew() />
 		<cfset local.returnData.tokens = ArrayNew(1) />
+		<cfset local.uriMatcher = "" />
 
-		<!--- extract token names and values from requested uri --->
-		<cfset local.uriRegex = "^" & arguments.uri />
-		<cfloop array="#local.almostTokens#" index="local.token">
-			<cfset arrayAppend(local.returnData.tokens, replaceList(local.token, "{,}", ",")) />
-			<cfset local.uriRegex = rereplaceNoCase(local.uriRegex,"{[^}]+}", "([^\/]+)") />
+		<cfloop array="#local.uriChunks#" index="local.chunk">
+			<cfif left(local.chunk, 1) neq "{" or right(local.chunk, 1) neq "}">
+				<!--- not a token --->
+				<cfset local.uriMatcher = local.uriMatcher & '/' & local.chunk />
+			<cfelse>
+				<cfset local.chunk = left(right(local.chunk, len(local.chunk)-1), len(local.chunk)-2) />
+				<!--- it's a token... but which kind? --->
+				<cfif find(':', local.chunk) neq 0>
+					<cfset local.pattern = '(' & listRest(local.chunk, ':') & ')' /><!--- make sure we capture the value --->
+					<cfset local.tokenName = listFirst(local.chunk, ':') />
+				<cfelse>
+					<cfset local.pattern = "([^\/]+)" />
+					<cfset local.tokenName = local.chunk />
+				</cfif>
+				<cfset local.uriMatcher = local.uriMatcher & '/' & local.pattern />
+				<cfset arrayAppend(local.returnData.tokens, local.tokenName) />
+			</cfif>
 		</cfloop>
 
-		<!--- require the uri to terminate after specified content --->
-		<cfset local.uriRegex = local.uriRegex
-							  & "(\.[^\.\?]+)?"	<!--- anything other than these characters will be considered a mime-type request: / \ ? . --->
-							  & "$" />			<!--- terminate the uri (query string not included in cgi.path_info, does not need to be accounted for here) --->
-
-		<cfset local.returnData.uriRegex = local.uriRegex />
-
+		<cfset local.returnData.uriRegex = "^" & local.uriMatcher & "$" />
 		<cfreturn local.returnData />
 	</cffunction>
 
@@ -472,25 +502,14 @@
 				<cfset local.returnData[listFirst(local.t,'=')] = "" />
 			</cfif>
 		</cfloop>
-		<!--- if a mime type is requested as part of the url ("whatever.json"), then extract that so taffy can use it --->
-		<cfif listlen(arguments.uri,".") gt 1>
-			<cfset local.mime = listLast(arguments.uri, ".") />
-			<cfset local.returnData["_taffy_mime"] = local.mime />
-			<cfheader name="x-deprecation-warning" value="Specifying return format as '.#local.mime#' is deprecated. Please use the HTTP Accept header when possible." />
-		</cfif>
-		<cfif structKeyExists(cgi, "http_accept") and len(cgi.http_accept)>
-			<cfloop list="#cgi.HTTP_ACCEPT#" index="tmp">
-				<!--- deal with that q=0 stuff (just ignore it) --->
-				<cfif listLen(tmp, ";") gt 1>
-					<cfset tmp = listFirst(tmp, ";") />
-				</cfif>
-				<cfif structKeyExists(application._taffy.settings.mimeTypes, tmp)>
-					<cfset local.returnData["_taffy_mime"] = application._taffy.settings.mimeTypes[tmp] />
-					<cfbreak /><!--- exit loop --->
-				</cfif>
+		<!--- check headers for format request --->
+		<cfif structKeyExists(arguments.headers, "accept") and len(arguments.headers.accept)>
+			<cfloop list="#arguments.headers.accept#" index="tmp">
+				<cfset tmp = listFirst(tmp, ";") /><!--- deal with that q=0 stuff (just ignore it) --->
+				<cfset local.returnData["_taffy_mime"] = tmp />
+				<cfbreak /><!--- exit loop --->
 			</cfloop>
 		</cfif>
-		<!--- return --->
 		<cfreturn local.returnData />
 	</cffunction>
 
