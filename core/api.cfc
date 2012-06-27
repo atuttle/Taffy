@@ -422,6 +422,7 @@
 	<cffunction name="matchURI" access="private" output="false" returnType="string">
 		<cfargument name="requestedURI" type="string" required="true" hint="probably just pass in cgi.path_info" />
 		<cfset var endpoint = '' />
+		<cfset var attempt = '' />
 		<cfloop collection="#application._taffy.endpoints#" item="endpoint">
 			<cfset attempt = reMatchNoCase(endpoint, arguments.requestedURI) />
 			<cfif arrayLen(attempt) gt 0>
