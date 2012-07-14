@@ -4,3 +4,4 @@ settings.xml
 examples/api/jquery.min.js
 WEB-INF
 jquery.min.js
+tests/tests/output
