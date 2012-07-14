@@ -1,0 +1,10 @@
+Unfortunately, to keep things simple, I had to sacrifice a little bit of cleanliness.
+
+To install Taffy, all you need to do is either create a Taffy folder in your web root, or create a /taffy mapping;
+and in it, place the /core and /bonus folders from this archive.
+
+Everything else is for purposes of development, testing, and examples.
+
+Enjoy!
+-Adam
+ http://fusiongrokker.com
