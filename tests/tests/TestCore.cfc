@@ -332,4 +332,18 @@
 
 	</cfscript>
 
+
+	<cffunction name="can_upload_a_file">
+		<cfset var local = structNew() />
+		<!--- <cfset debug(cgi) /> --->
+		<cfhttp
+			url="http://#cgi.server_name#:#cgi.server_port#/taffy/tests/index.cfm/upload.json"
+			method="post"
+			result="local.uploadResult">
+			<cfhttpparam type="file" name="img" file="#expandPath('/taffy/tests/tests/upload.png')#" />
+		</cfhttp>
+		<cfset debug(local.uploadResult) />
+		<cfset assertTrue(local.uploadResult.statusCode eq "200 OK", "Did not return status 200") />
+	</cffunction>
+
 </cfcomponent>
