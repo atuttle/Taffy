@@ -106,7 +106,7 @@
 		<!--- display api dashboard if requested --->
 		<cfif structKeyExists(url, application._taffy.settings.dashboardKey) and not application._taffy.settings.disableDashboard>
 			<cfinclude template="dashboard.cfm" />
-			<cfabort>
+			<cfabort />
 		</cfif>
 
 		<!--- get request details --->
@@ -230,27 +230,31 @@
 	<!--- internal methods --->
 	<cffunction name="setupFramework" access="private" output="false" returntype="void">
 		<cfset var local = structNew() />
+		<cfparam name="variables.framework" default="#structNew()#" />
 		<cfheader name="X-TAFFY-RELOAD" value="true" />
 		<cfset application._taffy = structNew() />
 		<cfset application._taffy.endpoints = structNew() />
 		<!--- default settings --->
-		<cfset application._taffy.settings = structNew() />
-		<cfset application._taffy.settings.defaultMime = "" />
-		<cfset application._taffy.settings.debugKey = "debug" />
-		<cfset application._taffy.settings.reloadKey = "reload"/>
-		<cfset application._taffy.settings.reloadPassword = "true"/>
-		<cfset application._taffy.settings.defaultRepresentationClass = "taffy.core.nativeJsonRepresentation"/>
-		<cfset application._taffy.settings.dashboardKey = "dashboard"/>
-		<cfset application._taffy.settings.disableDashboard = false />
-		<cfset application._taffy.settings.unhandledPaths = "/flex2gateway" />
-		<cfset application._taffy.settings.allowCrossDomain = false />
-		<cfset application._taffy.settings.globalHeaders = structNew() />
+		<cfset local.defaultConfig = structNew() />
+		<cfset local.defaultConfig.defaultMime = "" />
+		<cfset local.defaultConfig.debugKey = "debug" />
+		<cfset local.defaultConfig.reloadKey = "reload"/>
+		<cfset local.defaultConfig.reloadPassword = "true"/>
+		<cfset local.defaultConfig.defaultRepresentationClass = "taffy.core.nativeJsonRepresentation"/>
+		<cfset local.defaultConfig.dashboardKey = "dashboard"/>
+		<cfset local.defaultConfig.disableDashboard = false />
+		<cfset local.defaultConfig.unhandledPaths = "/flex2gateway" />
+		<cfset local.defaultConfig.allowCrossDomain = false />
+		<cfset local.defaultConfig.globalHeaders = structNew() />
 		<!--- status --->
 		<cfset application._taffy.status = structNew() />
 		<cfset application._taffy.status.internalBeanFactoryUsed = false />
 		<cfset application._taffy.status.externalBeanFactoryUsed = false />
 		<!--- allow setting overrides --->
-		<cfset configureTaffy()/>
+		<cfset application._taffy.settings = structNew() />
+		<cfset structAppend(application._taffy.settings, local.defaultConfig, true) /><!--- initialize to default values --->
+		<cfset structAppend(application._taffy.settings, variables.framework, true) /><!--- update with user values --->
+		<cfset configureTaffy()/><!--- result of configureTaffy() takes precedence --->
 		<!--- translate unhandledPaths config to regex for easier matching (This is ripped off from FW/1. Thanks, Sean!) --->
 		<cfset application._taffy.settings.unhandledPathsRegex = replaceNoCase(
 			REReplace(application._taffy.settings.unhandledPaths, '(\+|\*|\?|\.|\[|\^|\$|\(|\)|\{|\||\\)', '\\\1', 'all' ),
