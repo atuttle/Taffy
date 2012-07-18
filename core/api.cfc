@@ -352,7 +352,7 @@
 					<cfset requestObj.bodyArgs = local.tmp />
 				</cfif>
 				<cfset requestObj.queryString = cgi.query_string />
-			<cfelseif findNoCase("multipart/form-data")>
+			<cfelseif findNoCase("multipart/form-data", requestObj.contentType)>
 				<!--- do nothing, to support the way railo handles multipart requests (just avoids the error condition below) --->
 			<cfelse>
 				<cfif isJson(requestObj.body)>
