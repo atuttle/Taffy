@@ -43,7 +43,7 @@
 		<!-- ////////   MXUNIT ANT TASK SETUP (used in runtests and junitreport targets) -->
 
 		<!-- what server and port should your tests run against? -->
-		<property name="test.server" value="localhost" />
+		<property name="test.server" value="jenkins.local" />
 		<property name="test.serverport" value="80" />
 		<!-- what "runner" URL should the tests hit. In this example, you'd be hitting
 		http://localhost:80/DirectoryNameOfYourProject/test/HttpAntRunner.cfc
