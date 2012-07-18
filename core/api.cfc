@@ -80,6 +80,12 @@
 			<cfif structKeyExists(root,"tagContext")>
 				<cfset data.tagContext = root.tagContext[1].template & " [Line #root.tagContext[1].line#]" />
 			</cfif>
+
+			<!---
+				* use a logging adapter to do something with the error
+				* determine whether or not to return a json result from a variable
+			--->
+
 			<cfoutput>#serializeJson(data)#</cfoutput>
 			<cfheader statuscode="500" statustext="Error" />
 			<cfcatch>
