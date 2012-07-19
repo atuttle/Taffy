@@ -381,7 +381,7 @@
 			<cfset requestObj.returnMimeExt = requestObj.requestArguments._taffy_mime />
 			<cfset structDelete(requestObj.requestArguments, "_taffy_mime") />
 			<cfif not structKeyExists(application._taffy.settings.mimeExtensions, requestObj.returnMimeExt)>
-				<cfset throwError(400, "Requested mime type is not supported") />
+				<cfset throwError(400, "Requested mime type is not supported (#requestObj.returnMimeExt#)") />
 			</cfif>
 		<cfelse>
 			<!--- run some checks on the default --->
@@ -472,8 +472,10 @@
 			</cfif>
 		</cfloop>
 		<!--- if a mime type is requested as part of the url ("whatever.json"), then extract that so taffy can use it --->
-		<cfif listlen(arguments.uri,".") gt 1>
+		<cfset local.lastChunk = local.tokenValues[local.numTokenValues] />
+		<cfif listlen(local.lastChunk,".") gt 1 and len(listLast(local.lastChunk,".")) lte 10><!--- sanity check, ".ext" limited to 10 characters --->
 			<cfset local.mime = listLast(arguments.uri, ".") />
+			<cfset local.returnData[arguments.tokenNamesArray[local.numTokenNames]] =  left(local.lastChunk, len(local.lastChunk) - len(local.mime) - 1) /><!--- the extra -1 is for the dot --->
 			<cfset local.returnData["_taffy_mime"] = local.mime />
 			<cfheader name="x-deprecation-warning" value="Specifying return format as '.#local.mime#' is deprecated. Please use the HTTP Accept header when possible." />
 		</cfif>
