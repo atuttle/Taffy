@@ -5,3 +5,6 @@ examples/api/jquery.min.js
 WEB-INF
 jquery.min.js
 tests/tests/output
+examples/api_hoth/hoth/exceptions/exceptions/*.log
+examples/api_hoth/hoth/exceptions/incidents/*.log
+examples/api_hoth/hoth/logs/*.log

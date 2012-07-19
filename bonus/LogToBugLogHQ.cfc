@@ -1,4 +1,4 @@
-<cfcomponent implements="taffy.core.ILogAdapter">
+<cfcomponent implements="taffy.bonus.ILogAdapter">
 
 	<cffunction name="init">
 		<cfargument name="config" />

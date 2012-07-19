@@ -263,7 +263,7 @@
 		<cfset local.defaultConfig.allowCrossDomain = false />
 		<cfset local.defaultConfig.globalHeaders = structNew() />
 		<cfset local.defaultConfig.returnExceptionsAsJson = true />
-		<cfset local.defaultConfig.defaultExceptionLogAdapter = "taffy.core.LogToEmail" />
+		<cfset local.defaultConfig.defaultExceptionLogAdapter = "taffy.bonus.LogToEmail" />
 		<cfset local.defaultConfig.exceptionLogAdapterConfig = StructNew() />
 		<cfset local.defaultConfig.exceptionLogAdapterConfig.emailFrom = "api-error@yourdomain.com" />
 		<cfset local.defaultConfig.exceptionLogAdapterConfig.emailTo = "you@yourdomain.com" />
