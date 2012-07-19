@@ -472,7 +472,7 @@
 			</cfif>
 		</cfloop>
 		<!--- if a mime type is requested as part of the url ("whatever.json"), then extract that so taffy can use it --->
-		<cfset local.lastChunk = local.tokenValues[local.numTokenValues] />
+		<cfset local.lastChunk = listLast(arguments.uri, "/") />
 		<cfif listlen(local.lastChunk,".") gt 1 and len(listLast(local.lastChunk,".")) lte 10><!--- sanity check, ".ext" limited to 10 characters --->
 			<cfset local.mime = listLast(arguments.uri, ".") />
 			<cfset local.returnData[arguments.tokenNamesArray[local.numTokenNames]] =  left(local.lastChunk, len(local.lastChunk) - len(local.mime) - 1) /><!--- the extra -1 is for the dot --->
