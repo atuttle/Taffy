@@ -3,7 +3,7 @@
 	<cffunction name="init">
 		<cfargument name="config" />
 		<cfset variables.hothtracker = createObject("component", "Hoth.HothTracker").init(
-			createObject("component", arguments.config).init()
+			createObject("component", arguments.config)
 		) />
 		<cfreturn this />
 	</cffunction>
