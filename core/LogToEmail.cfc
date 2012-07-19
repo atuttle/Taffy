@@ -17,7 +17,7 @@
 			to="#variables.emailTo#"
 			subject="#variables.emailSubj#"
 			type="#variables.emailType#">
-				<cfif varaibles.emailType eq "text">
+				<cfif variables.emailType eq "text">
 Exception Report
 
 Exception Timestamp: <cfoutput>#dateformat(now(), 'yyyy-mm-dd')# #timeformat(now(), 'HH:MM:SS tt')#</cfoutput>
