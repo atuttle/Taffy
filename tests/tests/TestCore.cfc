@@ -163,7 +163,7 @@
 			//-- it's hard (impossible?) to distinguish between foo.json and ex@ex.com
 			local.headers = structNew();
 			local.headers.Accept = "text/json";
-			local.result = apiCall("get", "/echo/test@example.com", "", local.headers);
+			local.result = apiCall("get", "/echo/test@example.com.json", "", local.headers);
 			debug(local.result);
 			assertEquals(999, local.result.responseHeader.status_code);
 			local.oResult = deserializeJson(local.result.fileContent);
