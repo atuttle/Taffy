@@ -532,12 +532,24 @@
 				<cfset local.returnData[listFirst(local.t,'=')] = "" />
 			</cfif>
 		</cfloop>
-		<!--- check headers for format request --->
-		<cfif structKeyExists(arguments.headers, "accept") and len(arguments.headers.accept)>
-			<cfloop list="#arguments.headers.accept#" index="tmp">
-				<cfset tmp = listFirst(tmp, ";") /><!--- deal with that q=0 stuff (just ignore it) --->
-				<cfset local.returnData["_taffy_mime"] = tmp />
-				<cfbreak /><!--- exit loop --->
+		<!--- if a mime type is requested as part of the url ("whatever.json"), then extract that so taffy can use it --->
+		<cfset local.lastChunk = local.tokenValues[local.numTokenValues] />
+		<cfif listlen(local.lastChunk,".") gt 1 and len(listLast(local.lastChunk,".")) lte 10><!--- sanity check, ".ext" limited to 10 characters --->
+			<cfset local.mime = listLast(arguments.uri, ".") />
+			<cfset local.returnData[arguments.tokenNamesArray[local.numTokenNames]] =  left(local.lastChunk, len(local.lastChunk) - len(local.mime) - 1) /><!--- the extra -1 is for the dot --->
+			<cfset local.returnData["_taffy_mime"] = local.mime />
+			<cfheader name="x-deprecation-warning" value="Specifying return format as '.#local.mime#' is deprecated. Please use the HTTP Accept header when possible." />
+		</cfif>
+		<cfif structKeyExists(cgi, "http_accept") and len(cgi.http_accept)>
+			<cfloop list="#cgi.HTTP_ACCEPT#" index="tmp">
+				<!--- deal with that q=0 stuff (just ignore it) --->
+				<cfif listLen(tmp, ";") gt 1>
+					<cfset tmp = listFirst(tmp, ";") />
+				</cfif>
+				<cfif structKeyExists(application._taffy.settings.mimeTypes, tmp)>
+					<cfset local.returnData["_taffy_mime"] = application._taffy.settings.mimeTypes[tmp] />
+					<cfbreak /><!--- exit loop --->
+				</cfif>
 			</cfloop>
 		</cfif>
 		<cfreturn local.returnData />
