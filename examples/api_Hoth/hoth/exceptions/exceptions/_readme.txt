@@ -1,0 +1,1 @@
+Hoth: The files within this directory contain the complete details for each unique exception.

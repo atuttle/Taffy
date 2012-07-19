@@ -1,0 +1,1 @@
+Hoth: The files within this directory contain the details about the volume of errors for each unique exception.
