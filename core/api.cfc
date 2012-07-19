@@ -384,7 +384,7 @@
 			<cfset requestObj.returnMimeExt = requestObj.requestArguments._taffy_mime />
 			<cfset structDelete(requestObj.requestArguments, "_taffy_mime") />
 			<cfif not structKeyExists(application._taffy.settings.mimeExtensions, requestObj.returnMimeExt)>
-				<cfset throwError(400, "Requested mime type is not supported") />
+				<cfset throwError(400, "Requested mime type is not supported (#requestObj.returnMimeExt#)") />
 			</cfif>
 		<cfelse>
 			<!--- run some checks on the default --->
@@ -412,9 +412,26 @@
 			<cfset local.uriRegex = rereplaceNoCase(local.uriRegex,"{[^}]+}", "([^\/]+)") />
 		</cfloop>
 
+		<!--- if uriRegex ends with a token, slip the format piece in there too... --->
+		<cfif right(local.uriRegex, 8) eq "([^\/]+)">
+			<cfset local.uriRegex = left(local.uriRegex, len(local.uriRegex)-8) & "(?:(?:([^\/]+)(?:\.)([a-zA-Z0-9]+))|([^\/]+))" />
+			<!---
+				above regex explained:
+				(?:
+					(?:
+						([^\/]+)(?:\.)([a-zA-Z0-9]+)	--foo.json
+					)|(									--or
+						[^\/]+							--foo
+					)
+				)
+
+				we make it this complicated so that we can capture the ".json" separately from the "foo"
+			--->
+		</cfif>
+
 		<!--- require the uri to terminate after specified content --->
 		<cfset local.uriRegex = local.uriRegex
-							  & "(\.[^\.\?]+)?"	<!--- anything other than these characters will be considered a mime-type request: / \ ? . --->
+							  & "((?:\.)[^\.\?]+)?"	<!--- anything other than these characters will be considered a mime-type request: / \ ? . --->
 							  & "$" />			<!--- terminate the uri (query string not included in cgi.path_info, does not need to be accounted for here) --->
 
 		<cfset local.returnData.uriRegex = local.uriRegex />
@@ -476,8 +493,8 @@
 			</cfif>
 		</cfloop>
 		<!--- if a mime type is requested as part of the url ("whatever.json"), then extract that so taffy can use it --->
-		<cfif listlen(arguments.uri,".") gt 1>
-			<cfset local.mime = listLast(arguments.uri, ".") />
+		<cfif local.numTokenValues gt local.numTokenNames><!--- when there is 1 more token value than name, that value (regex capture group) is the format --->
+			<cfset local.mime = local.tokenValues[local.numTokenValues] />
 			<cfset local.returnData["_taffy_mime"] = local.mime />
 			<cfheader name="x-deprecation-warning" value="Specifying return format as '.#local.mime#' is deprecated. Please use the HTTP Accept header when possible." />
 		</cfif>
