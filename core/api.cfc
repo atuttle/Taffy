@@ -63,10 +63,6 @@
 		<cfargument name="exception" />
 		<cfset var data = {} />
 		<cfset var root = '' />
-		<cfif structKeyExists(url, "dump")>
-			<cfdump var="#exception#" />
-			<cfabort/>
-		</cfif>
 		<cftry>
 			<cfif structKeyExists(exception, "rootCause")>
 				<cfset root = exception.rootCause />
