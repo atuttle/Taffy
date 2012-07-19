@@ -63,6 +63,10 @@
 		<cfargument name="exception" />
 		<cfset var data = {} />
 		<cfset var root = '' />
+		<cfif structKeyExists(url, "dump")>
+			<cfdump var="#exception#" />
+			<cfabort/>
+		</cfif>
 		<cftry>
 			<cfif structKeyExists(exception, "rootCause")>
 				<cfset root = exception.rootCause />
@@ -409,9 +413,26 @@
 			<cfset local.uriRegex = rereplaceNoCase(local.uriRegex,"{[^}]+}", "([^\/]+)") />
 		</cfloop>
 
+		<!--- if uriRegex ends with a token, slip the format piece in there too... --->
+		<cfif right(local.uriRegex, 8) eq "([^\/]+)">
+			<cfset local.uriRegex = left(local.uriRegex, len(local.uriRegex)-8) & "(?:(?:([^\/]+)(?:\.)([a-zA-Z0-9]+))|([^\/]+))" />
+			<!---
+				above regex explained:
+				(?:
+					(?:
+						([^\/]+)(?:\.)([a-zA-Z0-9]+)	--foo.json
+					)|(									--or
+						[^\/]+							--foo
+					)
+				)
+
+				we make it this complicated so that we can capture the ".json" separately from the "foo"
+			--->
+		</cfif>
+
 		<!--- require the uri to terminate after specified content --->
 		<cfset local.uriRegex = local.uriRegex
-							  & "(\.[^\.\?]+)?"	<!--- anything other than these characters will be considered a mime-type request: / \ ? . --->
+							  & "((?:\.)[^\.\?]+)?"	<!--- anything other than these characters will be considered a mime-type request: / \ ? . --->
 							  & "$" />			<!--- terminate the uri (query string not included in cgi.path_info, does not need to be accounted for here) --->
 
 		<cfset local.returnData.uriRegex = local.uriRegex />
@@ -472,10 +493,8 @@
 			</cfif>
 		</cfloop>
 		<!--- if a mime type is requested as part of the url ("whatever.json"), then extract that so taffy can use it --->
-		<cfset local.lastChunk = listLast(arguments.uri, "/") />
-		<cfif listlen(local.lastChunk,".") gt 1 and len(listLast(local.lastChunk,".")) lte 10><!--- sanity check, ".ext" limited to 10 characters --->
-			<cfset local.mime = listLast(arguments.uri, ".") />
-			<cfset local.returnData[arguments.tokenNamesArray[local.numTokenNames]] =  left(local.lastChunk, len(local.lastChunk) - len(local.mime) - 1) /><!--- the extra -1 is for the dot --->
+		<cfif local.numTokenValues gt local.numTokenNames><!--- when there is 1 more token value than name, that value (regex capture group) is the format --->
+			<cfset local.mime = local.tokenValues[local.numTokenValues] />
 			<cfset local.returnData["_taffy_mime"] = local.mime />
 			<cfheader name="x-deprecation-warning" value="Specifying return format as '.#local.mime#' is deprecated. Please use the HTTP Accept header when possible." />
 		</cfif>
