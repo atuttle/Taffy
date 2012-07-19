@@ -65,10 +65,6 @@
 		<cfset var root = '' />
 		<cfset var logger = '' />
 		<cftry>
-			<!---
-				* use a logging adapter to do something with the error
-				* determine whether or not to return a json result from a variable
-			--->
 			<cfset logger = createObject("component", application._taffy.settings.defaultExceptionLogAdapter).init(
 				application._taffy.settings.exceptionLogAdapterConfig
 			) />
@@ -78,13 +74,14 @@
 			<cfheader statuscode="500" statustext="Error" />
 			<cfcontent reset="true" />
 
+			<cfif structKeyExists(exception, "rootCause")>
+				<cfset root = exception.rootCause />
+			<cfelse>
+				<cfset root = exception />
+			</cfif>
+
 			<cfif application._taffy.settings.returnExceptionsAsJson eq true>
 				<!--- try to find the relevant details --->
-				<cfif structKeyExists(exception, "rootCause")>
-					<cfset root = exception.rootCause />
-				<cfelse>
-					<cfset root = exception />
-				</cfif>
 				<cfif structKeyExists(root, "message")>
 					<cfset data.error = root.message />
 				</cfif>
@@ -101,7 +98,9 @@
 			</cfif>
 			<cfcatch>
 				<cfcontent reset="true" type="text/plain; charset=utf-8" />
-				<cfoutput>An unhandled exception occurred: <cfif structKeyExists(root,"message")>#root.message#</cfif> <cfif structKeyExists(root,"detail")>-- #root.detail#</cfif></cfoutput>
+				<cfheader statuscode="500" statustext="Error" />
+				<cfoutput>An unhandled exception occurred: <cfif isStruct(root) and structKeyExists(root,"message")>#root.message#<cfelse>#root#</cfif> <cfif isStruct(root) and structKeyExists(root,"detail")>-- #root.detail#</cfif></cfoutput>
+				<cfdump var="#cfcatch#" format="text" />
 			</cfcatch>
 		</cftry>
 	</cffunction>
