@@ -335,6 +335,13 @@
 			assertTrue(local.body.dataFromOTR eq "who let the hulk out?!");
 		}
 
+		function returns_error_when_resource_throws_exception(){
+			local.result = apiCall("get", "/echo/throwException.json");
+			debug(local.result);
+			assertEquals(500, local.result.responseHeader.status_code);
+			assertTrue( isJson( local.result.fileContent ), "Response body was not json" );
+		}
+
 	</cfscript>
 
 

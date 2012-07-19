@@ -63,31 +63,42 @@
 		<cfargument name="exception" />
 		<cfset var data = {} />
 		<cfset var root = '' />
+		<cfset var logger = '' />
 		<cftry>
-			<cfif structKeyExists(exception, "rootCause")>
-				<cfset root = exception.rootCause />
-			<cfelse>
-				<cfset root = exception />
-			</cfif>
-			<cfsetting enablecfoutputonly="true" showdebugoutput="false" />
-			<cfcontent reset="true" type="application/json; charset=utf-8" />
-			<cfif structKeyExists(root, "message")>
-				<cfset data.error = root.message />
-			</cfif>
-			<cfif structKeyExists(root, "detail")>
-				<cfset data.detail = root.detail />
-			</cfif>
-			<cfif structKeyExists(root,"tagContext")>
-				<cfset data.tagContext = root.tagContext[1].template & " [Line #root.tagContext[1].line#]" />
-			</cfif>
-
 			<!---
 				* use a logging adapter to do something with the error
 				* determine whether or not to return a json result from a variable
 			--->
+			<cfset logger = createObject("component", application._taffy.settings.defaultExceptionLogAdapter).init(
+				application._taffy.settings.exceptionLogAdapterConfig
+			) />
+			<cfset logger.log(exception) />
 
-			<cfoutput>#serializeJson(data)#</cfoutput>
+			<!--- return 500 no matter what --->
 			<cfheader statuscode="500" statustext="Error" />
+			<cfcontent reset="true" />
+
+			<cfif application._taffy.settings.returnExceptionsAsJson eq true>
+				<!--- try to find the relevant details --->
+				<cfif structKeyExists(exception, "rootCause")>
+					<cfset root = exception.rootCause />
+				<cfelse>
+					<cfset root = exception />
+				</cfif>
+				<cfif structKeyExists(root, "message")>
+					<cfset data.error = root.message />
+				</cfif>
+				<cfif structKeyExists(root, "detail")>
+					<cfset data.detail = root.detail />
+				</cfif>
+				<cfif structKeyExists(root,"tagContext")>
+					<cfset data.tagContext = root.tagContext[1].template & " [Line #root.tagContext[1].line#]" />
+				</cfif>
+				<!--- MAKE IT LOOK GOOD! --->
+				<cfsetting enablecfoutputonly="true" showdebugoutput="false" />
+				<cfcontent type="application/json; charset=utf-8" />
+				<cfoutput>#serializeJson(data)#</cfoutput>
+			</cfif>
 			<cfcatch>
 				<cfcontent reset="true" type="text/plain; charset=utf-8" />
 				<cfoutput>An unhandled exception occurred: <cfif structKeyExists(root,"message")>#root.message#</cfif> <cfif structKeyExists(root,"detail")>-- #root.detail#</cfif></cfoutput>
@@ -237,7 +248,7 @@
 	<cffunction name="setupFramework" access="private" output="false" returntype="void">
 		<cfset var local = structNew() />
 		<cfparam name="variables.framework" default="#structNew()#" />
-		<cfheader name="X-TAFFY-RELOAD" value="true" />
+		<cfheader name="X-TAFFY-RELOADED" value="true" />
 		<cfset application._taffy = structNew() />
 		<cfset application._taffy.endpoints = structNew() />
 		<!--- default settings --->
@@ -252,6 +263,13 @@
 		<cfset local.defaultConfig.unhandledPaths = "/flex2gateway" />
 		<cfset local.defaultConfig.allowCrossDomain = false />
 		<cfset local.defaultConfig.globalHeaders = structNew() />
+		<cfset local.defaultConfig.returnExceptionsAsJson = true />
+		<cfset local.defaultConfig.defaultExceptionLogAdapter = "taffy.core.LogToEmail" />
+		<cfset local.defaultConfig.exceptionLogAdapterConfig = StructNew() />
+		<cfset local.defaultConfig.exceptionLogAdapterConfig.emailFrom = "api-error@yourdomain.com" />
+		<cfset local.defaultConfig.exceptionLogAdapterConfig.emailTo = "you@yourdomain.com" />
+		<cfset local.defaultConfig.exceptionLogAdapterConfig.emailSubj = "Exception Caught in Taffy API" />
+		<cfset local.defaultConfig.exceptionLogAdapterConfig.emailType = "html" />
 		<!--- status --->
 		<cfset application._taffy.status = structNew() />
 		<cfset application._taffy.status.internalBeanFactoryUsed = false />
