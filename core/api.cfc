@@ -37,7 +37,18 @@
 			<cfset local.reloadedInThisRequest = true />
 		</cfif>
 		<!--- allow reloading --->
-		<cfif structKeyExists(url, application._taffy.settings.reloadKey) and url[application._taffy.settings.reloadKey] eq application._taffy.settings.reloadPassword>
+		<cfif
+			(
+				structKeyExists(url, application._taffy.settings.reloadKey)
+				AND
+				url[application._taffy.settings.reloadKey] eq application._taffy.settings.reloadPassword
+			)
+			OR
+			(
+				structKeyExists(application._taffy.settings, "reloadOnEveryRequest")
+				AND
+				application._taffy.settings.reloadOnEveryRequest eq true
+			)>
 			<cfif !reloadedInThisRequest><!--- prevent double reloads --->
 				<cfset onApplicationStart() />
 			</cfif>
@@ -238,10 +249,11 @@
 		<cfset local.defaultConfig = structNew() />
 		<cfset local.defaultConfig.defaultMime = "" />
 		<cfset local.defaultConfig.debugKey = "debug" />
-		<cfset local.defaultConfig.reloadKey = "reload"/>
-		<cfset local.defaultConfig.reloadPassword = "true"/>
-		<cfset local.defaultConfig.defaultRepresentationClass = "taffy.core.nativeJsonRepresentation"/>
-		<cfset local.defaultConfig.dashboardKey = "dashboard"/>
+		<cfset local.defaultConfig.reloadKey = "reload" />
+		<cfset local.defaultConfig.reloadPassword = "true" />
+		<cfset local.defaultConfig.reloadOnEveryRequest = false />
+		<cfset local.defaultConfig.defaultRepresentationClass = "taffy.core.nativeJsonRepresentation" />
+		<cfset local.defaultConfig.dashboardKey = "dashboard" />
 		<cfset local.defaultConfig.disableDashboard = false />
 		<cfset local.defaultConfig.unhandledPaths = "/flex2gateway" />
 		<cfset local.defaultConfig.allowCrossDomain = false />
