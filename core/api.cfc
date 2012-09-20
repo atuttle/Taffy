@@ -160,8 +160,8 @@
 				<cfset throwError(405, "Method Not Allowed") />
 			<cfelse>
 				<!--- create dummy response for cross domain OPTIONS request --->
-				<cfset _taffyRequest.resultHeaders	= structNew() />
-				<cfset _taffyRequest.statusArgs			= structNew() />
+				<cfset _taffyRequest.resultHeaders = structNew() />
+				<cfset _taffyRequest.statusArgs = structNew() />
 				<cfset _taffyRequest.statusArgs.statusCode = 200 />
 				<cfset _taffyRequest.statusArgs.statusText = '200 OK' />
 			</cfif>
