@@ -84,7 +84,8 @@
 			makePublic(variables.taffy, "matchURI");
 			local.result = variables.taffy.matchURI("/echo/3.json");
 			debug(local.result);
-			assertEquals('^/echo/([a-za-z0-9_\-\.\+]+@?[a-za-z0-9_\-\.]+\.?[a-za-z]+)((?:\.)[^\.\?]+)?$', local.result);
+			assertEquals('^/echo/(?:(?:([^\/]+)(?:\.)([a-za-z0-9]+))|([^\/]+))((?:\.)[^\.\?]+)?$', local.result);
+					   // ^/echo/([a-za-z0-9_\-\.\+]+@?[a-za-z0-9_\-\.]+\.?[a-za-z]+)((?:\.)[^\.\?]+)?$
 		}
 
 		function uri_matching_works_without_extension(){
@@ -165,25 +166,42 @@
 		}
 
 		function accept_header_takes_precedence_over_extension(){
-			variables.taffy.setDefaultMime("application/json");
+			variables.taffy.setDefaultMime("text/json");
 			local.headers = structNew();
-			local.headers["Accept"] = "application/json";
-			local.result = apiCall ("get","/echo/2.json","foo=bar",local.headers);
+			local.headers["Accept"] = "text/json";
+			local.result = apiCall("get","/echo/2.xml","foo=bar",local.headers);
 			debug(local.result);
 			assertEquals(999, local.result.responseHeader.status_code);
 			assertTrue(isJson(local.result.fileContent));
 		}
 
 		function allows_email_as_final_url_value(){
-			//this test illustrates the issue with the current codebase:
-			//-- it's hard (impossible?) to distinguish between foo.json and ex@ex.com
+			makePublic(variables.taffy, "buildRequestArguments");
 			local.headers = structNew();
-			local.headers.Accept = "text/json";
-			local.result = apiCall("get", "/echo/test@example.com.json", "", local.headers);
+			local.headers.Accept = "application/json";
+			local.result = variables.taffy.buildRequestArguments(
+				"^/echo/([a-zA-Z0-9_\-\.\+]+@[a-zA-Z0-9_\-\.]+\.?[a-zA-Z]+)((?:\.)[^\.\?]+)?$",
+				["id"],
+				"/echo/foo@bar.com",
+				"",
+				local.headers
+			);
 			debug(local.result);
-			assertFalse(structKeyExists(local.result, "_taffy_mime"), "Did not detect desired return format correctly.");
+			assertTrue(local.result._taffy_mime eq "json", "Did not detect desired return format correctly.");
 
-			//todo: use apiCall() to do a similar integration test with a format at the end of the url too
+			// //full integration test for a@b.c.json
+			// local.result = apiCall("get", "/echo/test@example.com.json", "", {});
+			// debug(local.result);
+			// assert(isJson(local.result.fileContent), "response was not json");
+			// local.response = deserializeJSON(local.result.fileContent);
+			// assertEquals("test@example.com", local.response.id);
+
+			// //full integration test for a@b.c (no .json, but with headers)
+			// local.result = apiCall("get", "/echo/test@example.com", "", local.headers);
+			// debug(local.result);
+			// assert(isJson(local.result.fileContent), "response was not json");
+			// local.response = deserializeJSON(local.result.fileContent);
+			// assertEquals("test@example.com", local.response.id);
 		}
 
 		function returns_405_for_unimplemented_verbs(){

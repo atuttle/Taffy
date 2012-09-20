@@ -172,7 +172,7 @@
 		</cfif>
 		<!--- make sure the requested mime type is available --->
 		<cfif not mimeSupported(_taffyRequest.returnMimeExt)>
-			<cfset throwError(400, "Requested format not available") />
+			<cfset throwError(400, "Requested format not available (#_taffyRequest.returnMimeExt#)") />
 		</cfif>
 
 		<!--- get status code --->
@@ -187,7 +187,7 @@
 		/>
 
 		<cfsetting enablecfoutputonly="true" />
-		<cfcontent reset="true" type="#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#; charset=utf-8" />
+		<cfcontent reset="true" type="#getReturnMimeAsHeader(_taffyRequest.returnMimeExt)#; charset=utf-8" />
 		<cfheader statuscode="#_taffyRequest.statusArgs.statusCode#" statustext="#_taffyRequest.statusArgs.statusText#" />
 		<cfif application._taffy.settings.allowCrossDomain>
 			<cfheader name="Access-Control-Allow-Origin" value="*" />
@@ -211,10 +211,10 @@
 			<!--- serialize the representation's data into the requested mime type --->
 			<cfinvoke
 				component="#_taffyRequest.result#"
-				method="getAs#_taffyRequest.returnMimeExt#"
+				method="getAs#getReturnMimeAsExt(_taffyRequest.returnMimeExt)#"
 				returnvariable="_taffyRequest.resultSerialized"
 			/>
-			<cfcontent reset="true" type="#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#; charset=utf-8" />
+			<cfcontent reset="true" type="#getReturnMimeAsHeader(_taffyRequest.returnMimeExt)#; charset=utf-8" />
 			<cfif _taffyRequest.resultSerialized neq ('"' & '"')>
 				<cfoutput>#_taffyRequest.resultSerialized#</cfoutput>
 			</cfif>
@@ -419,6 +419,10 @@
 			<cfset structDelete(requestObj.requestArguments, "_taffy_mime") />
 			<cfif not structKeyExists(application._taffy.settings.mimeExtensions, requestObj.returnMimeExt)>
 				<cfset throwError(400, "Requested mime type is not supported (#requestObj.returnMimeExt#)") />
+<!--- bookmark1: should this be kept? --->
+			<cfelse>
+				<cfset requestObj.returnMimeExt = application._taffy.settings.mimeExtensions[requestObj.returnMimeExt] />
+<!--- end bookmark1 --->
 			</cfif>
 		<cfelseif requestObj.uriFormat neq "">
 			<cfset requestObj.returnMimeExt = requestObj.uriFormat />
@@ -489,6 +493,7 @@
 				)
 
 				we make it this complicated so that we can capture the ".json" separately from the "foo"
+				... fucking regex, man!
 			--->
 		</cfif>
 
@@ -569,6 +574,7 @@
 				</cfif>
 				<cfif structKeyExists(application._taffy.settings.mimeTypes, tmp)>
 					<cfset local.returnData["_taffy_mime"] = application._taffy.settings.mimeTypes[tmp] />
+					<cfset local.headerMatch = true />
 					<cfbreak /><!--- exit loop --->
 				</cfif>
 			</cfloop>
@@ -765,7 +771,30 @@
 		<cfif structKeyExists(application._taffy.settings.mimeExtensions, arguments.mimeExt)>
 			<cfreturn true />
 		</cfif>
+		<cfif structKeyExists(application._taffy.settings.mimeTypes, arguments.mimeExt)>
+			<cfreturn true />
+		</cfif>
 		<cfreturn false />
+	</cffunction>
+
+	<cffunction name="getReturnMimeAsHeader" output="false" access="private">
+		<cfargument name="mimeExt" type="string" required="true" />
+		<cfif structKeyExists(application._taffy.settings.mimeExtensions, arguments.mimeExt)>
+			<cfreturn application._taffy.settings.mimeExtensions[arguments.mimeExt] />
+		</cfif>
+		<cfif structKeyExists(application._taffy.settings.mimeTypes, arguments.mimeExt)>
+			<cfreturn arguments.mimeExt />
+		</cfif>
+	</cffunction>
+
+	<cffunction name="getReturnMimeAsExt" output="false" access="private">
+		<cfargument name="mimeExt" type="string" required="true" />
+		<cfif structKeyExists(application._taffy.settings.mimeExtensions, arguments.mimeExt)>
+			<cfreturn arguments.mimeExt />
+		</cfif>
+		<cfif structKeyExists(application._taffy.settings.mimeTypes, arguments.mimeExt)>
+			<cfreturn application._taffy.settings.mimeTypes[arguments.mimeExt] />
+		</cfif>
 	</cffunction>
 
 	<cffunction name="isUnhandledPathRequest" access="private" returntype="boolean">
