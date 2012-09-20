@@ -7,6 +7,7 @@
 
 	<cffunction name="log">
 		<cfargument name="exception" />
+		<!--- TODO --->
 	</cffunction>
 
 </cfcomponent>
