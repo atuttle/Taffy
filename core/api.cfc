@@ -74,28 +74,44 @@
 		<cfargument name="exception" />
 		<cfset var data = {} />
 		<cfset var root = '' />
+		<cfset var logger = '' />
 		<cftry>
+			<cfset logger = createObject("component", application._taffy.settings.exceptionLogAdapter).init(
+				application._taffy.settings.exceptionLogAdapterConfig
+			) />
+			<cfset logger.log(exception) />
+
+			<!--- return 500 no matter what --->
+			<cfheader statuscode="500" statustext="Error" />
+			<cfcontent reset="true" />
+
 			<cfif structKeyExists(exception, "rootCause")>
 				<cfset root = exception.rootCause />
 			<cfelse>
 				<cfset root = exception />
 			</cfif>
-			<cfsetting enablecfoutputonly="true" showdebugoutput="false" />
-			<cfcontent reset="true" type="application/json; charset=utf-8" />
-			<cfif structKeyExists(root, "message")>
-				<cfset data.error = root.message />
+
+			<cfif application._taffy.settings.returnExceptionsAsJson eq true>
+				<!--- try to find the relevant details --->
+				<cfif structKeyExists(root, "message")>
+					<cfset data.error = root.message />
+				</cfif>
+				<cfif structKeyExists(root, "detail")>
+					<cfset data.detail = root.detail />
+				</cfif>
+				<cfif structKeyExists(root,"tagContext")>
+					<cfset data.tagContext = root.tagContext[1].template & " [Line #root.tagContext[1].line#]" />
+				</cfif>
+				<!--- MAKE IT LOOK GOOD! --->
+				<cfsetting enablecfoutputonly="true" showdebugoutput="false" />
+				<cfcontent type="application/json; charset=utf-8" />
+				<cfoutput>#serializeJson(data)#</cfoutput>
 			</cfif>
-			<cfif structKeyExists(root, "detail")>
-				<cfset data.detail = root.detail />
-			</cfif>
-			<cfif structKeyExists(root,"tagContext")>
-				<cfset data.tagContext = root.tagContext[1].template & " [Line #root.tagContext[1].line#]" />
-			</cfif>
-			<cfoutput>#serializeJson(data)#</cfoutput>
-			<cfheader statuscode="500" statustext="Error" />
 			<cfcatch>
 				<cfcontent reset="true" type="text/plain; charset=utf-8" />
-				<cfoutput>An unhandled exception occurred: <cfif structKeyExists(root,"message")>#root.message#</cfif> <cfif structKeyExists(root,"detail")>-- #root.detail#</cfif></cfoutput>
+				<cfheader statuscode="500" statustext="Error" />
+				<cfoutput>An unhandled exception occurred: <cfif isStruct(root) and structKeyExists(root,"message")>#root.message#<cfelse>#root#</cfif> <cfif isStruct(root) and structKeyExists(root,"detail")>-- #root.detail#</cfif></cfoutput>
+				<cfdump var="#cfcatch#" format="text" />
 			</cfcatch>
 		</cftry>
 	</cffunction>
@@ -145,6 +161,11 @@
 			/>
 		</cfif>
 
+		<cfset local.allowVerbs = uCase(structKeyList(_taffyRequest.matchDetails.methods)) />
+		<cfif application._taffy.settings.allowCrossDomain AND listFindNoCase('PUT,DELETE,OPTIONS',_taffyRequest.verb) AND NOT listFind(local.allowVerbs,'OPTIONS')>
+			<cfset local.allowVerbs = listAppend(local.allowVerbs,'OPTIONS') />
+		</cfif>
+
 		<cfif isObject(_taffyRequest.continue)>
 			<!--- inspection complete but request has been aborted by developer; return custom response --->
 			<cfset _taffyRequest.result = duplicate(_taffyRequest.continue) />
@@ -152,84 +173,90 @@
 		<cfelse>
 			<!--- inspection complete and request allowed by developer; send request to service --->
 
-			<!--- if the verb is not implemented, refuse the request --->
-			<cfif not structKeyExists(_taffyRequest.matchDetails.methods, _taffyRequest.verb)>
+			<cfif structKeyExists(_taffyRequest.matchDetails.methods, _taffyRequest.verb)>
+				<!--- returns a representation-object --->
+				<cfinvoke
+					component="#application._taffy.factory.getBean(_taffyRequest.matchDetails.beanName)#"
+					method="#_taffyRequest.method#"
+					argumentcollection="#_taffyRequest.requestArguments#"
+					returnvariable="_taffyRequest.result"
+				/>
+			<cfelseif NOT listFind(local.allowVerbs,_taffyRequest.verb)>
+				<!--- if the verb is not implemented, refuse the request --->
 				<cfheader name="ALLOW" value="#ucase(structKeyList(_taffyRequest.matchDetails.methods))#" />
 				<cfset throwError(405, "Method Not Allowed") />
+			<cfelse>
+				<!--- create dummy response for cross domain OPTIONS request --->
+				<cfset _taffyRequest.resultHeaders = structNew() />
+				<cfset _taffyRequest.statusArgs = structNew() />
+				<cfset _taffyRequest.statusArgs.statusCode = 200 />
+				<cfset _taffyRequest.statusArgs.statusText = '200 OK' />
 			</cfif>
-			<!--- returns a representation-object --->
-			<cfinvoke
-				component="#application._taffy.factory.getBean(_taffyRequest.matchDetails.beanName)#"
-				method="#_taffyRequest.method#"
-				argumentcollection="#_taffyRequest.requestArguments#"
-				returnvariable="_taffyRequest.result"
-			/>
+
 		</cfif>
 		<!--- make sure the requested mime type is available --->
 		<cfif not mimeSupported(_taffyRequest.returnMimeExt)>
 			<cfset throwError(400, "Requested format not available (#_taffyRequest.returnMimeExt#)") />
 		</cfif>
 
-		<!--- get status code --->
-		<cfset _taffyRequest.statusArgs = structNew() />
-		<cfset _taffyRequest.statusArgs.statusCode = _taffyRequest.result.getStatus() />
-		<cfset _taffyRequest.statusArgs.statusText = _taffyRequest.result.getStatusText() />
-		<!--- get custom headers --->
-		<cfinvoke
-			component="#_taffyRequest.result#"
-			method="getHeaders"
-			returnvariable="_taffyRequest.resultHeaders"
-		/>
+		<cfif structKeyExists(_taffyRequest,'result')>
+			<!--- get status code --->
+			<cfset _taffyRequest.statusArgs = structNew() />
+			<cfset _taffyRequest.statusArgs.statusCode = _taffyRequest.result.getStatus() />
+			<cfset _taffyRequest.statusArgs.statusText = _taffyRequest.result.getStatusText() />
+			<!--- get custom headers --->
+			<cfinvoke
+				component="#_taffyRequest.result#"
+				method="getHeaders"
+				returnvariable="_taffyRequest.resultHeaders"
+			/>
+		</cfif>
 
 		<cfsetting enablecfoutputonly="true" />
 		<cfcontent reset="true" type="#getReturnMimeAsHeader(_taffyRequest.returnMimeExt)#; charset=utf-8" />
 		<cfheader statuscode="#_taffyRequest.statusArgs.statusCode#" statustext="#_taffyRequest.statusArgs.statusText#" />
+
+		<!--- headers --->
 		<cfif application._taffy.settings.allowCrossDomain>
 			<cfheader name="Access-Control-Allow-Origin" value="*" />
+			<cfheader name="Access-Control-Allow-Methods" value="#local.allowVerbs#" />
 		</cfif>
-		<!--- headers --->
 		<cfset addHeaders(getGlobalHeaders()) />
-		<cfinvoke
-			component="#_taffyRequest.result#"
-			method="getHeaders"
-			returnvariable="_taffyRequest.resultHeaders"
-		/>
 		<cfset addHeaders(_taffyRequest.resultHeaders) />
 
 		<!--- add ALLOW header for current resource, which describes available verbs --->
 		<cfheader name="ALLOW" value="#ucase(structKeyList(_taffyRequest.matchDetails.methods))#" />
 
 		<!--- result data --->
-		<cfset _taffyRequest.resultType = _taffyRequest.result.getType() />
-		<cfif _taffyRequest.resultType eq "textual">
+		<cfif structKeyExists(_taffyRequest,'result')>
+			<cfset _taffyRequest.resultType = _taffyRequest.result.getType() />
 
-			<!--- serialize the representation's data into the requested mime type --->
-			<cfinvoke
-				component="#_taffyRequest.result#"
-				method="getAs#getReturnMimeAsExt(_taffyRequest.returnMimeExt)#"
-				returnvariable="_taffyRequest.resultSerialized"
-			/>
-			<cfcontent reset="true" type="#getReturnMimeAsHeader(_taffyRequest.returnMimeExt)#; charset=utf-8" />
-			<cfif _taffyRequest.resultSerialized neq ('"' & '"')>
-				<cfoutput>#_taffyRequest.resultSerialized#</cfoutput>
+			<cfif _taffyRequest.resultType eq "textual">
+				<!--- serialize the representation's data into the requested mime type --->
+				<cfinvoke
+					component="#_taffyRequest.result#"
+					method="getAs#_taffyRequest.returnMimeExt#"
+					returnvariable="_taffyRequest.resultSerialized"
+				/>
+				<cfcontent reset="true" type="#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#; charset=utf-8" />
+				<cfif _taffyRequest.resultSerialized neq ('"' & '"')>
+					<cfoutput>#_taffyRequest.resultSerialized#</cfoutput>
+				</cfif>
+				<!--- debug output --->
+				<cfif structKeyExists(url, application._taffy.settings.debugKey)>
+					<cfoutput><h3>Request Details:</h3><cfdump var="#_taffyRequest#"></cfoutput>
+				</cfif>
+
+			<cfelseif _taffyRequest.resultType eq "filename">
+				<cfcontent reset="true" file="#_taffyRequest.result.getFileName()#" type="#_taffyRequest.result.getFileMime()#" />
+
+			<cfelseif _taffyRequest.resultType eq "filedata">
+				<cfcontent reset="true" variable="#_taffyRequest.result.getFileData()#" type="#_taffyRequest.result.getFileMime()#" />
+
+			<cfelseif _taffyRequest.resultType eq "imagedata">
+				<cfcontent reset="true" variable="#_taffyRequest.result.getImageData()#" type="#_taffyRequest.result.getFileMime()#" />
+
 			</cfif>
-			<!--- debug output --->
-			<cfif structKeyExists(url, application._taffy.settings.debugKey)>
-				<cfoutput><h3>Request Details:</h3><cfdump var="#_taffyRequest#"></cfoutput>
-			</cfif>
-
-		<cfelseif _taffyRequest.resultType eq "filename">
-
-			<cfcontent reset="true" file="#_taffyRequest.result.getFileName()#" type="#_taffyRequest.result.getFileMime()#" />
-
-		<cfelseif _taffyRequest.resultType eq "filedata">
-
-			<cfcontent reset="true" variable="#_taffyRequest.result.getFileData()#" type="#_taffyRequest.result.getFileMime()#" />
-
-		<cfelseif _taffyRequest.resultType eq "imagedata">
-
-			<cfcontent reset="true" variable="#_taffyRequest.result.getImageData()#" type="#_taffyRequest.result.getFileMime()#" />
-
 		</cfif>
 
 		<cfreturn true />
@@ -242,7 +269,7 @@
 	<cffunction name="setupFramework" access="private" output="false" returntype="void">
 		<cfset var local = structNew() />
 		<cfparam name="variables.framework" default="#structNew()#" />
-		<cfheader name="X-TAFFY-RELOAD" value="true" />
+		<cfheader name="X-TAFFY-RELOADED" value="true" />
 		<cfset application._taffy = structNew() />
 		<cfset application._taffy.endpoints = structNew() />
 		<!--- default settings --->
@@ -258,6 +285,13 @@
 		<cfset local.defaultConfig.unhandledPaths = "/flex2gateway" />
 		<cfset local.defaultConfig.allowCrossDomain = false />
 		<cfset local.defaultConfig.globalHeaders = structNew() />
+		<cfset local.defaultConfig.returnExceptionsAsJson = true />
+		<cfset local.defaultConfig.exceptionLogAdapter = "taffy.bonus.LogToEmail" />
+		<cfset local.defaultConfig.exceptionLogAdapterConfig = StructNew() />
+		<cfset local.defaultConfig.exceptionLogAdapterConfig.emailFrom = "api-error@yourdomain.com" />
+		<cfset local.defaultConfig.exceptionLogAdapterConfig.emailTo = "you@yourdomain.com" />
+		<cfset local.defaultConfig.exceptionLogAdapterConfig.emailSubj = "Exception Caught in Taffy API" />
+		<cfset local.defaultConfig.exceptionLogAdapterConfig.emailType = "html" />
 		<!--- status --->
 		<cfset application._taffy.status = structNew() />
 		<cfset application._taffy.status.internalBeanFactoryUsed = false />
@@ -405,13 +439,9 @@
 		<cfset requestObj.returnMimeExt = "" />
 		<cfif structKeyExists(requestObj.requestArguments, "_taffy_mime")>
 			<cfset requestObj.returnMimeExt = requestObj.requestArguments._taffy_mime />
-<cffile action="delete" file="/users/adam/desktop/appscope.html" />
-<cfdump var="#application#" label="APPLICATION" output="/users/adam/desktop/appscope.html" format="html" />
-<cfdump var="#requestObj#" label="REQUESTOBJ" output="/users/adam/desktop/appscope.html" format="html" />
+			<cfset structDelete(requestObj.requestArguments, "_taffy_mime") />
 			<cfif not structKeyExists(application._taffy.settings.mimeExtensions, requestObj.returnMimeExt)>
 				<cfset throwError(400, "Requested mime type is not supported (#requestObj.returnMimeExt#)") />
-			<cfelse>
-				<cfset requestObj.returnMimeExt = application._taffy.settings.mimeExtensions[requestObj.returnMimeExt] />
 			</cfif>
 		<cfelseif requestObj.uriFormat neq "">
 			<cfset requestObj.returnMimeExt = requestObj.uriFormat />
@@ -467,8 +497,8 @@
 			</cfif>
 		</cfloop>
 
-		<cfset local.uriRegex = "^" & local.uriMatcher />
 		<!--- if uriRegex ends with a token, slip the format piece in there too... --->
+		<cfset local.uriRegex = "^" & local.uriMatcher />
 		<cfif right(local.uriRegex, 8) eq "([^\/]+)">
 			<cfset local.uriRegex = left(local.uriRegex, len(local.uriRegex)-8) & "(?:(?:([^\/]+)(?:\.)([a-zA-Z0-9]+))|([^\/]+))" />
 			<!---
@@ -555,8 +585,7 @@
 			<cfset local.returnData["_taffy_mime"] = local.mime />
 			<cfheader name="x-deprecation-warning" value="Specifying return format as '.#local.mime#' is deprecated. Please use the HTTP Accept header when possible." />
 		</cfif>
-		<cfif structKeyExists(arguments.headers, "Accept")>
-			<cfset local.headerMatch = false />
+		<cfif structKeyExists(arguments.headers, "accept") and len(arguments.headers.accept)>
 			<cfloop list="#arguments.headers.accept#" index="tmp">
 				<!--- deal with that q=0 stuff (just ignore it) --->
 				<cfif listLen(tmp, ";") gt 1>
@@ -568,9 +597,8 @@
 					<cfbreak /><!--- exit loop --->
 				</cfif>
 			</cfloop>
-			<!--- if a header is passed, but it didn't match any known mimes, and no mime was found via extension, just use whatever's in the header --->
-			<cfif not structKeyExists(local.returnData, "_taffy_mime") and local.headerMatch eq false>
-				<cfset local.returnData["_taffy_mime"] = listFirst(listFirst(arguments.headers.accept, ","), ";") />
+			<cfif not structKeyExists(local.returnData, "_taffy_mime")>
+				<cfset local.returnData["_taffy_mime"] = listFirst(listFirst(arguments.headers.accept), ";") />
 			</cfif>
 		</cfif>
 		<cfreturn local.returnData />

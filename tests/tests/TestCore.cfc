@@ -55,29 +55,29 @@
 			assertEquals("{""uriregex"":""\/a\/([^\\\/\\.]+)\/b(\\.[^\\.\\?]+)?$"",""tokens"":[""abc""]}",
 							serializeJson(local.result),
 							"The expected result of the conversion did not match the actual result.");*/
-			assertEquals( "^/a/([^\/]+)/b((?:\.)[^\.\?]+)?$", local.result["uriregex"], "Resulted regex did not match expected.");
-			assertEquals( 1, arrayLen(local.result["tokens"]) );
-			assertEquals( "abc", local.result["tokens"][1] );
+			assertEquals( "^/a/([^\/]+)/b((?:\.)[^\.\?]+)?$", local.result["uriregex"], "Resulted regex did not match expected. (assert 1)");
+			assertEquals( 1, arrayLen(local.result["tokens"]), "assert 2" );
+			assertEquals( "abc", local.result["tokens"][1], "assert 3" );
 
 			local.result2 = taffy.convertURItoRegex("/a/{abc}");
 			debug(local.result2);
-			assertEquals( "^/a/(?:(?:([^\/]+)(?:\.)([a-zA-Z0-9]+))|([^\/]+))((?:\.)[^\.\?]+)?$", local.result2["uriregex"], "Resulted regex did not match expected.");
-			assertEquals( 1, arrayLen(local.result2["tokens"]) );
-			assertEquals( "abc", local.result2["tokens"][1] );
+			assertEquals( "^/a/(?:(?:([^\/]+)(?:\.)([a-zA-Z0-9]+))|([^\/]+))((?:\.)[^\.\?]+)?$", local.result2["uriregex"], "Resulted regex did not match expected. (assert 4)");
+			assertEquals( 1, arrayLen(local.result2["tokens"]), "assert 5" );
+			assertEquals( "abc", local.result2["tokens"][1], "assert 6" );
 
 			//custom regexes for tokens
 			local.result3 = taffy.convertURItoRegex("/a/{b:[a-z]+(?:42){1}}");
 			debug(local.result3);
-			assertEquals( "^/a/([a-z]+(?:42){1})((?:\.)[^\.\?]+)?$", local.result3["uriregex"], "Failed on CUSTOM REGEX TOKEN 1");
-			assertEquals( 1, arrayLen(local.result3["tokens"]) );
-			assertEquals( "b", local.result3["tokens"][1] );
+			assertEquals( "^/a/([a-z]+(?:42){1})((?:\.)[^\.\?]+)?$", local.result3["uriregex"], "Resulted regex did not match expected. (assert 7)");
+			assertEquals( 1, arrayLen(local.result3["tokens"]), "assert 8" );
+			assertEquals( "b", local.result3["tokens"][1], "assert 9" );
 
 			local.result4 = taffy.convertURItoRegex("/a/{b:[0-4]{1,7}(?:aaa){1}}/c/{d:\d+}");
 			debug(local.result4);
-			assertEquals( "^/a/([0-4]{1,7}(?:aaa){1})/c/(\d+)((?:\.)[^\.\?]+)?$", local.result4["uriregex"], "Failed on CUSTOM REGEX TOKEN 2");
-			assertEquals( 2, arrayLen(local.result4["tokens"]) );
-			assertEquals( "b", local.result4["tokens"][1] );
-			assertEquals( "d", local.result4["tokens"][2] );
+			assertEquals( "^/a/([0-4]{1,7}(?:aaa){1})/c/(\d+)((?:\.)[^\.\?]+)?$", local.result4["uriregex"], "Resulted regex did not match expected. (assert 10)");
+			assertEquals( 2, arrayLen(local.result4["tokens"]), "assert 11" );
+			assertEquals( "b", local.result4["tokens"][1], "assert 12" );
+			assertEquals( "d", local.result4["tokens"][2], "assert 13" );
 		}
 
 		function uri_matching_works_with_extension(){
@@ -177,17 +177,31 @@
 
 		function allows_email_as_final_url_value(){
 			makePublic(variables.taffy, "buildRequestArguments");
+			local.headers = structNew();
+			local.headers.Accept = "application/json";
 			local.result = variables.taffy.buildRequestArguments(
 				"^/echo/([a-zA-Z0-9_\-\.\+]+@[a-zA-Z0-9_\-\.]+\.?[a-zA-Z]+)((?:\.)[^\.\?]+)?$",
 				["id"],
 				"/echo/foo@bar.com",
 				"",
-				{"Accept" = "application/json"}
+				local.headers
 			);
 			debug(local.result);
 			assertTrue(local.result._taffy_mime eq "json", "Did not detect desired return format correctly.");
 
-			//todo: use apiCall() to do a similar integration test with a format at the end of the url too
+			//full integration test for a@b.c.json
+			local.result = apiCall("get", "/echo/test@example.com.json", "", {});
+			debug(local.result);
+			assert(isJson(local.result.fileContent), "response was not json");
+			local.response = deserializeJSON(local.result.fileContent);
+			assertEquals("test@example.com", local.response.id);
+
+			//full integration test for a@b.c (no .json, but with headers)
+			local.result = apiCall("get", "/echo/test@example.com", "", local.headers);
+			debug(local.result);
+			assert(isJson(local.result.fileContent), "response was not json");
+			local.response = deserializeJSON(local.result.fileContent);
+			assertEquals("test@example.com", local.response.id);
 		}
 
 		function returns_405_for_unimplemented_verbs(){
@@ -349,6 +363,13 @@
 			application._taffy.settings.reloadOnEveryRequest = true;
 			local.result3 = apiCall("get", "/echo/dude.json", "");
 			assertTrue(structKeyExists(local.result3.responseheader, "X-TAFFY-RELOAD"), "Expected reload header to be sent, but it was missing.");
+		}
+
+		function returns_error_when_resource_throws_exception(){
+			local.result = apiCall("get", "/throwException.json", "");
+			debug(local.result);
+			assertEquals(500, local.result.responseHeader.status_code);
+			assertTrue( isJson( local.result.fileContent ), "Response body was not json" );
 		}
 
 	</cfscript>
