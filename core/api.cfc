@@ -65,7 +65,7 @@
 		<cfset var root = '' />
 		<cfset var logger = '' />
 		<cftry>
-			<cfset logger = createObject("component", application._taffy.settings.defaultExceptionLogAdapter).init(
+			<cfset logger = createObject("component", application._taffy.settings.exceptionLogAdapter).init(
 				application._taffy.settings.exceptionLogAdapterConfig
 			) />
 			<cfset logger.log(exception) />
@@ -263,7 +263,7 @@
 		<cfset local.defaultConfig.allowCrossDomain = false />
 		<cfset local.defaultConfig.globalHeaders = structNew() />
 		<cfset local.defaultConfig.returnExceptionsAsJson = true />
-		<cfset local.defaultConfig.defaultExceptionLogAdapter = "taffy.bonus.LogToEmail" />
+		<cfset local.defaultConfig.exceptionLogAdapter = "taffy.bonus.LogToEmail" />
 		<cfset local.defaultConfig.exceptionLogAdapterConfig = StructNew() />
 		<cfset local.defaultConfig.exceptionLogAdapterConfig.emailFrom = "api-error@yourdomain.com" />
 		<cfset local.defaultConfig.exceptionLogAdapterConfig.emailTo = "you@yourdomain.com" />
