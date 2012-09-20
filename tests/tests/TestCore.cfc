@@ -358,11 +358,10 @@
 			application._taffy.settings.reloadOnEveryRequest = false;
 			local.result = apiCall("get", "/echo/dude.json", "");
 			debug(local.result);
-			local.result2 = apiCall("get", "/echo/dude.json", "");
-			assertFalse(structKeyExists(local.result2.responseheader, "X-TAFFY-RELOAD"), "Expected reload header to be missing, but it was sent.");
+			assertFalse(structKeyExists(local.result.responseheader, "X-TAFFY-RELOADED"), "Expected reload header to be missing, but it was sent.");
 			application._taffy.settings.reloadOnEveryRequest = true;
-			local.result3 = apiCall("get", "/echo/dude.json", "");
-			assertTrue(structKeyExists(local.result3.responseheader, "X-TAFFY-RELOAD"), "Expected reload header to be sent, but it was missing.");
+			local.result2 = apiCall("get", "/echo/dude.json", "");
+			assertTrue(structKeyExists(local.result2.responseheader, "X-TAFFY-RELOADED"), "Expected reload header to be sent, but it was missing.");
 		}
 
 		function returns_error_when_resource_throws_exception(){
