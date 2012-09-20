@@ -51,43 +51,47 @@
 
 			local.result = taffy.convertURItoRegex("/a/{abc}/b");
 			debug(local.result);
-			assertEquals( "^/a/([^\/]+)/b$", local.result["uriregex"], "Resulted regex did not match expected.");
-			assertEquals( 1, arrayLen(local.result["tokens"]) );
-			assertEquals( "abc", local.result["tokens"][1] );
+			/* Since CF8, 9, etc don't all serialize the same, we'll do this in a little longer form to be more portable
+			assertEquals("{""uriregex"":""\/a\/([^\\\/\\.]+)\/b(\\.[^\\.\\?]+)?$"",""tokens"":[""abc""]}",
+							serializeJson(local.result),
+							"The expected result of the conversion did not match the actual result.");*/
+			assertEquals( "^/a/([^\/]+)/b((?:\.)[^\.\?]+)?$", local.result["uriregex"], "Resulted regex did not match expected. (assert 1)");
+			assertEquals( 1, arrayLen(local.result["tokens"]), "assert 2" );
+			assertEquals( "abc", local.result["tokens"][1], "assert 3" );
 
 			local.result2 = taffy.convertURItoRegex("/a/{abc}");
 			debug(local.result2);
-			assertEquals( "^/a/([^\/]+)$", local.result2["uriregex"], "Resulted regex did not match expected.");
-			assertEquals( 1, arrayLen(local.result2["tokens"]) );
-			assertEquals( "abc", local.result2["tokens"][1] );
+			assertEquals( "^/a/(?:(?:([^\/]+)(?:\.)([a-zA-Z0-9]+))|([^\/]+))((?:\.)[^\.\?]+)?$", local.result2["uriregex"], "Resulted regex did not match expected. (assert 4)");
+			assertEquals( 1, arrayLen(local.result2["tokens"]), "assert 5" );
+			assertEquals( "abc", local.result2["tokens"][1], "assert 6" );
 
 			//custom regexes for tokens
 			local.result3 = taffy.convertURItoRegex("/a/{b:[a-z]+(?:42){1}}");
 			debug(local.result3);
-			assertEquals( "^/a/([a-z]+(?:42){1})$", local.result3["uriregex"], "Resulted regex did not match expected.");
-			assertEquals( 1, arrayLen(local.result3["tokens"]) );
-			assertEquals( "b", local.result3["tokens"][1] );
+			assertEquals( "^/a/([a-z]+(?:42){1})((?:\.)[^\.\?]+)?$", local.result3["uriregex"], "Resulted regex did not match expected. (assert 7)");
+			assertEquals( 1, arrayLen(local.result3["tokens"]), "assert 8" );
+			assertEquals( "b", local.result3["tokens"][1], "assert 9" );
 
 			local.result4 = taffy.convertURItoRegex("/a/{b:[0-4]{1,7}(?:aaa){1}}/c/{d:\d+}");
 			debug(local.result4);
-			assertEquals( "^/a/([0-4]{1,7}(?:aaa){1})/c/(\d+)$", local.result4["uriregex"], "Resulted regex did not match expected.");
-			assertEquals( 2, arrayLen(local.result4["tokens"]) );
-			assertEquals( "b", local.result4["tokens"][1] );
-			assertEquals( "d", local.result4["tokens"][2] );
+			assertEquals( "^/a/([0-4]{1,7}(?:aaa){1})/c/(\d+)((?:\.)[^\.\?]+)?$", local.result4["uriregex"], "Resulted regex did not match expected. (assert 10)");
+			assertEquals( 2, arrayLen(local.result4["tokens"]), "assert 11" );
+			assertEquals( "b", local.result4["tokens"][1], "assert 12" );
+			assertEquals( "d", local.result4["tokens"][2], "assert 13" );
 		}
 
 		function uri_matching_works_with_extension(){
 			makePublic(variables.taffy, "matchURI");
 			local.result = variables.taffy.matchURI("/echo/3.json");
 			debug(local.result);
-			assertEquals('^/echo/([^\/]+)$', local.result);
+			assertEquals('^/echo/([a-za-z0-9_\-\.\+]+@?[a-za-z0-9_\-\.]+\.?[a-za-z]+)((?:\.)[^\.\?]+)?$', local.result);
 		}
 
 		function uri_matching_works_without_extension(){
 			makePublic(variables.taffy, "matchURI");
 			local.result = variables.taffy.matchURI("/echo/3");
 			debug(local.result);
-			assertEquals('^/echo/([^\/]+)$', local.result);
+			assertEquals('^/echo/(?:(?:([^\/]+)(?:\.)([a-za-z0-9]+))|([^\/]+))((?:\.)[^\.\?]+)?$', local.result);
 		}
 
 		function request_parsing_works(){
@@ -171,14 +175,11 @@
 		}
 
 		function allows_email_as_final_url_value(){
-			makePublic(variables.taffy, "buildRequestArguments");
-			local.result = variables.taffy.buildRequestArguments(
-				"^/echo/([a-zA-Z0-9_\-\.\+]+@[a-zA-Z0-9_\-\.]+\.[a-zA-Z]+)$",
-				["id"],
-				"/echo/foo@bar.com",
-				"",
-				{}
-			);
+			//this test illustrates the issue with the current codebase:
+			//-- it's hard (impossible?) to distinguish between foo.json and ex@ex.com
+			local.headers = structNew();
+			local.headers.Accept = "text/json";
+			local.result = apiCall("get", "/echo/test@example.com.json", "", local.headers);
 			debug(local.result);
 			assertFalse(structKeyExists(local.result, "_taffy_mime"), "Did not detect desired return format correctly.");
 
@@ -349,7 +350,7 @@
 		<cfset var local = structNew() />
 		<!--- <cfset debug(cgi) /> --->
 		<cfhttp
-			url="http://#cgi.server_name#:#cgi.server_port#/taffy/tests/index.cfm/upload.json"
+			url="http://#cgi.server_name#:#cgi.server_port#/taffy/tests/index.cfm/upload"
 			method="post"
 			result="local.uploadResult">
 			<cfhttpparam type="file" name="img" file="#expandPath('/taffy/tests/tests/upload.png')#" />

@@ -416,10 +416,9 @@
 		<cfset requestObj.returnMimeExt = "" />
 		<cfif structKeyExists(requestObj.requestArguments, "_taffy_mime")>
 			<cfset requestObj.returnMimeExt = requestObj.requestArguments._taffy_mime />
-			<cfif not structKeyExists(application._taffy.settings.mimeTypes, requestObj.returnMimeExt)>
+			<cfset structDelete(requestObj.requestArguments, "_taffy_mime") />
+			<cfif not structKeyExists(application._taffy.settings.mimeExtensions, requestObj.returnMimeExt)>
 				<cfset throwError(400, "Requested mime type is not supported (#requestObj.returnMimeExt#)") />
-			<cfelse>
-				<cfset requestObj.returnMimeExt = application._taffy.settings.mimeTypes[requestObj.returnMimeExt] />
 			</cfif>
 		<cfelseif requestObj.uriFormat neq "">
 			<cfset requestObj.returnMimeExt = requestObj.uriFormat />
@@ -475,7 +474,31 @@
 			</cfif>
 		</cfloop>
 
-		<cfset local.returnData.uriRegex = "^" & local.uriMatcher & "$" />
+		<!--- if uriRegex ends with a token, slip the format piece in there too... --->
+		<cfset local.uriRegex = "^" & local.uriMatcher />
+		<cfif right(local.uriRegex, 8) eq "([^\/]+)">
+			<cfset local.uriRegex = left(local.uriRegex, len(local.uriRegex)-8) & "(?:(?:([^\/]+)(?:\.)([a-zA-Z0-9]+))|([^\/]+))" />
+			<!---
+				above regex explained:
+				(?:
+					(?:
+						([^\/]+)(?:\.)([a-zA-Z0-9]+)	--foo.json
+					)|(									--or
+						[^\/]+							--foo
+					)
+				)
+
+				we make it this complicated so that we can capture the ".json" separately from the "foo"
+			--->
+		</cfif>
+
+		<!--- require the uri to terminate after specified content --->
+		<cfset local.uriRegex = local.uriRegex
+							  & "((?:\.)[^\.\?]+)?"	<!--- anything other than these characters will be considered a mime-type request: / \ ? . --->
+							  & "$" />			<!--- terminate the uri (query string not included in cgi.path_info, does not need to be accounted for here) --->
+
+		<cfset local.returnData.uriRegex = local.uriRegex />
+
 		<cfreturn local.returnData />
 	</cffunction>
 
@@ -533,15 +556,13 @@
 			</cfif>
 		</cfloop>
 		<!--- if a mime type is requested as part of the url ("whatever.json"), then extract that so taffy can use it --->
-		<cfset local.lastChunk = listLast(arguments.uri, "/") />
-		<cfif listlen(local.lastChunk,".") gt 1 and len(listLast(local.lastChunk,".")) lte 10><!--- sanity check, ".ext" limited to 10 characters --->
-			<cfset local.mime = listLast(arguments.uri, ".") />
-			<cfset local.returnData[arguments.tokenNamesArray[local.numTokenNames]] =  left(local.lastChunk, len(local.lastChunk) - len(local.mime) - 1) /><!--- the extra -1 is for the dot --->
+		<cfif local.numTokenValues gt local.numTokenNames><!--- when there is 1 more token value than name, that value (regex capture group) is the format --->
+			<cfset local.mime = local.tokenValues[local.numTokenValues] />
 			<cfset local.returnData["_taffy_mime"] = local.mime />
 			<cfheader name="x-deprecation-warning" value="Specifying return format as '.#local.mime#' is deprecated. Please use the HTTP Accept header when possible." />
 		</cfif>
-		<cfif structKeyExists(cgi, "http_accept") and len(cgi.http_accept)>
-			<cfloop list="#cgi.HTTP_ACCEPT#" index="tmp">
+		<cfif structKeyExists(arguments.headers, "accept") and len(arguments.headers.accept)>
+			<cfloop list="#arguments.headers.accept#" index="tmp">
 				<!--- deal with that q=0 stuff (just ignore it) --->
 				<cfif listLen(tmp, ";") gt 1>
 					<cfset tmp = listFirst(tmp, ";") />
@@ -551,6 +572,9 @@
 					<cfbreak /><!--- exit loop --->
 				</cfif>
 			</cfloop>
+			<cfif not structKeyExists(local.returnData, "_taffy_mime")>
+				<cfset local.returnData["_taffy_mime"] = listFirst(listFirst(arguments.headers.accept), ";") />
+			</cfif>
 		</cfif>
 		<cfreturn local.returnData />
 	</cffunction>
