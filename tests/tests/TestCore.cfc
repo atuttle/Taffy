@@ -189,19 +189,19 @@
 			debug(local.result);
 			assertTrue(local.result._taffy_mime eq "json", "Did not detect desired return format correctly.");
 
-			// //full integration test for a@b.c.json
-			// local.result = apiCall("get", "/echo/test@example.com.json", "", {});
-			// debug(local.result);
-			// assert(isJson(local.result.fileContent), "response was not json");
-			// local.response = deserializeJSON(local.result.fileContent);
-			// assertEquals("test@example.com", local.response.id);
+			//full integration test for a@b.c.json
+			local.result = apiCall("get", "/echo/test@example.com.json", "", {});
+			debug(local.result);
+			assert(isJson(local.result.fileContent), "response was not json");
+			local.response = deserializeJSON(local.result.fileContent);
+			assertEquals("test@example.com", local.response.id);
 
-			// //full integration test for a@b.c (no .json, but with headers)
-			// local.result = apiCall("get", "/echo/test@example.com", "", local.headers);
-			// debug(local.result);
-			// assert(isJson(local.result.fileContent), "response was not json");
-			// local.response = deserializeJSON(local.result.fileContent);
-			// assertEquals("test@example.com", local.response.id);
+			//full integration test for a@b.c (no .json, but with headers)
+			local.result = apiCall("get", "/echo/test@example.com", "", local.headers);
+			debug(local.result);
+			assert(isJson(local.result.fileContent), "response was not json");
+			local.response = deserializeJSON(local.result.fileContent);
+			assertEquals("test@example.com", local.response.id);
 		}
 
 		function returns_405_for_unimplemented_verbs(){
