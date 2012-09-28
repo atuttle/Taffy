@@ -2,15 +2,16 @@
 	<cfscript>
 		this.name = "Taffy_testSuite";
 
-		variables.framework = {
-			disableDashboard = false
-			,reloadKey = "reload"
-			,unhandledPaths = "/Taffy/tests/someFolder,/Taffy/tests/tests,/tests/someFolder,/tests/tests"
-			,defaultRepresentationClass = "customJsonRepresentation"
-			,globalHeaders = {
-				"x-foo-globalheader" = "snafu"
-			}
-		};
+
+		variables.framework = {};
+		variables.framework.disableDashboard = false;
+		variables.framework.reloadKey = "reload";
+		variables.framework.unhandledPaths = "/Taffy/tests/someFolder,/Taffy/tests/tests,/tests/someFolder,/tests/tests";
+		variables.framework.defaultRepresentationClass = "customJsonRepresentation";
+		variables.framework.globalHeaders = {};
+		variables.framework.globalHeaders["x-foo-globalheader"] = "snafu";
+		variables.framework.defaultRepresentationClass = "customJsonRepresentation";
+
 
 		function onTaffyRequest(verb, cfc, requestArguments, mimeExt, headers) {
 			//pass data into a resource by modifying requestArguments
