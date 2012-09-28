@@ -2,6 +2,12 @@
 	<cfscript>
 		this.name = hash(getCurrentTemplatePath());
 
+		variables.framework = {};
+		variables.framework.debugKey = "debug";
+		variables.framework.reloadKey = "reload";
+		variables.framework.reloadPassword = "true";
+		variables.framework.defaultRepresentationClass = "taffy.core.genericRepresentation";
+
 		// do your onApplicationStart stuff here
 		function applicationStartEvent(){}
 
@@ -14,15 +20,5 @@
 			return true;
 		}
 
-		// called when taffy is initializing or when a reload is requested
-		function configureTaffy(){
-			setDebugKey("debug");
-			setReloadKey("reload");
-			setReloadPassword("true");
-
-			// Usage of this function is entirely optional. You may omit it if you want to use the default representation class.
-			// Change this to a custom class to change the default for the entire API instead of overriding for every individual response.
-			setDefaultRepresentationClass("taffy.core.genericRepresentation");
-		}
 	</cfscript>
 </cfcomponent>
