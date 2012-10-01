@@ -61,7 +61,7 @@
 
 			local.result2 = taffy.convertURItoRegex("/a/{abc}");
 			debug(local.result2);
-			assertEquals( "^/a/(?:(?:([^\/]+)(?:\.)([a-zA-Z0-9]+))|([^\/]+))((?:\.)[^\.\?]+)?$", local.result2["uriregex"], "Resulted regex did not match expected.");
+			assertEquals( "^/a/(?:(?:([^\/\.]+)(?:\.)([a-za-z0-9]+))|([^\/\.]+))((?:\.)[^\.\?]+)?$", local.result2["uriregex"], "Resulted regex did not match expected.");
 			assertEquals( 1, arrayLen(local.result2["tokens"]) );
 			assertEquals( "abc", local.result2["tokens"][1] );
 
@@ -84,15 +84,14 @@
 			makePublic(variables.taffy, "matchURI");
 			local.result = variables.taffy.matchURI("/echo/3.json");
 			debug(local.result);
-			assertEquals('^/echo/(?:(?:([^\/]+)(?:\.)([a-za-z0-9]+))|([^\/]+))((?:\.)[^\.\?]+)?$', local.result);
-					   // ^/echo/([a-za-z0-9_\-\.\+]+@?[a-za-z0-9_\-\.]+\.?[a-za-z]+)((?:\.)[^\.\?]+)?$
+			assertEquals('^/echo/(?:(?:([^\/\.]+)(?:\.)([a-za-z0-9]+))|([^\/\.]+))((?:\.)[^\.\?]+)?$', local.result);
 		}
 
 		function uri_matching_works_without_extension(){
 			makePublic(variables.taffy, "matchURI");
 			local.result = variables.taffy.matchURI("/echo/3");
 			debug(local.result);
-			assertEquals('^/echo/(?:(?:([^\/]+)(?:\.)([a-za-z0-9]+))|([^\/]+))((?:\.)[^\.\?]+)?$', local.result);
+			assertEquals('^/echo/(?:(?:([^\/\.]+)(?:\.)([a-za-z0-9]+))|([^\/\.]+))((?:\.)[^\.\?]+)?$', local.result);
 		}
 
 		function request_parsing_works(){
@@ -165,11 +164,11 @@
 			assertEquals("Requested mime type is not supported (application/NOPE)", local.result.responseHeader.explanation);
 		}
 
-		function accept_header_takes_precedence_over_extension(){
+		function extension_takes_precedence_over_accept_header(){
 			variables.taffy.setDefaultMime("text/json");
 			local.headers = structNew();
-			local.headers["Accept"] = "text/json";
-			local.result = apiCall("get","/echo/2.xml","foo=bar",local.headers);
+			local.headers["Accept"] = "text/xml";
+			local.result = apiCall("get","/echo/2.json","foo=bar",local.headers);
 			debug(local.result);
 			assertEquals(999, local.result.responseHeader.status_code);
 			assertTrue(isJson(local.result.fileContent));
@@ -346,6 +345,7 @@
 	<cffunction name="can_upload_a_file">
 		<cfset var local = structNew() />
 		<!--- <cfset debug(cgi) /> --->
+		<cfset variables.taffy.setDefaultMime("text/json") />
 		<cfhttp
 			url="http://#cgi.server_name#:#cgi.server_port#/taffy/tests/index.cfm/upload"
 			method="post"

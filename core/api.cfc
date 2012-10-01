@@ -317,9 +317,6 @@
  		<!--- check for format in the URI --->
  		<cfset requestObj.uri = getPath() />
  		<cfset requestObj.uriFormat = formatFromURI(requestObj.uri) />
- 		<cfif requestObj.uriFormat neq "">
- 			<cfset requestObj.uri = left(requestObj.uri, len(requestObj.uri) - len(requestObj.uriFormat) - 1) />
- 		</cfif>
 
 		<!--- attempt to find the cfc for the requested uri --->
 		<cfset requestObj.matchingRegex = matchURI(requestObj.uri) />
@@ -404,13 +401,8 @@
 		<cfset requestObj.returnMimeExt = "" />
 		<cfif structKeyExists(requestObj.requestArguments, "_taffy_mime")>
 			<cfset requestObj.returnMimeExt = requestObj.requestArguments._taffy_mime />
-<cffile action="delete" file="/users/adam/desktop/appscope.html" />
-<cfdump var="#application#" label="APPLICATION" output="/users/adam/desktop/appscope.html" format="html" />
-<cfdump var="#requestObj#" label="REQUESTOBJ" output="/users/adam/desktop/appscope.html" format="html" />
 			<cfif not structKeyExists(application._taffy.settings.mimeExtensions, requestObj.returnMimeExt)>
 				<cfset throwError(400, "Requested mime type is not supported (#requestObj.returnMimeExt#)") />
-			<cfelse>
-				<cfset requestObj.returnMimeExt = application._taffy.settings.mimeExtensions[requestObj.returnMimeExt] />
 			</cfif>
 		<cfelseif requestObj.uriFormat neq "">
 			<cfset requestObj.returnMimeExt = requestObj.uriFormat />
@@ -418,10 +410,10 @@
 			<!--- run some checks on the default --->
 			<cfif application._taffy.settings.defaultMime eq "">
 				<cfset throwError(400, "You have not specified a default mime type") />
-			<cfelseif not structKeyExists(application._taffy.settings.mimeExtensions, application._taffy.settings.defaultMime)>
+			<cfelseif not structKeyExists(application._taffy.settings.mimeTypes, application._taffy.settings.defaultMime)>
 				<cfset throwError(400, "Your default mime type is not implemented") />
 			</cfif>
-			<cfset requestObj.returnMimeExt = application._taffy.settings.defaultMime />
+			<cfset requestObj.returnMimeExt = application._taffy.settings.mimeTypes[application._taffy.settings.defaultMime] />
 		</cfif>
 		<cfset structDelete(requestObj.requestArguments, "_taffy_mime") />
 		<cfreturn requestObj />
@@ -452,6 +444,7 @@
 				<!--- not a token --->
 				<cfset local.uriMatcher = local.uriMatcher & '/' & local.chunk />
 			<cfelse>
+				<!--- strip {curly braces} --->
 				<cfset local.chunk = left(right(local.chunk, len(local.chunk)-1), len(local.chunk)-2) />
 				<!--- it's a token... but which kind? --->
 				<cfif find(':', local.chunk) neq 0>
@@ -469,14 +462,14 @@
 		<cfset local.uriRegex = "^" & local.uriMatcher />
 		<!--- if uriRegex ends with a token, slip the format piece in there too... --->
 		<cfif right(local.uriRegex, 8) eq "([^\/]+)">
-			<cfset local.uriRegex = left(local.uriRegex, len(local.uriRegex)-8) & "(?:(?:([^\/]+)(?:\.)([a-zA-Z0-9]+))|([^\/]+))" />
+			<cfset local.uriRegex = left(local.uriRegex, len(local.uriRegex)-8) & "(?:(?:([^\/\.]+)(?:\.)([a-zA-Z0-9]+))|([^\/\.]+))" />
 			<!---
 				above regex explained:
 				(?:
 					(?:
 						([^\/]+)(?:\.)([a-zA-Z0-9]+)	--foo.json
 					)|(									--or
-						[^\/]+							--foo
+						([^\/]+)						--foo
 					)
 				)
 
@@ -552,9 +545,7 @@
 		<cfif local.numTokenValues gt local.numTokenNames><!--- when there is 1 more token value than name, that value (regex capture group) is the format --->
 			<cfset local.mime = local.tokenValues[local.numTokenValues] />
 			<cfset local.returnData["_taffy_mime"] = local.mime />
-			<cfheader name="x-deprecation-warning" value="Specifying return format as '.#local.mime#' is deprecated. Please use the HTTP Accept header when possible." />
-		</cfif>
-		<cfif structKeyExists(arguments.headers, "Accept")>
+		<cfelseif structKeyExists(arguments.headers, "Accept")>
 			<cfset local.headerMatch = false />
 			<cfloop list="#arguments.headers.accept#" index="tmp">
 				<!--- deal with that q=0 stuff (just ignore it) --->
@@ -568,7 +559,7 @@
 				</cfif>
 			</cfloop>
 			<!--- if a header is passed, but it didn't match any known mimes, and no mime was found via extension, just use whatever's in the header --->
-			<cfif not structKeyExists(local.returnData, "_taffy_mime") and local.headerMatch eq false>
+			<cfif local.headerMatch eq false>
 				<cfset local.returnData["_taffy_mime"] = listFirst(listFirst(arguments.headers.accept, ","), ";") />
 			</cfif>
 		</cfif>
