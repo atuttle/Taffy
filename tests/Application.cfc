@@ -2,7 +2,6 @@
 	<cfscript>
 		this.name = "Taffy_testSuite";
 
-
 		variables.framework = {};
 		variables.framework.disableDashboard = false;
 		variables.framework.reloadKey = "reload";
@@ -10,8 +9,6 @@
 		variables.framework.defaultRepresentationClass = "customJsonRepresentation";
 		variables.framework.globalHeaders = {};
 		variables.framework.globalHeaders["x-foo-globalheader"] = "snafu";
-		variables.framework.defaultRepresentationClass = "customJsonRepresentation";
-
 
 		function onTaffyRequest(verb, cfc, requestArguments, mimeExt, headers) {
 			//pass data into a resource by modifying requestArguments
