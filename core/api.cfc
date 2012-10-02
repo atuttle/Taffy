@@ -265,6 +265,9 @@
 		<cfset application._taffy.settings = structNew() />
 		<cfset structAppend(application._taffy.settings, local.defaultConfig, true) /><!--- initialize to default values --->
 		<cfset structAppend(application._taffy.settings, variables.framework, true) /><!--- update with user values --->
+		<cfif structKeyExists(variables.framework, "beanFactory")>
+			<cfset setBeanFactory(variables.framework.beanFactory) />
+		</cfif>
 		<cfset configureTaffy()/><!--- result of configureTaffy() takes precedence --->
 		<!--- translate unhandledPaths config to regex for easier matching (This is ripped off from FW/1. Thanks, Sean!) --->
 		<cfset application._taffy.settings.unhandledPathsRegex = replaceNoCase(
