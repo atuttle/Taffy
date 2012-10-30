@@ -162,8 +162,10 @@
 		</cfif>
 
 		<cfset local.allowVerbs = uCase(structKeyList(_taffyRequest.matchDetails.methods)) />
-		<cfif application._taffy.settings.allowCrossDomain AND listFindNoCase('PUT,DELETE,OPTIONS',_taffyRequest.verb) AND NOT listFind(local.allowVerbs,'OPTIONS')>
-			<cfset local.allowVerbs = listAppend(local.allowVerbs,'OPTIONS') />
+		<cfif application._taffy.settings.allowCrossDomain 
+				AND listFindNoCase('PUT,DELETE,OPTIONS',_taffyRequest.verb) 
+				AND NOT listFind(local.allowVerbs,'OPTIONS')>
+		    <cfset local.allowVerbs = listAppend(local.allowVerbs,'OPTIONS') />
 		</cfif>
 
 		<cfif isObject(_taffyRequest.continue)>
@@ -183,7 +185,7 @@
 				/>
 			<cfelseif NOT listFind(local.allowVerbs,_taffyRequest.verb)>
 				<!--- if the verb is not implemented, refuse the request --->
-				<cfheader name="ALLOW" value="#ucase(structKeyList(_taffyRequest.matchDetails.methods))#" />
+				<cfheader name="ALLOW" value="#local.allowVerbs#" />
 				<cfset throwError(405, "Method Not Allowed") />
 			<cfelse>
 				<!--- create dummy response for cross domain OPTIONS request --->
@@ -220,12 +222,13 @@
 		<cfif application._taffy.settings.allowCrossDomain>
 			<cfheader name="Access-Control-Allow-Origin" value="*" />
 			<cfheader name="Access-Control-Allow-Methods" value="#local.allowVerbs#" />
+			<cfheader name="Access-Control-Allow-Headers" value="Content-Type" />
 		</cfif>
 		<cfset addHeaders(getGlobalHeaders()) />
 		<cfset addHeaders(_taffyRequest.resultHeaders) />
 
 		<!--- add ALLOW header for current resource, which describes available verbs --->
-		<cfheader name="ALLOW" value="#ucase(structKeyList(_taffyRequest.matchDetails.methods))#" />
+		<cfheader name="ALLOW" value="#local.allowVerbs#" />
 
 		<!--- result data --->
 		<cfif structKeyExists(_taffyRequest,'result')>
