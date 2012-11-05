@@ -3,10 +3,8 @@
 
 		this.name = hash(getCurrentTemplatePath());
 
-		function configureTaffy() {
-			// exclude test harness for uploading files
-			setUnhandledPaths('/Taffy/examples/api_uploadImg/client');
-		}
+		variables.framework = {};
+		variables.framework.unhandledPaths = "/Taffy/examples/api_uploadImg/client";
 
 	</cfscript>
 </cfcomponent>

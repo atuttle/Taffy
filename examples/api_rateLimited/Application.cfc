@@ -1,5 +1,6 @@
 <cfcomponent extends="taffy.core.api">
 	<cfscript>
+
 		this.name = "rate_limiting_example";
 
 		function applicationStartEvent(){
