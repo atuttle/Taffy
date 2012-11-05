@@ -815,6 +815,10 @@
 	<cffunction name="setBeanFactory" access="public" output="false" returntype="void">
 		<cfargument name="beanFactory" required="true" hint="Instance of bean factory object" />
 		<cfargument name="beanList" required="false" default="" />
+		<cfif isSimpleValue(arguments.beanFactory) and len(arguments.beanFactory) eq 0>
+			<!--- allow simply passing "" to this function and doing nothing with it --->
+			<cfreturn />
+		</cfif>
 		<cfset application._taffy.externalBeanFactory = arguments.beanFactory />
 		<cfset application._taffy.status.externalBeanFactoryUsed = true />
 	</cffunction>
