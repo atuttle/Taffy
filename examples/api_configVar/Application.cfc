@@ -1,5 +1,6 @@
 <cfcomponent extends="taffy.core.api">
 	<cfscript>
+
 		this.name = hash(getCurrentTemplatePath());
 
 		// In the interest of compatibility, we'll write this out long-form so it works on CF8
@@ -14,6 +15,8 @@
 		variables.framework.allowCrossDomain = false;
 		variables.framework.globalHeaders = structNew();
 		variables.framework.globalHeaders["X-MY-HEADER"] = "my header value";
+		//variables.framework.beanFactory = "";
+
 
 		/* If you have CF9+, the above could be written as:
 

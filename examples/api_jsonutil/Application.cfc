@@ -3,9 +3,8 @@
 
 		this.name = hash(getCurrentTemplatePath());
 
-		function configureTaffy(){
-			setDefaultRepresentationClass("JsonUtilRepresentation");
-		}
+		variables.framework = {};
+		variables.framework.defaultRepresentationClass = "JsonUtilRepresentation";
 
 	</cfscript>
 </cfcomponent>

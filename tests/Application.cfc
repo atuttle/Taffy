@@ -2,19 +2,13 @@
 	<cfscript>
 		this.name = "Taffy_testSuite";
 
-		function configureTaffy() {
-			var local = {};
-			local.headers["x-foo-globalheader"] = "snafu";
-
-			enableDashboard(true);
-			setReloadKey("reload");
-
-			// Don't try to handle the Unit Test Suite files
-			setUnhandledPaths('/Taffy/tests/someFolder,/Taffy/tests/tests,/tests/someFolder,/tests/tests');
-
-			setGlobalHeaders(local.headers);
-			setDefaultRepresentationClass("customJsonRepresentation");
-		}
+		variables.framework = {};
+		variables.framework.disableDashboard = false;
+		variables.framework.reloadKey = "reload";
+		variables.framework.unhandledPaths = "/Taffy/tests/someFolder,/Taffy/tests/tests,/tests/someFolder,/tests/tests";
+		variables.framework.defaultRepresentationClass = "customJsonRepresentation";
+		variables.framework.globalHeaders = {};
+		variables.framework.globalHeaders["x-foo-globalheader"] = "snafu";
 
 		function onTaffyRequest(verb, cfc, requestArguments, mimeExt, headers) {
 			//pass data into a resource by modifying requestArguments

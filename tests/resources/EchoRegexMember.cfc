@@ -1,4 +1,4 @@
-<cfcomponent extends="taffy.core.resource" taffy:uri="/echo/{id:[a-zA-Z0-9_\-\.\+]+@[a-zA-Z0-9_\-\.]+\.?[a-zA-Z]+}">
+<cfcomponent extends="taffy.core.resource" taffy:uri="/echo_regex/{id:\d{5}}">
 
 	<cffunction name="get">
 		<cfargument name="id" />

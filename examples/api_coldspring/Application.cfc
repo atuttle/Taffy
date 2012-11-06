@@ -1,31 +1,22 @@
 <cfcomponent extends="taffy.core.api">
 	<cfscript>
+
 		this.name = hash(getCurrentTemplatePath());
+
+		variables.framework = {};
+		variables.framework.debugKey = "debug";
+		variables.framework.reloadKey = "reload";
+		variables.framework.reloadPassword = "true";
+		variables.framework.defaultRepresentationClass = "taffy.core.nativeJsonRepresentation";
 
 		//do your onApplicationStart stuff here
 		function applicationStartEvent(){
 			application.beanFactory = createObject("component", "coldspring.beans.DefaultXMLBeanFactory");
 			application.beanFactory.loadBeans('/taffy/examples/api_coldspring/config/coldspring.xml');
+
+			//note that we're modifying variables.framework here, after the application variable has been set
+			variables.framework.beanFactory = application.beanFactory;
 		}
 
-		//do your onRequestStart stuff here
-		function requestStartEvent(){}
-
-		//this function is called after the request has been parsed and all request details are known
-		function onTaffyRequest(string verb, string cfc, struct requestArguments, string mimeExt){
-			//this would be a good place for you to check API key validity and other non-resource-specific validation
-			return true;
-		}
-
-		//called when taffy is initializing or when a reload is requested
-		function configureTaffy(){
-			setBeanFactory(application.beanfactory);
-			setDebugKey("debug");
-			setReloadKey("reload");
-			setReloadPassword("true");
-
-			//you could change this to a custom class to change the default instead of specifying an override for each response
-			setDefaultRepresentationClass("taffy.core.genericRepresentation");
-		}
 	</cfscript>
 </cfcomponent>
