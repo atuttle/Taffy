@@ -49,7 +49,7 @@
 				AND
 				application._taffy.settings.reloadOnEveryRequest eq true
 			)>
-			<cfif !reloadedInThisRequest><!--- prevent double reloads --->
+			<cfif !local.reloadedInThisRequest><!--- prevent double reloads --->
 				<cfset onApplicationStart() />
 			</cfif>
 		</cfif>
