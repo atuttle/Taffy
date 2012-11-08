@@ -2,15 +2,19 @@
 
 	<cffunction name="init">
 		<cfargument name="config" />
-		<cfset structAppend( variables, arguments.config, true ) /><!--- copy settings into adapter instance data --->
+		<cfargument name="tracker" hint="unused" default="" />
+
+		<!--- copy settings into adapter instance data --->
+		<cfset structAppend( variables, arguments.config, true ) />
+		
 		<cfreturn this />
 	</cffunction>
 
 	<cffunction name="log">
 		<cfargument name="exception" />
 		<!---
-			TODO: this adapter does not currently support authentication-required email, supplying a specific server, etc.
-			That would be a great and relatively easy thing for a 3rd party contributor to add! :)
+			TODO: This adapter does not currently support authentication-required email, supplying a specific server, etc.
+			That would be a great and relatively easy thing for you to contribute back! :)
 		--->
 		<cfmail
 			from="#variables.emailFrom#"

@@ -2,7 +2,9 @@
 
 	<cffunction name="init">
 		<cfargument name="config" />
-		<cfset variables.hothtracker = createObject("component", "Hoth.HothTracker").init(
+		<cfargument name="tracker" default="#createObject("component", "Hoth.HothTracker")#" />
+		<cfset variables.hothtracker = arguments.tracker />
+		<cfset variables.hothtracker.init(
 			createObject("component", arguments.config)
 		) />
 		<cfreturn this />

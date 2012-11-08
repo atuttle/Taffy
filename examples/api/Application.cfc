@@ -8,6 +8,7 @@
 		variables.framework.reloadKey = "reload";
 		variables.framework.reloadPassword = "true";
 		variables.framework.defaultRepresentationClass = "taffy.core.genericRepresentation";
+		variables.framework.returnExceptionsAsJson = true;
 
 		// do your onApplicationStart stuff here
 		function applicationStartEvent(){}
