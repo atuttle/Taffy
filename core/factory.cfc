@@ -27,19 +27,21 @@
 	<cffunction name="loadBeansFromPath" access="public" output="false" returnType="void">
 		<cfargument name="beanPath" type="string" required="true" hint="Absolute path to folder containing beans" />
 		<cfargument name="resourcesPath" type="string" default="resources" />
+		<cfargument name="resourcesBasePath" type="string" default="" />
 		<cfset var local = StructNew() />
 		<!--- if the folder doesn't exist, do nothing --->
 		<cfif not directoryExists(arguments.beanPath)>
 			<cfreturn />
 		</cfif>
 		<!--- get list of beans to load --->
-		<cfdirectory action="list" directory="#arguments.beanPath#" filter="*.cfc" name="local.beanQuery" />
+		<cfdirectory action="list" directory="#arguments.beanPath#" filter="*.cfc" name="local.beanQuery" recurse="true" />
 		<!--- cache all of the beans --->
 		<cfset application._taffy.status.skippedResources = arrayNew(1) /> <!--- empty out the array on factory reloads --->
 		<cfloop query="local.beanQuery">
-			<cfset local.beanName = left(local.beanQuery.name, len(local.beanQuery.name)-4) /><!--- drop the ".cfc" --->
+			<cfset local.beanName = filePathToBeanName(local.beanQuery.directory, local.beanquery.name, arguments.resourcesBasePath) />
+			<cfset local.beanPath = filePathToBeanPath(local.beanQuery.directory, local.beanquery.name, arguments.resourcesBasePath) />
 			<cftry>
-				<cfset this.beans[local.beanName] = createObject("component", arguments.resourcesPath & "." & local.beanName) />
+				<cfset this.beans[local.beanName] = createObject("component", local.beanPath) />
 				<cfcatch>
 					<!--- skip cfc's with errors, but save info about them for display in the dashboard --->
 					<cfset local.err = structNew() />
@@ -55,6 +57,54 @@
 			<cfset _recurse_ResolveDependencies(local.b, local.beanMeta) />
 		</cfloop>
 	</cffunction>
+
+	<cffunction name="filePathToBeanPath" access="private">
+		<cfargument name="path" />
+		<cfargument name="filename" />
+		<cfargument name="basepath" />
+		<cfset var beanPath = 
+			"resources."
+			&
+			replace(
+				replace(path, basepath, ""), 
+				"/",
+				".",
+				"ALL"
+			)
+			& 
+			"."
+			& 
+			replace(
+				filename,
+				".cfc",
+				""
+			)
+		/>
+		<cfif left(beanPath, 1) eq ".">
+			<cfset beanPath = right(beanPath, len(beanPath)-1) />
+		</cfif>
+		<cfreturn beanPath />
+	</cffunction>
+
+	<cffunction name="filePathToBeanName" access="private">
+		<cfargument name="path" />
+		<cfargument name="filename" />
+		<cfargument name="basepath" />
+		<cfreturn 
+			replace(
+				replace(path, basepath, ""), 
+				"/",
+				"",
+				"ALL"
+			)
+			& replace(
+				filename,
+				".cfc",
+				""
+			)
+		/>
+	</cffunction>
+
 	<cffunction name="_recurse_ResolveDependencies" access="private">
 		<cfargument name="beanName" type="string" required="true" />
 		<cfargument name="metaData" type="struct" required="true" />

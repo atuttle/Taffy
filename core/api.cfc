@@ -317,7 +317,7 @@
 		<cfif directoryExists(_taffyRequest.resourcePath)>
 			<!--- setup internal bean factory --->
 			<cfset application._taffy.factory = createObject("component", "taffy.core.factory").init() />
-			<cfset application._taffy.factory.loadBeansFromPath(_taffyRequest.resourcePath, guessResourcesCFCPath()) />
+			<cfset application._taffy.factory.loadBeansFromPath(_taffyRequest.resourcePath, guessResourcesCFCPath(), guessResourcesFullPath()) />
 			<cfset application._taffy.beanList = application._taffy.factory.getBeanList() />
 			<cfset cacheBeanMetaData(application._taffy.factory, application._taffy.beanList) />
 			<cfset application._taffy.status.internalBeanFactoryUsed = true />
