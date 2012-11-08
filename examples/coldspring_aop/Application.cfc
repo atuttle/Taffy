@@ -10,7 +10,7 @@
 		variables.framework.debugKey = "debug";
 		variables.framework.reloadKey = "reload";
 		variables.framework.reloadPassword = "true";
-		variables.framework.defaultRepresentationClass = "taffy.core.genericRepresentation";
+		variables.framework.representationClass = "taffy.core.genericRepresentation";
 
 		// do your onApplicationStart stuff here
 		function applicationStartEvent(){

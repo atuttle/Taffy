@@ -282,7 +282,7 @@
 		<cfset local.defaultConfig.reloadKey = "reload" />
 		<cfset local.defaultConfig.reloadPassword = "true" />
 		<cfset local.defaultConfig.reloadOnEveryRequest = false />
-		<cfset local.defaultConfig.defaultRepresentationClass = "taffy.core.nativeJsonRepresentation" />
+		<cfset local.defaultConfig.representationClass = "taffy.core.nativeJsonRepresentation" />
 		<cfset local.defaultConfig.dashboardKey = "dashboard" />
 		<cfset local.defaultConfig.disableDashboard = false />
 		<cfset local.defaultConfig.unhandledPaths = "/flex2gateway" />
@@ -339,7 +339,7 @@
 			<cfset throwError(500, "You must either set an external bean factory or use the internal factory by creating a `/resources` folder.") />
 		</cfif>
 		<!--- automatically introspect mime types from cfc metadata of default representation class --->
-		<cfset inspectMimeTypes(application._taffy.settings.defaultRepresentationClass) />
+		<cfset inspectMimeTypes(application._taffy.settings.representationClass) />
 		<!--- check to make sure a default mime type is set --->
 		<cfif application._taffy.settings.defaultMime eq "">
 			<cfset throwError(400, "You have not specified a default mime type!") />
@@ -923,11 +923,11 @@
 
 	<cffunction name="setDefaultRepresentationClass" access="public" output="false" returnType="void" hint="Override the global default representation object with a custom class">
 		<cfargument name="customClassDotPath" type="string" required="true" hint="Dot-notation path to your custom class to use as the default" />
-		<cfset application._taffy.settings.defaultRepresentationClass = arguments.customClassDotPath />
+		<cfset application._taffy.settings.representationClass = arguments.customClassDotPath />
 	</cffunction>
 
 	<cffunction name="newRepresentation" access="public" output="false">
-		<cfargument name="class" type="string" default="#application._taffy.settings.defaultRepresentationClass#" />
+		<cfargument name="class" type="string" default="#application._taffy.settings.representationClass#" />
 		<cfif application._taffy.factory.containsBean(arguments.class)>
 			<cfreturn application._taffy.factory.getBean(arguments.class) />
 		<cfelse>

@@ -4,7 +4,7 @@
 		this.name = hash(getCurrentTemplatePath());
 
 		variables.framework = {};
-		variables.framework.defaultRepresentationClass = "resources.CustomRepresentationClass";
+		variables.framework.representationClass = "resources.CustomRepresentationClass";
 
 		function applicationStartEvent(){
 			application.JsonUtil = createObject("component", "resources.JSONUtil.JSONUtil");
