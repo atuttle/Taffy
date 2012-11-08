@@ -3,7 +3,7 @@
 		this.name = hash(getCurrentTemplatePath());
 
 		variables.framework = {};
-		variables.framework.defaultExceptionLogAdapter = "taffy.bonus.LogToHoth";
+		variables.framework.exceptionLogAdapter = "taffy.bonus.LogToHoth";
 		variables.framework.exceptionLogAdapterConfig = "taffy.examples.api_hoth.resources.HothConfig";
 
 	</cfscript>

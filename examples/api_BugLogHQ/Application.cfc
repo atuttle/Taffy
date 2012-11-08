@@ -5,7 +5,7 @@
 
 		variables.framework = {};
 
-		variables.framework.defaultExceptionLogAdapter = "taffy.bonus.LogToBugLogHQ";
+		variables.framework.exceptionLogAdapter = "taffy.bonus.LogToBugLogHQ";
 
 		variables.framework.exceptionLogAdapterConfig = StructNew();
 		variables.framework.exceptionLogAdapterConfig.bugLogListener = "bugLog.listeners.bugLogListenerWS";

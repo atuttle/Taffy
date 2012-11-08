@@ -293,7 +293,7 @@
 		<cfset local.defaultConfig.exceptionLogAdapterConfig = StructNew() />
 		<cfset local.defaultConfig.exceptionLogAdapterConfig.emailFrom = "api-error@yourdomain.com" />
 		<cfset local.defaultConfig.exceptionLogAdapterConfig.emailTo = "you@yourdomain.com" />
-		<cfset local.defaultConfig.exceptionLogAdapterConfig.emailSubj = "Exception Caught in Taffy API" />
+		<cfset local.defaultConfig.exceptionLogAdapterConfig.emailSubj = "Exception Trapped in API" />
 		<cfset local.defaultConfig.exceptionLogAdapterConfig.emailType = "html" />
 		<!--- status --->
 		<cfset application._taffy.status = structNew() />
