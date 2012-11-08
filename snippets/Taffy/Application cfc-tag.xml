@@ -5,13 +5,34 @@
 <starttext><![CDATA[<cfcomponent extends="taffy.core.api">
 
 	<cfset this.name = "]]></starttext>
-<endtext><![CDATA["/>
+<endtext><![CDATA[" />
 
-	<cffunction name="applicationStartEvent">
-	</cffunction>
+	<cfset variables.framework = {
+		reloadKey = "reload"
+		,reloadPassword = "true"
+		,reloadOnEveryRequest = false
+		,defaultRepresentationClass = "taffy.core.nativeJsonRepresentation"
+		,dashboardKey = "dashboard"
+		,disableDashboard = false
+		,unhandledPaths = "/flex2gateway"
+		,allowCrossDomain = false
+		,globalHeaders = structNew()
+		,debugKey = "debug"
+		,returnExceptionsAsJson = true
+		,exceptionLogAdapter = "taffy.bonus.LogToEmail"
+		,exceptionLogAdapterConfig = {
+			emailFrom = "api-error@yourdomain.com"
+			,emailTo = "you@yourdomain.com"
+			,emailSubj = "Exception Trapped in API"
+			,emailType = "html"
+		}
+		,beanFactory = ""
+	} />
 
-	<cffunction name="requestStartEvent">
-	</cffunction>
+
+	<cffunction name="applicationStartEvent"></cffunction>
+
+	<cffunction name="requestStartEvent"></cffunction>
 
 	<cffunction name="onTaffyRequest">
 		<cfargument name="verb" />
@@ -19,12 +40,7 @@
 		<cfargument name="requestArguments" />
 		<cfargument name="mimeExt" />
 		<cfargument name="headers" />
-		<cfreturn true />
 	</cffunction>
 
-	<cffunction name="configureTaffy">
-		<cfset enableDashboard(true)/>
-		<cfset setUnhandledPaths('/flex2gateway')/>
-	</cffunction>
 </cfcomponent>]]></endtext>
 </snippet>
