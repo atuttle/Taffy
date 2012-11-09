@@ -2,19 +2,21 @@
 
 Taffy is a ColdFusion framework that helps you build RESTful web services with very little boilerplate code, very little configuration, and to be honest, very little effort.
 
+<!--
 ## Build Status
 
 [![Taffy Build Status](http://fusiongrokker.com:8080/job/Taffy/badge/icon)](http://fusiongrokker.com:8080/job/Taffy/)
 
 Taffy has a comprehensive test suite and uses continuous integration to ensure that the code is always usable. If you'd like, you can [review the Jenkins build history for Taffy](http://fusiongrokker.com:8080/job/Taffy/).
+-->
 
 ## Documentation
 
-Documentation is provided via [the wiki][3].
+Documentation is provided via the wiki, and [here's a nice clean index of what's in the wiki][3].
 
 ### You can contribute to the documentation
 
-If you would like to contribute to [the wiki][3] documentation, [please read this blog post][2]. If you still have questions, [ask them on our mailing list][1]. :)
+If you would like to contribute to documentation, [please read this blog post][2]. If you still have questions, [ask them on our mailing list][1]. :)
 
 ## Community
 
@@ -42,4 +44,4 @@ It means you can use Taffy pretty much any way you like. You can fork it. You ca
 
 [1]:https://groups.google.com/forum/#!forum/taffy-users
 [2]:http://fusiongrokker.com/post/how-you-can-contribute-to-taffy-documentation
-[3]:https://github.com/atuttle/Taffy/wiki/_pages
+[3]:http://atuttle.github.com/Taffy/documentation.html
