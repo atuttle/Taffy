@@ -2,13 +2,11 @@
 
 Taffy is a ColdFusion framework that helps you build RESTful web services with very little boilerplate code, very little configuration, and to be honest, very little effort.
 
-<!--
 ## Build Status
 
 [![Taffy Build Status](http://fusiongrokker.com:8080/job/Taffy/badge/icon)](http://fusiongrokker.com:8080/job/Taffy/)
 
 Taffy has a comprehensive test suite and uses continuous integration to ensure that the code is always usable. If you'd like, you can [review the Jenkins build history for Taffy](http://fusiongrokker.com:8080/job/Taffy/).
--->
 
 ## Documentation
 
