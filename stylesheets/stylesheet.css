@@ -337,6 +337,14 @@ footer a:hover {
 * html .clearfix {height: 1%;}
 .clearfix {display: block;}
 
+#docs li {
+  padding-bottom: 15px;
+  padding-left: 0px;
+  margin-left: 38px;
+  list-style-position: outside;
+}
+
+
 /* #Media Queries
 ================================================== */
 
