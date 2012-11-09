@@ -75,6 +75,10 @@
 	</target>
 
 	<target name="runtests" description="Make output directories and run the MXUnit task" depends="init,clean">
+		<!-- first, make sure Taffy is initialized -->
+		<get src="http://jenkins.local/taffy/tests/?dashboard" dest="init.result" />
+		<delete file="init.result" />
+
 		<!-- <delete dir="${test.output}" failonerror="false" /> -->
 		<taskdef name="mxunittask" classname="org.mxunit.ant.MXUnitAntTask" classpathref="project.classpath" />
 		<mxunittask server="${test.server}" port="${test.serverport}" defaultrunner="${test.runner}" outputdir="${test.output.xml}" verbose="true">
