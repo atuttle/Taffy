@@ -20,6 +20,8 @@ If you would like to contribute to documentation, [please read this blog post][2
 
 We have [a mailing list for Taffy Users][1]. Feel free to ask for help, discuss potential bugs, and share new ideas there.
 
+I also frequent the #ColdFusion channels on both Freenode and DALNet (IRC).
+
 ## Open Source!
 
 Part of the beauty of open source is that _you can affect change_. You can help improve the documentation, fix a bug, add tests, or even propose new features. Nothing is off limits, and I try to be very responsive to pull requests and on the mailing list.
