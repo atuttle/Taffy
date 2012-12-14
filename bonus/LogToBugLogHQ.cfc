@@ -15,7 +15,7 @@
 		<cfreturn this />
 	</cffunction>
 
-	<cffunction name="log">
+	<cffunction name="saveLog">
 		<cfargument name="exception" />
 	
 		<cfset var msg = '' />

@@ -10,7 +10,7 @@
 		<cfreturn this />
 	</cffunction>
 
-	<cffunction name="log">
+	<cffunction name="saveLog">
 		<cfargument name="exception" />
 		<cfset local.result = variables.HothTracker.track(arguments.exception) />
 		<cfheader name="X-HOTH-LOGGED-EXCEPTION" value="#local.result#" />

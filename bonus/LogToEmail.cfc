@@ -10,7 +10,7 @@
 		<cfreturn this />
 	</cffunction>
 
-	<cffunction name="log">
+	<cffunction name="saveLog">
 		<cfargument name="exception" />
 		<!---
 			TODO: This adapter does not currently support authentication-required email, supplying a specific server, etc.
