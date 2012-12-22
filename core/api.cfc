@@ -79,7 +79,7 @@
 			<cfset logger = createObject("component", application._taffy.settings.exceptionLogAdapter).init(
 				application._taffy.settings.exceptionLogAdapterConfig
 			) />
-			<cfset logger.log(exception) />
+			<cfset logger.saveLog(exception) />
 
 			<!--- return 500 no matter what --->
 			<cfheader statuscode="500" statustext="Error" />
