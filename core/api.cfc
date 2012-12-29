@@ -45,8 +45,6 @@
 			)
 			OR
 			(
-				structKeyExists(application._taffy.settings, "reloadOnEveryRequest")
-				AND
 				application._taffy.settings.reloadOnEveryRequest eq true
 			)>
 			<cfif !local.reloadedInThisRequest><!--- prevent double reloads --->
@@ -458,7 +456,7 @@
 			<cfif application._taffy.settings.defaultMime eq "">
 				<cfset throwError(400, "You have not specified a default mime type") />
 			<cfelseif not structKeyExists(application._taffy.settings.mimeTypes, application._taffy.settings.defaultMime)>
-				<cfset throwError(400, "Your default mime type is not implemented") />
+				<cfset throwError(400, "Your default mime type (#application._taffy.settings.defaultMime#) is not implemented") />
 			</cfif>
 			<cfset requestObj.returnMimeExt = application._taffy.settings.mimeTypes[application._taffy.settings.defaultMime] />
 		</cfif>

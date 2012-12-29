@@ -153,7 +153,7 @@
 			local.result = apiCall("get", "/echo/2", "foo=bar");
 			debug(local.result);
 			assertEquals(400, local.result.responseHeader.status_code);
-			assertEquals("Your default mime type is not implemented", local.result.responseHeader.explanation);
+			assertEquals("Your default mime type (DoesNotExist) is not implemented", local.result.responseHeader.explanation);
 		}
 
 		function returns_error_when_requested_mime_not_supported(){
