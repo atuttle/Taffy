@@ -29,6 +29,14 @@
 		<cfreturn getRepInstance(arguments.customRepresentationClass).setImageData(arguments.binaryData) />
 	</cffunction>
 
+	<cffunction name="saveLog">
+		<cfargument name="exception" />
+		<cfset logger = createObject("component", application._taffy.settings.exceptionLogAdapter).init(
+				application._taffy.settings.exceptionLogAdapterConfig
+		) />
+		<cfset logger.saveLog(exception) />
+	</cffunction>
+
 	<!---
 		function that gets the representation class instance
 		-- if the argument is blank, we use the default from taffy settings
