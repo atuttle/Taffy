@@ -7,7 +7,7 @@
 		}
 
 		function representationOf_returns_repClass(){
-			//this test does not account for nested inheretance, should be enhanced to at some point
+			application._taffy.settings.representationClass = "taffy.core.nativeJsonRepresentation";
 			makePublic(variables.resource, "representationOf");
 			local.result = variables.resource.representationOf(10);
 			local.meta = getMetadata(local.result);

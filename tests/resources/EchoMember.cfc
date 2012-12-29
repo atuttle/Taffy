@@ -1,5 +1,7 @@
 <cfcomponent extends="taffy.core.resource" taffy:uri="/echo/{id}">
 
+	<cfproperty name="customJsonRepresentation" default="initial" />
+
 	<cffunction name="get">
 		<cfargument name="id" />
 		<cfset local.headers = {}/>

@@ -4,6 +4,8 @@
 
 		function beforeTests(){
 			variables.taffy = createObject("component","taffy.tests.Application");
+			variables.factory = variables.taffy.getBeanFactory();
+			variables.factory.loadBeansFromPath( expandPath('/taffy/tests/resources'), 'taffy.tests.resources', expandPath('/taffy/tests/resources'), true );
 		}
 
 		function properly_notifies_unimplemented_mimes(){

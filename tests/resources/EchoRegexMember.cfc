@@ -17,4 +17,10 @@
 		<cfreturn representationOf(arguments).withStatus(200) />
 	</cffunction>
 
+
+	<cffunction name="setEchoMember">
+		<cfargument name="echoMember" />
+		<cfset this.echoMember = arguments.echoMember />
+	</cffunction>
+
 </cfcomponent>
