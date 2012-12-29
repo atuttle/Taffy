@@ -971,4 +971,19 @@
 		</cfif>
 	</cffunction>
 
+	<cffunction name="getBasicAuthCredentials" access="public" output="false" returntype="Struct">
+		<cfset var local = {} />
+		<cfset local.credentials = {} />
+		<cfset local.credentials.username = "" />
+		<cfset local.credentials.password = "" />
+		<cftry>
+			<cfset local.encodedCredentials = ListLast( GetPageContext().getRequest().getHeader("Authorization"), " " ) />
+			<cfset local.decodedCredentials = toString( toBinary( local.EncodedCredentials ) ) />
+			<cfset local.credentials.username = listFirst( local.decodedCredentials, ":" ) />
+			<cfset local.credentials.password = listRest( local.decodedCredentials, ":" ) />
+			<cfcatch></cfcatch>
+		</cftry>
+		<cfreturn local.credentials />
+	</cffunction>
+
 </cfcomponent>

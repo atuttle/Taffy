@@ -270,7 +270,7 @@
 			debug( local.deserializedContent );
 
 			// The service response should contain only the ID parameter, and not anything parsed from the body
-			assertEquals("id,foo", structKeylist(local.deserializedContent));
+			assertEquals("foo,id,password,username", listSort(structKeylist(local.deserializedContent), "textnocase"));
 			assertEquals(12, local.deserializedContent["id"]);
 			assertEquals("The quick brown fox jumped over the lazy dog.", local.deserializedContent["foo"]);
 		}
@@ -291,7 +291,7 @@
 			debug( local.deserializedContent );
 
 			// The service response should contain the ID parameter and all parsed form fields from the body
-			assertEquals("bar,baz,foo,id", listSort(structKeylist(local.deserializedContent), "textnocase"));
+			assertEquals("bar,baz,foo,id,password,username", listSort(structKeylist(local.deserializedContent), "textnocase"));
 			assertEquals(12, local.deserializedContent["id"]);
 			assertEquals("yankee", local.deserializedContent["foo"]);
 			assertEquals("hotel", local.deserializedContent["bar"]);
@@ -362,6 +362,7 @@
 			assertFalse(structKeyExists(local.result.responseheader, "X-TAFFY-RELOADED"), "Expected reload header to be missing, but it was sent.");
 			application._taffy.settings.reloadOnEveryRequest = true;
 			local.result2 = apiCall("get", "/echo/dude.json", "");
+			debug(local.result2);
 			assertTrue(structKeyExists(local.result2.responseheader, "X-TAFFY-RELOADED"), "Expected reload header to be sent, but it was missing.");
 		}
 
@@ -370,6 +371,17 @@
 			debug(local.result);
 			assertEquals(500, local.result.responseHeader.status_code);
 			assertTrue( isJson( local.result.fileContent ), "Response body was not json" );
+		}
+
+		function basic_auth_credentials_found(){
+			local.result = apiCall("get", "/basicauth.json", "", {}, "Towel:42");
+			debug(local.result);
+			assertTrue(isJson(local.result.fileContent));
+			local.data = deserializeJSON(local.result.fileContent);
+			assertTrue(structKeyExists(local.data, "username"));
+			assertEquals("Towel", local.data.username);
+			assertTrue(structKeyExists(local.data, "password"));
+			assertEquals("42", local.data.password);
 		}
 
 	</cfscript>
