@@ -994,4 +994,8 @@
 		<cfreturn local.credentials />
 	</cffunction>
 
+	<cffunction name="getHostname"><!--- unceremoniously stolen from FW/1 --->
+		<cfreturn createObject( "java", "java.net.InetAddress" ).getLocalHost().getHostName() />
+	</cffunction>
+
 </cfcomponent>
