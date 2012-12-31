@@ -384,6 +384,17 @@
 			assertEquals("42", local.data.password);
 		}
 
+		function getHostname_returns_not_blank(){
+			local.hostname = variables.taffy.getHostname();
+			debug(local.hostname);
+			assertNotEquals( "", local.hostname );
+		}
+
+		function envConfig_is_applied(){
+			debug( application._taffy.settings.reloadPassword );
+			assertEquals( "dontpanic", application._taffy.settings.reloadPassword );
+		}
+
 	</cfscript>
 
 

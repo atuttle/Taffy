@@ -11,7 +11,7 @@
 
 		<cfif lcase(arguments.method) eq "put" or lcase(arguments.method) eq "post">
 			<!--- always reload the api before making a request --->
-			<cfhttp method="GET" url="http://#CGI.SERVER_NAME#:#CGI.SERVER_PORT#/taffy/tests/index.cfm/dashboard?reload=true" />
+			<cfhttp method="GET" url="http://#CGI.SERVER_NAME#:#CGI.SERVER_PORT#/taffy/tests/index.cfm/dashboard?reload=#application._taffy.settings.reloadPassword#" />
 			<cfset local.args = {} />
 			<cfset local.args.method = arguments.method />
 			<cfset local.args.url = "http://#CGI.SERVER_NAME#:#CGI.SERVER_PORT#/taffy/tests/index.cfm#arguments.uri#" />

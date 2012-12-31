@@ -4,6 +4,7 @@
 	<cffunction name="applicationStartEvent" output="false" hint="override this function to run your own code inside onApplicationStart()"></cffunction>
 	<cffunction name="requestStartEvent" output="false" hint="override this function to run your own code inside onRequestStart()"></cffunction>
 	<cffunction name="configureTaffy" output="false" hint="override this function to set Taffy config settings"></cffunction>
+	<cffunction name="getEnvironment" output="false" hint="override this function to define the current API environment"><cfreturn "" /></cffunction>
 
 	<!---
 		onTaffyRequest gives you the opportunity to inspect the request before it is sent to the service.
@@ -305,6 +306,15 @@
 			<cfset setBeanFactory(variables.framework.beanFactory) />
 		</cfif>
 		<cfset configureTaffy()/><!--- result of configureTaffy() takes precedence --->
+		<!--- allow environment-specific config --->
+		<cfset local.env = getEnvironment() />
+		<cfif len(local.env) gt 0>
+			<cfparam name="variables.framework" default="#structNew()#" />
+			<cfparam name="variables.framework.environments" default="#structNew()#" />
+			<cfif structKeyExists(variables.framework.environments, local.env) and isStruct(variables.framework.environments[local.env])>
+				<cfset structAppend(application._taffy.settings, variables.framework.environments[local.env]) />
+			</cfif>
+		</cfif>
 		<!--- translate unhandledPaths config to regex for easier matching (This is ripped off from FW/1. Thanks, Sean!) --->
 		<cfset application._taffy.settings.unhandledPathsRegex = replaceNoCase(
 			REReplace(application._taffy.settings.unhandledPaths, '(\+|\*|\?|\.|\[|\^|\$|\(|\)|\{|\||\\)', '\\\1', 'all' ),

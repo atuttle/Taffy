@@ -10,6 +10,14 @@
 		variables.framework.globalHeaders = {};
 		variables.framework.globalHeaders["x-foo-globalheader"] = "snafu";
 
+		variables.framework.environments = {};
+		variables.framework.environments.test = {};
+		variables.framework.environments.test.reloadPassword = 'dontpanic';
+
+		function getEnvironment(){
+			return "test";
+		}
+
 		function onTaffyRequest(verb, cfc, requestArguments, mimeExt, headers) {
 			var local = {};
 
