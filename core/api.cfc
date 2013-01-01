@@ -260,7 +260,6 @@
 
 			</cfif>
 		</cfif>
-
 		<cfreturn true />
 	</cffunction>
 
@@ -355,6 +354,8 @@
 			<p>If all else fails, I recommend starting with <a href="https://github.com/atuttle/Taffy/wiki/Getting-Started">Getting Started</a>.</p>
 			<cfabort />
 		</cfif>
+		<!--- sort URIs --->
+		<cfset sortURIMatchOrder() />
 		<!--- automatically introspect mime types from cfc metadata of default representation class --->
 		<cfset inspectMimeTypes(application._taffy.settings.representationClass) />
 		<!--- check to make sure a default mime type is set --->
@@ -552,15 +553,20 @@
 		<cfreturn local.returnData />
 	</cffunction>
 
+	<cffunction name="sortURIMatchOrder" access="private" output="false">
+		<cfset application._taffy.URIMatchOrder = listToArray( structKeyList(application._taffy.endpoints, chr(10)), chr(10) ) />
+		<cfset arraySort(application._taffy.URIMatchOrder, "text", "desc") />
+	</cffunction>
+
 	<cffunction name="matchURI" access="private" output="false" returnType="string">
 		<cfargument name="requestedURI" type="string" required="true" hint="probably just pass in cgi.path_info" />
-		<cfset var endpoint = '' />
-		<cfset var attempt = '' />
-		<cfloop collection="#application._taffy.endpoints#" item="endpoint">
-			<cfset attempt = reMatchNoCase(endpoint, arguments.requestedURI) />
-			<cfif arrayLen(attempt) gt 0>
+		<cfset var local = {} />
+		<cfset local.uriCount = arrayLen(application._taffy.URIMatchOrder) />
+		<cfloop from="1" to="#local.uriCount#" index="local.i">
+			<cfset local.attempt = reMatchNoCase(application._taffy.URIMatchOrder[local.i], arguments.requestedURI) />
+			<cfif arrayLen(local.attempt) gt 0>
 				<!--- found our mapping --->
-				<cfreturn endpoint />
+				<cfreturn application._taffy.URIMatchOrder[local.i] />
 			</cfif>
 		</cfloop>
 		<!--- nothing found --->

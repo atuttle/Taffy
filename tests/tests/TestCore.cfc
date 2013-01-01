@@ -96,6 +96,16 @@
 			assertEquals('^/echo/(?:(?:([^\/\.]+)(?:\.)([a-za-z0-9]+))|([^\/\.]+))((?:\.)[^\.\?]+)?$', local.result);
 		}
 
+		function uri_matching_is_sorted_so_static_URIs_take_priority_over_tokens(){
+			makePublic(variables.taffy, "matchURI");
+			local.result = variables.taffy.matchURI("/echo/3");
+			debug(local.result);
+			assertEquals('^/echo/(?:(?:([^\/\.]+)(?:\.)([a-za-z0-9]+))|([^\/\.]+))((?:\.)[^\.\?]+)?$', local.result);
+			local.result = variables.taffy.matchURI("/echo/towel");
+			debug(local.result);
+			assertEquals('^/echo/towel((?:\.)[^\.\?]+)?$', local.result);
+		}
+
 		function request_parsing_works(){
 			makePublic(variables.taffy,"buildRequestArguments");
 			local.result = variables.taffy.buildRequestArguments(
