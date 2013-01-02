@@ -750,6 +750,18 @@
 			They would be added here, if they don't support getBeanList out of the box.
 			TODO: Add support for DI/1 when it is released
 		 --->
+		<cfelseif beanFactoryMeta.name contains "ioc">
+			<!--- this isn't a perfect test (contains "ioc") but it's all we can do for now... --->
+			<cfset local.beanInfo = application._taffy.externalBeanFactory.getBeanInfo().beanInfo />
+			<cfset local.beanList = "" />
+			<cfloop collection="#local.beanInfo#" item="local.beanName">
+				<cfif structKeyExists(local.beanInfo[local.beanName],'name')
+					  AND local.beanName NEQ local.beanInfo[local.beanName].name
+					  AND isInstanceOf(application._taffy.externalBeanFactory.getBean(local.beanName),'taffy.core.resource')>
+					<cfset local.beanList = listAppend(local.beanList,local.beanName) />
+				</cfif>
+			</cfloop>
+			<cfreturn local.beanList />
 		</cfif>
 		<cfreturn "" />
 	</cffunction>
