@@ -745,11 +745,6 @@
 		<cfset var beanFactoryMeta = getMetadata(application._taffy.externalBeanFactory) />
 		<cfif lcase(left(beanFactoryMeta.name, 10)) eq "coldspring">
 			<cfreturn getBeanListFromColdSpring() />
-		<!---
-			What other popular bean factories should be supported?
-			They would be added here, if they don't support getBeanList out of the box.
-			TODO: Add support for DI/1 when it is released
-		 --->
 		<cfelseif beanFactoryMeta.name contains "ioc">
 			<!--- this isn't a perfect test (contains "ioc") but it's all we can do for now... --->
 			<cfset local.beanInfo = application._taffy.externalBeanFactory.getBeanInfo().beanInfo />
