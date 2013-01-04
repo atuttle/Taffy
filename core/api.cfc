@@ -391,7 +391,6 @@
 
 		<!--- uri doesn't map to any known resources --->
 		<cfif not len(requestObj.matchingRegex)>
-			<cfdump var="#requestObj.uri#"><cfabort>
 			<cfset throwError(404, "Not Found") />
 		</cfif>
 
