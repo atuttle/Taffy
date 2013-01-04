@@ -54,7 +54,7 @@
 		</cfif>
 		<cfif !isUnhandledPathRequest(arguments.targetPath)>
 			<!--- if browsing to root of api, redirect to dashboard --->
-			<cfif len(cgi.path_info) lte 1 and len(cgi.query_string) eq 0 and listLast(cgi.script_name, "/") eq "index.cfm" and not application._taffy.settings.disableDashboard>
+			<cfif NOT application._taffy.settings.disableDashboard AND NOT structKeyExists(url,application._taffy.settings.endpointURLParam) AND NOT structKeyExists(form,application._taffy.settings.endpointURLParam) AND len(cgi.path_info) lte 1 and len(cgi.query_string) eq 0 and listLast(cgi.script_name, "/") eq "index.cfm">
 				<cfset local.basePath = listDeleteAt(cgi.script_name,listLen(cgi.script_name,"/"),"/") />
 				<cflocation url="#local.basePath#/?#application._taffy.settings.dashboardKey#" addtoken="false" />
 			</cfif>
@@ -161,8 +161,8 @@
 		</cfif>
 
 		<cfset local.allowVerbs = uCase(structKeyList(_taffyRequest.matchDetails.methods)) />
-		<cfif application._taffy.settings.allowCrossDomain 
-				AND listFindNoCase('PUT,DELETE,OPTIONS',_taffyRequest.verb) 
+		<cfif application._taffy.settings.allowCrossDomain
+				AND listFindNoCase('PUT,DELETE,OPTIONS',_taffyRequest.verb)
 				AND NOT listFind(local.allowVerbs,'OPTIONS')>
 		    <cfset local.allowVerbs = listAppend(local.allowVerbs,'OPTIONS') />
 		</cfif>
@@ -280,6 +280,7 @@
 		<cfset local.defaultConfig.reloadKey = "reload" />
 		<cfset local.defaultConfig.reloadPassword = "true" />
 		<cfset local.defaultConfig.reloadOnEveryRequest = false />
+		<cfset local.defaultConfig.endpointURLParam = 'endpoint' />
 		<cfset local.defaultConfig.representationClass = "taffy.core.nativeJsonRepresentation" />
 		<cfset local.defaultConfig.dashboardKey = "dashboard" />
 		<cfset local.defaultConfig.disableDashboard = false />
@@ -344,11 +345,11 @@
 
 		<cfelse>
 			<h1>Taffy is up and running!</h1>
-			<p>It looks like you don't have any resources defined. Get started by creating the folder 
+			<p>It looks like you don't have any resources defined. Get started by creating the folder
 			<code style="background-color: #F5DA81"><cfoutput>#guessResourcesFullPath()#</cfoutput></code> in which you should place your
 			Resource CFC's.</p>
-			<p>Or you could set up a bean factory, like <a href="http://www.coldspringframework.org/">ColdSpring</a> 
-			or <a href="https://github.com/seancorfield/di1">DI/1</a>. Want to know more about using bean factories with Taffy? 
+			<p>Or you could set up a bean factory, like <a href="http://www.coldspringframework.org/">ColdSpring</a>
+			or <a href="https://github.com/seancorfield/di1">DI/1</a>. Want to know more about using bean factories with Taffy?
 			<a href="https://github.com/atuttle/Taffy/wiki/So-you-want-to:-use-an-external-bean-factory-like-coldspring-to-completely-manage-resources"
 			>Check out the wiki!</a></p>
 			<p>If all else fails, I recommend starting with <a href="https://github.com/atuttle/Taffy/wiki/Getting-Started">Getting Started</a>.</p>
@@ -373,8 +374,16 @@
 					Actual desired method will be contained in a special header --->
  		<cfset var httpMethodOverride = GetPageContext().getRequest().getHeader("X-HTTP-Method-Override") />
 
+		<cfset requestObj.uri = getPath() />
+		<cfif NOT len(requestObj.uri)>
+			<cfif structKeyExists(url,application._taffy.settings.endpointURLParam)>
+				<cfset requestObj.uri = url[application._taffy.settings.endpointURLParam] />
+			<cfelseif structKeyExists(form,application._taffy.settings.endpointURLParam)>
+				<cfset requestObj.uri = form[application._taffy.settings.endpointURLParam] />
+			</cfif>
+		</cfif>
+
  		<!--- check for format in the URI --->
- 		<cfset requestObj.uri = getPath() />
  		<cfset requestObj.uriFormat = formatFromURI(requestObj.uri) />
 
 		<!--- attempt to find the cfc for the requested uri --->
@@ -382,6 +391,7 @@
 
 		<!--- uri doesn't map to any known resources --->
 		<cfif not len(requestObj.matchingRegex)>
+			<cfdump var="#requestObj.uri#"><cfabort>
 			<cfset throwError(404, "Not Found") />
 		</cfif>
 
