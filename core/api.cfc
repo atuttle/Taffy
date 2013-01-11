@@ -626,6 +626,10 @@
 					<cfset local.returnData["_taffy_mime"] = application._taffy.settings.mimeTypes[tmp] />
 					<cfset local.headerMatch = true />
 					<cfbreak /><!--- exit loop --->
+				<cfelseif trim(tmp) eq "*/*">
+					<cfset local.returnData["_taffy_mime"] = application._taffy.settings.defaultMime />
+					<cfset local.headerMatch = true />
+					<cfbreak /><!--- exit loop --->
 				</cfif>
 			</cfloop>
 			<!--- if a header is passed, but it didn't match any known mimes, and no mime was found via extension, just use whatever's in the header --->
