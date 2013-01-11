@@ -161,8 +161,8 @@
 		</cfif>
 
 		<cfset local.allowVerbs = uCase(structKeyList(_taffyRequest.matchDetails.methods)) />
-		<cfif application._taffy.settings.allowCrossDomain 
-				AND listFindNoCase('PUT,DELETE,OPTIONS',_taffyRequest.verb) 
+		<cfif application._taffy.settings.allowCrossDomain
+				AND listFindNoCase('PUT,DELETE,OPTIONS',_taffyRequest.verb)
 				AND NOT listFind(local.allowVerbs,'OPTIONS')>
 		    <cfset local.allowVerbs = listAppend(local.allowVerbs,'OPTIONS') />
 		</cfif>
@@ -344,11 +344,11 @@
 
 		<cfelse>
 			<h1>Taffy is up and running!</h1>
-			<p>It looks like you don't have any resources defined. Get started by creating the folder 
+			<p>It looks like you don't have any resources defined. Get started by creating the folder
 			<code style="background-color: #F5DA81"><cfoutput>#guessResourcesFullPath()#</cfoutput></code> in which you should place your
 			Resource CFC's.</p>
-			<p>Or you could set up a bean factory, like <a href="http://www.coldspringframework.org/">ColdSpring</a> 
-			or <a href="https://github.com/seancorfield/di1">DI/1</a>. Want to know more about using bean factories with Taffy? 
+			<p>Or you could set up a bean factory, like <a href="http://www.coldspringframework.org/">ColdSpring</a>
+			or <a href="https://github.com/seancorfield/di1">DI/1</a>. Want to know more about using bean factories with Taffy?
 			<a href="https://github.com/atuttle/Taffy/wiki/So-you-want-to:-use-an-external-bean-factory-like-coldspring-to-completely-manage-resources"
 			>Check out the wiki!</a></p>
 			<p>If all else fails, I recommend starting with <a href="https://github.com/atuttle/Taffy/wiki/Getting-Started">Getting Started</a>.</p>
