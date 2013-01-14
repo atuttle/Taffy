@@ -6,7 +6,7 @@
 		variables.framework.disableDashboard = false;
 		variables.framework.reloadKey = "reload";
 		variables.framework.unhandledPaths = "/Taffy/tests/someFolder,/Taffy/tests/tests,/tests/someFolder,/tests/tests";
-		variables.framework.representationClass = "customJsonRepresentation";
+		variables.framework.representationClass = "resources.customJsonRepresentation";
 		variables.framework.globalHeaders = {};
 		variables.framework.globalHeaders["x-foo-globalheader"] = "snafu";
 
