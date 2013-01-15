@@ -1,6 +1,8 @@
 <cfcomponent extends="taffy.core.api" output="false">
 	<cfscript>
 		this.name = "Taffy_testSuite";
+		this.mappings['/resources']				= '#getDirectoryFromPath(getCurrentTemplatePath())#resources';
+		this.mappings['/resourcesError']	= '#getDirectoryFromPath(getCurrentTemplatePath())#resourcesError';
 
 		variables.framework = {};
 		variables.framework.disableDashboard = false;

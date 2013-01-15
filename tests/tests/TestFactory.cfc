@@ -55,7 +55,7 @@
 			assertTrue(structKeyExists(application._taffy.status, "skippedResources"));
 			assertTrue( arrayLen(application._taffy.status.skippedResources) gt 0 );
 
-			variables.factory.loadBeansFromPath( '/taffy/tests/resources', 'taffy.tests.resources', expandPath('taffy/tests/resources'), true );
+			variables.factory.loadBeansFromPath( expandPath('/taffy/tests/resources'), 'taffy.tests.resources', expandPath('/taffy/tests/resources'), true );
 			debug(application._taffy.status);
 			assertTrue(structKeyExists(application._taffy.status, "skippedResources"));
 			assertTrue( ArrayLen(application._taffy.status.skippedResources) eq 0, "Expected skipped resources array to be empty but it wasn't" );
