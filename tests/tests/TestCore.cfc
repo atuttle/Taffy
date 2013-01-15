@@ -406,31 +406,31 @@
 		}
 
 		function use_endpointURLParam_in_GET(){
-			local.result = apiCall('get','?#application._taffy.settings.endpointURLParam#=/echo/2606.json');
+			local.result = apiCall('get','?#application._taffy.settings.endpointURLParam#=/echo/2606.json','');
 
 			debug(local.result);
-			assertEquals(local.result.status_code,999);
+			assertEquals(val(local.result.statusCode),999);
 		}
 
 		function use_endpointURLParam_in_POST(){
 			local.result = apiCall('post','?#application._taffy.settings.endpointURLParam#=/echo/2606.json','bar=foo');
 
 			debug(local.result);
-			assertEquals(local.result.status_code,200);
+			assertEquals(val(local.result.statusCode),200);
 		}
 
 		function use_endpointURLParam_in_PUT(){
 			local.result = apiCall('put','?#application._taffy.settings.endpointURLParam#=/echo/2606.json','bar=foo');
 
 			debug(local.result);
-			assertEquals(local.result.status_code,200);
+			assertEquals(val(local.result.statusCode),200);
 		}
 
 		function use_endpointURLParam_in_DELETE(){
 			local.result = apiCall('delete','?#application._taffy.settings.endpointURLParam#=/echo/tunnel/2606.json','');
 
 			debug(local.result);
-			assertEquals(local.result.status_code,200);
+			assertEquals(val(local.result.statusCode),200);
 		}
 	</cfscript>
 
