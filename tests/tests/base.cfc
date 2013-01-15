@@ -39,7 +39,12 @@
 		<cfelse>
 			<cfset local.args = {} />
 			<cfset local.args.method = arguments.method />
-			<cfset local.args.url = "http://#CGI.SERVER_NAME#:#CGI.SERVER_PORT##local.apiRootURL#/index.cfm#arguments.uri#?#arguments.query#" />
+			<cfset local.args.url = "http://#CGI.SERVER_NAME#:#CGI.SERVER_PORT##local.apiRootURL#/index.cfm#arguments.uri#" />
+			<cfif find('?',local.args.url)>
+				<cfset local.args.url = '#local.args.url##arguments.query#' />
+			<cfelse>
+				<cfset local.args.url = '#local.args.url#?#arguments.query#' />
+			</cfif>
 			<cfset local.args.result = "local.result" />
 			<cfset local.args.charset = "utf-8" />
 			<cfif len(arguments.basicauth)>
