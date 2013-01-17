@@ -8,13 +8,15 @@
 		<cfargument name="basicauth" type="string" default="" />
 
 		<cfset var local = structNew() />
+		<cfset local.apiRootURL	= getDirectoryFromPath(cgi.script_name) />
+		<cfset local.apiRootURL	= listDeleteAt(local.apiRootURL,listLen(local.apiRootURL,'/'),'/') />
 
 		<cfif lcase(arguments.method) eq "put" or lcase(arguments.method) eq "post">
 			<!--- always reload the api before making a request --->
-			<cfhttp method="GET" url="http://#CGI.SERVER_NAME#:#CGI.SERVER_PORT#/taffy/tests/index.cfm/dashboard?reload=#application._taffy.settings.reloadPassword#" />
+			<cfhttp method="GET" url="http://#CGI.SERVER_NAME#:#CGI.SERVER_PORT##local.apiRootURL#/index.cfm?dashboard&reload=#application._taffy.settings.reloadPassword#" />
 			<cfset local.args = {} />
 			<cfset local.args.method = arguments.method />
-			<cfset local.args.url = "http://#CGI.SERVER_NAME#:#CGI.SERVER_PORT#/taffy/tests/index.cfm#arguments.uri#" />
+			<cfset local.args.url = "http://#CGI.SERVER_NAME#:#CGI.SERVER_PORT##local.apiRootURL#/index.cfm#arguments.uri#" />
 			<cfset local.args.result = "local.result" />
 			<cfset local.args.charset = "utf-8" />
 			<cfif len(arguments.basicauth)>
@@ -28,7 +30,7 @@
 					<cfhttpparam type="header" name="Content-Type" value="application/x-www-form-urlencoded" />
 				</cfif>
 				<cfhttpparam type="body" value="#arguments.query#" />
-				
+
 				<!--- Add arbitrary headers to request --->
 				<cfloop item="local.header" collection="#arguments.headers#">
 					<cfhttpparam type="header" name="#local.header#" value="#arguments.headers[local.header]#" />
@@ -37,7 +39,12 @@
 		<cfelse>
 			<cfset local.args = {} />
 			<cfset local.args.method = arguments.method />
-			<cfset local.args.url = "http://#CGI.SERVER_NAME#:#CGI.SERVER_PORT#/taffy/tests/index.cfm#arguments.uri#?#arguments.query#" />
+			<cfset local.args.url = "http://#CGI.SERVER_NAME#:#CGI.SERVER_PORT##local.apiRootURL#/index.cfm#arguments.uri#" />
+			<cfif find('?',local.args.url)>
+				<cfset local.args.url = '#local.args.url##arguments.query#' />
+			<cfelse>
+				<cfset local.args.url = '#local.args.url#?#arguments.query#' />
+			</cfif>
 			<cfset local.args.result = "local.result" />
 			<cfset local.args.charset = "utf-8" />
 			<cfif len(arguments.basicauth)>
