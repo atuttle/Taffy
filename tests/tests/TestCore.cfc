@@ -23,6 +23,21 @@
 			assertTrue(taffy.mimeSupported("json"), "When given a mime type that should be supported, Taffy reported that it was not.");
 		}
 
+		function returns_etag_header(){
+			local.result = apiCall("get", "/echo/foo.json", "");
+			debug(local.result);
+			assertTrue(structKeyExists(local.result.responseHeader, "Etag"));
+			assertEquals("99805", local.result.responseHeader.etag);
+		}
+
+		function returns_304_when_not_modified(){
+			local.h = {};
+			local.h['if-none-match'] = "99805";
+			local.result = apiCall("get", "/echo/foo.json", "", local.h);
+			debug(local.result);
+			assertEquals(304, val(local.result.responseHeader.status_code));
+		}
+
 		function json_result_is_json(){
 			local.result = apiCall ("get","/echo/2.json","bar=foo");
 			debug(local.result);

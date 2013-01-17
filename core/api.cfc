@@ -240,6 +240,22 @@
 					method="getAs#_taffyRequest.returnMimeExt#"
 					returnvariable="_taffyRequest.resultSerialized"
 				/>
+
+				<!--- don't return data if etags are enabled and the data hasn't changed --->
+				<cfif application._taffy.settings.useEtags and _taffyRequest.verb eq "GET">
+					<cfif structKeyExists(_taffyRequest.headers, "If-None-Match")>
+						<cfset _taffyRequest.clientEtag = _taffyRequest.headers['If-None-Match'] />
+						<cfset _taffyRequest.serverEtag = _taffyRequest.result.getData().hashCode() />
+						<cfif len(_taffyRequest.clientEtag) gt 0 and _taffyRequest.clientEtag eq _taffyRequest.serverEtag>
+							<cfheader statuscode="304" statustext="Not Modified" />
+							<cfcontent reset="true" type="#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#; charset=utf-8" />
+							<cfreturn true />
+						</cfif>
+					<cfelse>
+						<cfheader name="Etag" value="#_taffyRequest.result.getData().hashCode()#" />
+					</cfif>
+				</cfif>
+
 				<cfcontent reset="true" type="#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#; charset=utf-8" />
 				<cfif _taffyRequest.resultSerialized neq ('"' & '"')>
 					<cfoutput>#_taffyRequest.resultSerialized#</cfoutput>
@@ -285,6 +301,7 @@
 		<cfset local.defaultConfig.disableDashboard = false />
 		<cfset local.defaultConfig.unhandledPaths = "/flex2gateway" />
 		<cfset local.defaultConfig.allowCrossDomain = false />
+		<cfset local.defaultConfig.useEtags = false />
 		<cfset local.defaultConfig.globalHeaders = structNew() />
 		<cfset local.defaultConfig.returnExceptionsAsJson = true />
 		<cfset local.defaultConfig.exceptionLogAdapter = "taffy.bonus.LogToEmail" />
