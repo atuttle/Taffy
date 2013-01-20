@@ -43,23 +43,35 @@
 
 <script type="text/javascript">
 	function submitRequest( verb, resource, representation ){
-		var endpoint = window.location.protocol + '//<cfoutput>#cgi.server_name#</cfoutput>';
+		var url = window.location.protocol + '//<cfoutput>#cgi.server_name#</cfoutput>';
+		var endpointURLParam = '<cfoutput>#jsStringFormat(application._taffy.settings.endpointURLParam)#</cfoutput>';
+		var endpoint = resource.split('?')[0];
+		var args = '';
+
 		if (window.location.port != 80){
-			endpoint += ':' + window.location.port;
+			url += ':' + window.location.port;
 		}
-		endpoint += '<cfoutput>#cgi.SCRIPT_NAME#</cfoutput>';
-		var url = endpoint + resource;
-		var dType = null;
-		if (representation && representation.indexOf("{") == 0){
-			dType = "application/json";
+		url += '<cfoutput>#cgi.SCRIPT_NAME#</cfoutput>';
+
+		if( resource.indexOf('?') && resource.split('?')[1] ){
+			args = resource.split('?')[1];
 		}
+
+		if( representation && representation.indexOf('{') == 0 ){
+			representation = $.parseJSON(representation);
+			representation[endpointURLParam] = endpoint;
+		} else {
+			representation = endpointURLParam + '=' + encodeURIComponent(endpoint);
+
+			if( args ){ representation += '&' + args; }
+		}
+
 		$("#rest_body").hide();
 		$.ajax({
 			type: verb,
 			url: url,
 			cache: false,
 			data: representation,
-			contentType: dType,
 			success: function(data, status, xhr){
 				$("#headers").val(xhr.getAllResponseHeaders());
 				$("#statuscode").val(xhr.status + " " + xhr.statusText).removeClass("statusError").addClass("statusSuccess");

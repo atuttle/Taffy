@@ -1,7 +1,6 @@
 <cfcomponent extends="base">
 
 	<cfscript>
-
 		function beforeTests(){
 			variables.taffy = createObject("component","taffy.tests.Application");
 			variables.factory = variables.taffy.getBeanFactory();
@@ -420,6 +419,33 @@
 			assertEquals( "dontpanic", application._taffy.settings.reloadPassword );
 		}
 
+		function use_endpointURLParam_in_GET(){
+			local.result = apiCall('get','?#application._taffy.settings.endpointURLParam#=/echo/2606.json','');
+
+			debug(local.result);
+			assertEquals(999,val(local.result.statusCode));
+		}
+
+		function use_endpointURLParam_in_POST(){
+			local.result = apiCall('post','?#application._taffy.settings.endpointURLParam#=/echo/2606.json','bar=foo');
+
+			debug(local.result);
+			assertEquals(200,val(local.result.statusCode));
+		}
+
+		function use_endpointURLParam_in_PUT(){
+			local.result = apiCall('put','?#application._taffy.settings.endpointURLParam#=/echo/2606.json','bar=foo');
+
+			debug(local.result);
+			assertEquals(200,val(local.result.statusCode));
+		}
+
+		function use_endpointURLParam_in_DELETE(){
+			local.result = apiCall('delete','?#application._taffy.settings.endpointURLParam#=/echo/tunnel/2606.json','');
+
+			debug(local.result);
+			assertEquals(200,val(local.result.statusCode));
+		}
 	</cfscript>
 
 
