@@ -73,11 +73,10 @@
 		<cfset var beanPath =
 			"resources."
 			&
-			replace(
+			replaceList(
 				replace(path, basepath, ""),
-				"/",
-				".",
-				"ALL"
+				"/,\",
+				".,."
 			)
 			&
 			"."
@@ -103,11 +102,10 @@
 			<cfset arguments.basePath = "!@$%^&*()" />
 		</cfif>
 		<cfreturn
-			replace(
+			replaceList(
 				replace(path, basepath, ""),
-				"/",
-				"",
-				"ALL"
+				"/,\",
+				","
 			)
 			& replace(
 				filename,
