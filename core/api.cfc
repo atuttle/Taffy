@@ -1033,7 +1033,10 @@
 		<cfset this.getComponentMetadata = tmp />
 	</cfif>
 
-	<cffunction name="getPath" output="false" access="public" returntype="String" hint="This method returns just the URI portion of the URL, and makes it easier to port Taffy to other platforms by subclassing this method to match the way the platform works. The default behavior is tested and works on Adobe ColdFusion 9.0.1.">
+	<cffunction name="getPath" output="false" access="public" returntype="String"
+		hint="This method returns just the URI portion of the URL, and makes it easier to port Taffy to other
+		platforms by subclassing this method to match the way the platform works. The default behavior is
+		tested and works on Adobe ColdFusion 9.0.1.">
 		<cfreturn cgi.path_info />
 	</cffunction>
 
