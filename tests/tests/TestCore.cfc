@@ -452,6 +452,41 @@
 			debug(local.result);
 			assertEquals(200,val(local.result.statusCode));
 		}
+
+		function allows_dashboard_when_enabled(){
+			var restore = application._taffy.settings.disableDashboard;
+			application._taffy.settings.disableDashboard = false;
+			local.result = apiCall("get", "/", "");
+			debug(local.result);
+			assertEquals(200, val(local.result.statusCode));
+
+			application._taffy.settings.disableDashboard = restore;
+		}
+
+		function returns_403_at_root_when_dashboard_disabled_with_no_redirect(){
+			var restore = application._taffy.settings.disableDashboard;
+			application._taffy.settings.disableDashboard = true;
+			local.result = apiCall("get", "/", "");
+			debug(local.result);
+			assertEquals(403, val(local.result.statusCode));
+
+			application._taffy.settings.disableDashboard = restore;
+		}
+
+		function returns_302_at_root_when_dashboard_disabled_with_redirect(){
+			var restore1 = application._taffy.settings.disableDashboard;
+			var restore2 = application._taffy.settings.disabledDashboardRedirect;
+			application._taffy.settings.disableDashboard = true;
+			application._taffy.settings.disabledDashboardRedirect = 'http://google.com';
+			local.result = apiCall("get", "/", "");
+			debug(local.result);
+			assertEquals(302, val(local.result.statusCode));
+			assertTrue(structKeyExists(local.result.responseHEader, "location"));
+			assertEquals(application._taffy.settings.disabledDashboardRedirect, local.result.responseHeader.location);
+
+			application._taffy.settings.disableDashboard = restore1;
+			application._taffy.settings.disabledDashboardRedirect = restore2;
+		}
 	</cfscript>
 
 

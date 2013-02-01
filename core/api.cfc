@@ -53,10 +53,24 @@
 			</cfif>
 		</cfif>
 		<cfif !isUnhandledPathRequest(arguments.targetPath)>
-			<!--- if browsing to root of api, redirect to dashboard --->
-			<cfif NOT application._taffy.settings.disableDashboard AND NOT structKeyExists(url,application._taffy.settings.endpointURLParam) AND NOT structKeyExists(form,application._taffy.settings.endpointURLParam) AND len(cgi.path_info) lte 1 and len(cgi.query_string) eq 0 and listLast(cgi.script_name, "/") eq "index.cfm">
-				<cfset local.basePath = listDeleteAt(cgi.script_name,listLen(cgi.script_name,"/"),"/") />
-				<cflocation url="#local.basePath#/?#application._taffy.settings.dashboardKey#" addtoken="false" />
+			<!--- if browsing to root of api, show dashboard --->
+			<cfif
+				NOT structKeyExists(url,application._taffy.settings.endpointURLParam)
+				AND NOT structKeyExists(form,application._taffy.settings.endpointURLParam)
+				AND len(cgi.path_info) lte 1
+				AND listLast(cgi.script_name, "/") eq "index.cfm">
+				<cfif NOT application._taffy.settings.disableDashboard>
+					<cfset requestStartEvent() />
+					<cfinclude template="dashboard.cfm" />
+					<cfabort />
+				<cfelse>
+					<cfif len(application._taffy.settings.disabledDashboardRedirect)>
+						<cflocation url="#application._taffy.settings.disabledDashboardRedirect#" addtoken="false" />
+						<cfabort />
+					<cfelse>
+						<cfset throwError(403, "Forbidden") />
+					</cfif>
+				</cfif>
 			</cfif>
 		<cfelse>
 			<!--- allow pass-thru for selected paths --->
@@ -300,6 +314,7 @@
 		<cfset local.defaultConfig.representationClass = "taffy.core.nativeJsonRepresentation" />
 		<cfset local.defaultConfig.dashboardKey = "dashboard" />
 		<cfset local.defaultConfig.disableDashboard = false />
+		<cfset local.defaultConfig.disabledDashboardRedirect = "" />
 		<cfset local.defaultConfig.unhandledPaths = "/flex2gateway" />
 		<cfset local.defaultConfig.allowCrossDomain = false />
 		<cfset local.defaultConfig.useEtags = false />
