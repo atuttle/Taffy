@@ -13,6 +13,7 @@
 
 		<cfset local.args = {} />
 		<cfset local.args.method = arguments.method />
+		<cfset local.args.redirect = false />
 		<cfset local.args.result = "local.result" />
 		<cfset local.args.charset = "utf-8" />
 		<cfif len(arguments.basicauth)>
