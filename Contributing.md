@@ -28,7 +28,7 @@ Starting with the development of Taffy 1.4, all new development will be done aga
 1. Make your changes and commit them.
 1. Push your changes back to your fork. `git push -u origin BRANCH_NAME`
 1. Send a pull request ([help with pull requests](https://help.github.com/articles/using-pull-requests))
-  a. please make sure you select **master** as the destination branch
+  * Please make sure you select **master** as the destination branch
 
 ### Tests
 
