@@ -22,9 +22,6 @@
 		</cfif>
 		<cfset local.args.url = "http://#CGI.SERVER_NAME#:#CGI.SERVER_PORT##local.apiRootURL#/index.cfm#arguments.uri#" />
 
-		<!--- always reload the api before making a request --->
-		<cfhttp method="GET" url="http://#CGI.SERVER_NAME#:#CGI.SERVER_PORT##local.apiRootURL#/index.cfm?dashboard&reload=#application._taffy.settings.reloadPassword#" />
-
 		<cfif lcase(arguments.method) eq "put" or lcase(arguments.method) eq "post">
 			<cfhttp attributeCollection="#local.args#">
 				<cfif isJson(query)>
