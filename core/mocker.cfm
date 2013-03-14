@@ -47,23 +47,18 @@
 		var endpointURLParam = '<cfoutput>#jsStringFormat(application._taffy.settings.endpointURLParam)#</cfoutput>';
 		var endpoint = resource.split('?')[0];
 		var args = '';
+		var dType = null;
 
 		if (window.location.port != 80){
 			url += ':' + window.location.port;
 		}
-		url += '<cfoutput>#cgi.SCRIPT_NAME#</cfoutput>';
-
+		url += '<cfoutput>#cgi.SCRIPT_NAME#</cfoutput>' + '?' + endpointURLParam + '=' + encodeURIComponent(endpoint);
 		if( resource.indexOf('?') && resource.split('?')[1] ){
-			args = resource.split('?')[1];
+			url += '&' + resource.split('?')[1];
 		}
 
 		if( representation && representation.indexOf('{') == 0 ){
-			representation = $.parseJSON(representation);
-			representation[endpointURLParam] = endpoint;
-		} else {
-			representation = endpointURLParam + '=' + encodeURIComponent(endpoint);
-
-			if( args ){ representation += '&' + args; }
+			dType = "application/json";
 		}
 
 		$("#rest_body").hide();
@@ -72,6 +67,7 @@
 			url: url,
 			cache: false,
 			data: representation,
+			contentType: dType,
 			success: function(data, status, xhr){
 				$("#headers").val(xhr.getAllResponseHeaders());
 				$("#statuscode").val(xhr.status + " " + xhr.statusText).removeClass("statusError").addClass("statusSuccess");
