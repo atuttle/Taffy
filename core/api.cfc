@@ -251,7 +251,7 @@
 				</cfif>
 
 			<cfelseif _taffyRequest.resultType eq "filename">
-				<cfcontent reset="true" file="#_taffyRequest.result.getFileName()#" type="#_taffyRequest.result.getFileMime()#" />
+				<cfcontent reset="true" file="#_taffyRequest.result.getFileName()#" type="#_taffyRequest.result.getFileMime()#" deletefile="#_taffyRequest.result.getDeleteFile()#" />
 
 			<cfelseif _taffyRequest.resultType eq "filedata">
 				<cfcontent reset="true" variable="#_taffyRequest.result.getFileData()#" type="#_taffyRequest.result.getFileMime()#" />
