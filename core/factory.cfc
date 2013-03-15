@@ -44,7 +44,7 @@
 		<cfdirectory action="list" directory="#arguments.beanPath#" filter="*.cfc" name="local.beanQuery" recurse="true" />
 		<cfloop query="local.beanQuery">
 			<cfset local.beanName = filePathToBeanName(local.beanQuery.directory, local.beanquery.name, arguments.resourcesBasePath) />
-			<cfset local.beanPath = filePathToBeanPath(local.beanQuery.directory, local.beanquery.name, arguments.resourcesBasePath) />
+			<cfset local.beanPath = filePathToBeanPath(local.beanQuery.directory, local.beanquery.name, arguments.resourcesPath, arguments.resourcesBasePath) />
 			<cftry>
 				<cfset this.beans[local.beanName] = createObject("component", local.beanPath) />
 				<cfcatch>
@@ -66,15 +66,18 @@
 	<cffunction name="filePathToBeanPath" access="private">
 		<cfargument name="path" />
 		<cfargument name="filename" />
-		<cfargument name="basepath" />
-		<cfif len(basepath) eq 0>
-			<cfset arguments.basePath = "!@$%^&*()" />
+		<cfargument name="resourcesPath" />
+		<cfargument name="resourcesBasePath" />
+		<cfif len(resourcesBasePath) eq 0>
+			<cfset arguments.resourcesBasePath = "!@$%^&*()" />
 		</cfif>
 		<cfset var beanPath =
-			"resources."
+			resourcesPath
+			&
+			"."
 			&
 			replaceList(
-				replace(path, basepath, ""),
+				replace(path, resourcesBasePath, ""),
 				"/,\",
 				".,."
 			)
