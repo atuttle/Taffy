@@ -1,8 +1,6 @@
 ﻿<cfcomponent>
 
 <cfset this.name = 'Taffy_testSuite' />	<!---uses the same application name as the api Application.cfc for scope sharing --->
-<cfset this.mappings['/resources']			= '#expandPath(replaceNoCase(cgi.script_name,'/tests/index.cfm',''))#/resources' />
-<cfset this.mappings['/resourcesError']	= '#expandPath(replaceNoCase(cgi.script_name,'/tests/index.cfm',''))#/resourcesError' />
 
 
 <cffunction name="onRequestStart" returnType="void" access="public" output="false">
