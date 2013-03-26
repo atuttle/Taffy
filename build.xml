@@ -87,7 +87,7 @@
 			defaultrunner="${test.runner}"
 			outputdir="${test.output.xml}"
 			verbose="true"
-			failuerproperty="testsfailed">
+			failureproperty="testsfailed">
 			<directory path="${test.dir.location}" recurse="true" packageName="${test.cfcpath}" componentPath="${test.cfcpath}" />
 		</mxunittask>
 
