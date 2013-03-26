@@ -81,9 +81,17 @@
 
 		<!-- <delete dir="${test.output}" failonerror="false" /> -->
 		<taskdef name="mxunittask" classname="org.mxunit.ant.MXUnitAntTask" classpathref="project.classpath" />
-		<mxunittask server="${test.server}" port="${test.serverport}" defaultrunner="${test.runner}" outputdir="${test.output.xml}" verbose="true">
+		<mxunittask
+			server="${test.server}"
+			port="${test.serverport}"
+			defaultrunner="${test.runner}"
+			outputdir="${test.output.xml}"
+			verbose="true"
+			failuerproperty="testsfailed">
 			<directory path="${test.dir.location}" recurse="true" packageName="${test.cfcpath}" componentPath="${test.cfcpath}" />
 		</mxunittask>
+
+		<fail if="testsfailed" message="Build fails because tests failed" />
 
 		<!-- generate pretty reports -->
 		<antcall target="junitreport" />
