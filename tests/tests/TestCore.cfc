@@ -1,9 +1,16 @@
 <cfcomponent extends="base">
 
-	<cfscript>
+	<cffunction name="setup">
+		<cfset local.apiRootURL	= getDirectoryFromPath(cgi.script_name) />
+		<cfset local.apiRootURL	= listDeleteAt(local.apiRootURL,listLen(local.apiRootURL,'/'),'/') />
+		<cfhttp method="GET" url="http://#CGI.SERVER_NAME#:#CGI.SERVER_PORT##local.apiRootURL#/index.cfm?#application._taffy.settings.reloadkey#=#application._taffy.settings.reloadPassword#" />
+	</cffunction>
 
+	<cfscript>
 		function beforeTests(){
 			variables.taffy = createObject("component","taffy.tests.Application");
+			variables.factory = variables.taffy.getBeanFactory();
+			variables.factory.loadBeansFromPath( expandPath('/taffy/tests/resources'), 'taffy.tests.resources', expandPath('/taffy/tests/resources'), true );
 		}
 
 		function properly_notifies_unimplemented_mimes(){
@@ -19,6 +26,21 @@
 			debug(variables.taffy);
 			variables.taffy.inspectMimeTypes('taffy.core.nativeJsonRepresentation');
 			assertTrue(taffy.mimeSupported("json"), "When given a mime type that should be supported, Taffy reported that it was not.");
+		}
+
+		function returns_etag_header(){
+			local.result = apiCall("get", "/echo/foo.json", "");
+			debug(local.result);
+			assertTrue(structKeyExists(local.result.responseHeader, "Etag"));
+			assertEquals("99805", local.result.responseHeader.etag);
+		}
+
+		function returns_304_when_not_modified(){
+			local.h = {};
+			local.h['if-none-match'] = "99805";
+			local.result = apiCall("get", "/echo/foo.json", "", local.h);
+			debug(local.result);
+			assertEquals(304, val(local.result.responseHeader.status_code));
 		}
 
 		function json_result_is_json(){
@@ -94,6 +116,16 @@
 			assertEquals('^/echo/(?:(?:([^\/\.]+)(?:\.)([a-za-z0-9]+))|([^\/\.]+))((?:\.)[^\.\?]+)?$', local.result);
 		}
 
+		function uri_matching_is_sorted_so_static_URIs_take_priority_over_tokens(){
+			makePublic(variables.taffy, "matchURI");
+			local.result = variables.taffy.matchURI("/echo/3");
+			debug(local.result);
+			assertEquals('^/echo/(?:(?:([^\/\.]+)(?:\.)([a-za-z0-9]+))|([^\/\.]+))((?:\.)[^\.\?]+)?$', local.result);
+			local.result = variables.taffy.matchURI("/echo/towel");
+			debug(local.result);
+			assertEquals('^/echo/towel((?:\.)[^\.\?]+)?$', local.result);
+		}
+
 		function request_parsing_works(){
 			makePublic(variables.taffy,"buildRequestArguments");
 			local.result = variables.taffy.buildRequestArguments(
@@ -151,7 +183,7 @@
 			local.result = apiCall("get", "/echo/2", "foo=bar");
 			debug(local.result);
 			assertEquals(400, local.result.responseHeader.status_code);
-			assertEquals("Your default mime type is not implemented", local.result.responseHeader.explanation);
+			assertEquals("Your default mime type (DoesNotExist) is not implemented", local.result.responseHeader.explanation);
 		}
 
 		function returns_error_when_requested_mime_not_supported(){
@@ -268,7 +300,7 @@
 			debug( local.deserializedContent );
 
 			// The service response should contain only the ID parameter, and not anything parsed from the body
-			assertEquals("id,foo", structKeylist(local.deserializedContent));
+			assertEquals("foo,id,password,username", listSort(structKeylist(local.deserializedContent), "textnocase"));
 			assertEquals(12, local.deserializedContent["id"]);
 			assertEquals("The quick brown fox jumped over the lazy dog.", local.deserializedContent["foo"]);
 		}
@@ -289,7 +321,7 @@
 			debug( local.deserializedContent );
 
 			// The service response should contain the ID parameter and all parsed form fields from the body
-			assertEquals("bar,baz,foo,id", listSort(structKeylist(local.deserializedContent), "textnocase"));
+			assertEquals("bar,baz,foo,id,password,username", listSort(structKeylist(local.deserializedContent), "textnocase"));
 			assertEquals(12, local.deserializedContent["id"]);
 			assertEquals("yankee", local.deserializedContent["foo"]);
 			assertEquals("hotel", local.deserializedContent["bar"]);
@@ -360,6 +392,7 @@
 			assertFalse(structKeyExists(local.result.responseheader, "X-TAFFY-RELOADED"), "Expected reload header to be missing, but it was sent.");
 			application._taffy.settings.reloadOnEveryRequest = true;
 			local.result2 = apiCall("get", "/echo/dude.json", "");
+			debug(local.result2);
 			assertTrue(structKeyExists(local.result2.responseheader, "X-TAFFY-RELOADED"), "Expected reload header to be sent, but it was missing.");
 		}
 
@@ -370,6 +403,90 @@
 			assertTrue( isJson( local.result.fileContent ), "Response body was not json" );
 		}
 
+		function basic_auth_credentials_found(){
+			local.result = apiCall("get", "/basicauth.json", "", {}, "Towel:42");
+			debug(local.result);
+			assertTrue(isJson(local.result.fileContent));
+			local.data = deserializeJSON(local.result.fileContent);
+			assertTrue(structKeyExists(local.data, "username"));
+			assertEquals("Towel", local.data.username);
+			assertTrue(structKeyExists(local.data, "password"));
+			assertEquals("42", local.data.password);
+		}
+
+		function getHostname_returns_not_blank(){
+			local.hostname = variables.taffy.getHostname();
+			debug(local.hostname);
+			assertNotEquals( "", local.hostname );
+		}
+
+		function envConfig_is_applied(){
+			debug( application._taffy.settings.reloadPassword );
+			assertEquals( "dontpanic", application._taffy.settings.reloadPassword );
+		}
+
+		function use_endpointURLParam_in_GET(){
+			local.result = apiCall('get','?#application._taffy.settings.endpointURLParam#=/echo/2606.json','');
+
+			debug(local.result);
+			assertEquals(999,val(local.result.statusCode));
+		}
+
+		function use_endpointURLParam_in_POST(){
+			local.result = apiCall('post','?#application._taffy.settings.endpointURLParam#=/echo/2606.json','bar=foo');
+
+			debug(local.result);
+			assertEquals(200,val(local.result.statusCode));
+		}
+
+		function use_endpointURLParam_in_PUT(){
+			local.result = apiCall('put','?#application._taffy.settings.endpointURLParam#=/echo/2606.json','bar=foo');
+
+			debug(local.result);
+			assertEquals(200,val(local.result.statusCode));
+		}
+
+		function use_endpointURLParam_in_DELETE(){
+			local.result = apiCall('delete','?#application._taffy.settings.endpointURLParam#=/echo/tunnel/2606.json','');
+
+			debug(local.result);
+			assertEquals(200,val(local.result.statusCode));
+		}
+
+		function allows_dashboard_when_enabled(){
+			var restore = application._taffy.settings.disableDashboard;
+			application._taffy.settings.disableDashboard = false;
+			local.result = apiCall("get", "/", "");
+			debug(local.result);
+			assertEquals(200, val(local.result.statusCode));
+
+			application._taffy.settings.disableDashboard = restore;
+		}
+
+		function returns_403_at_root_when_dashboard_disabled_with_no_redirect(){
+			var restore = application._taffy.settings.disableDashboard;
+			application._taffy.settings.disableDashboard = true;
+			local.result = apiCall("get", "/", "");
+			debug(local.result);
+			assertEquals(403, val(local.result.statusCode));
+
+			application._taffy.settings.disableDashboard = restore;
+		}
+
+		function returns_302_at_root_when_dashboard_disabled_with_redirect(){
+			var restore1 = application._taffy.settings.disableDashboard;
+			var restore2 = application._taffy.settings.disabledDashboardRedirect;
+			application._taffy.settings.disableDashboard = true;
+			application._taffy.settings.disabledDashboardRedirect = 'http://google.com';
+			local.result = apiCall("get", "/", "");
+			debug(local.result);
+			assertEquals(302, val(local.result.statusCode));
+			assertTrue(structKeyExists(local.result.responseHEader, "location"));
+			assertEquals(application._taffy.settings.disabledDashboardRedirect, local.result.responseHeader.location);
+
+			application._taffy.settings.disableDashboard = restore1;
+			application._taffy.settings.disabledDashboardRedirect = restore2;
+		}
 	</cfscript>
 
 
@@ -378,7 +495,7 @@
 		<!--- <cfset debug(cgi) /> --->
 		<cfset variables.taffy.setDefaultMime("text/json") />
 		<cfhttp
-			url="http://#cgi.server_name#:#cgi.server_port#/taffy/tests/index.cfm/upload"
+			url="http://#cgi.server_name#:#cgi.server_port#/taffy/tests/index.cfm/upload.json"
 			method="post"
 			result="local.uploadResult">
 			<cfhttpparam type="file" name="img" file="#expandPath('/taffy/tests/tests/upload.png')#" />

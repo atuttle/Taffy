@@ -43,16 +43,24 @@
 
 <script type="text/javascript">
 	function submitRequest( verb, resource, representation ){
-		var endpoint = window.location.protocol + '//<cfoutput>#cgi.server_name#</cfoutput>';
-		if (window.location.port != 80){
-			endpoint += ':' + window.location.port;
-		}
-		endpoint += '<cfoutput>#cgi.SCRIPT_NAME#</cfoutput>';
-		var url = endpoint + resource;
+		var url = window.location.protocol + '//<cfoutput>#cgi.server_name#</cfoutput>';
+		var endpointURLParam = '<cfoutput>#jsStringFormat(application._taffy.settings.endpointURLParam)#</cfoutput>';
+		var endpoint = resource.split('?')[0];
+		var args = '';
 		var dType = null;
-		if (representation && representation.indexOf("{") == 0){
+
+		if (window.location.port != 80){
+			url += ':' + window.location.port;
+		}
+		url += '<cfoutput>#cgi.SCRIPT_NAME#</cfoutput>' + '?' + endpointURLParam + '=' + encodeURIComponent(endpoint);
+		if( resource.indexOf('?') && resource.split('?')[1] ){
+			url += '&' + resource.split('?')[1];
+		}
+
+		if( representation && representation.indexOf('{') == 0 ){
 			dType = "application/json";
 		}
+
 		$("#rest_body").hide();
 		$.ajax({
 			type: verb,

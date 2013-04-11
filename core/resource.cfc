@@ -29,6 +29,33 @@
 		<cfreturn getRepInstance(arguments.customRepresentationClass).setImageData(arguments.binaryData) />
 	</cffunction>
 
+	<cffunction name="saveLog">
+		<cfargument name="exception" />
+		<cfset logger = createObject("component", application._taffy.settings.exceptionLogAdapter).init(
+				application._taffy.settings.exceptionLogAdapterConfig
+		) />
+		<cfset logger.saveLog(exception) />
+	</cffunction>
+
+	<cffunction name="queryToArray" access="private" returntype="array" output="false">
+		<cfargument name="q" type="query" required="yes" />
+		<cfscript>
+			var local = {};
+			local.Columns = arguments.q.getMetaData().getColumnLabels();
+			local.QueryArray = ArrayNew(1);
+			for (local.RowIndex = 1; local.RowIndex <= arguments.q.RecordCount; local.RowIndex++){
+				local.Row = {};
+				local.numCols = ArrayLen( local.Columns );
+				for (local.ColumnIndex = 1; local.ColumnIndex <= local.numCols; local.ColumnIndex++){
+					local.ColumnName = local.Columns[ local.ColumnIndex ];
+					local.Row[ local.ColumnName ] = arguments.q[ local.ColumnName ][ local.RowIndex ];
+				}
+				ArrayAppend( local.QueryArray, local.Row );
+			}
+			return( local.QueryArray );
+		</cfscript>
+	</cffunction>
+
 	<!---
 		function that gets the representation class instance
 		-- if the argument is blank, we use the default from taffy settings

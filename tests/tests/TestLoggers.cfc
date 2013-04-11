@@ -18,7 +18,7 @@
 			//fake error
 			fakeError.message = "This is a test error";
 			fakeError.detail = "Rubber Baby Buggy Bumper";
-			hothAdapter.log(fakeError);
+			hothAdapter.saveLog(fakeError);
 
 			mockHoth.verify().track('{struct}');
 		}
@@ -39,7 +39,7 @@
 			//fake error
 			fakeError.message = "This is a test error";
 			fakeError.detail = "Rubber Baby Buggy Bumper";
-			blhqAdapter.log(fakeError);
+			blhqAdapter.saveLog(fakeError);
 
 			mockBLHQ.verify().notifyService('{string}', '{struct}');
 		}
