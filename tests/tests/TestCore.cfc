@@ -495,7 +495,7 @@
 		<!--- <cfset debug(cgi) /> --->
 		<cfset variables.taffy.setDefaultMime("text/json") />
 		<cfhttp
-			url="http://#cgi.server_name#:#cgi.server_port#/taffy/tests/index.cfm/upload"
+			url="http://#cgi.server_name#:#cgi.server_port#/taffy/tests/index.cfm/upload.json"
 			method="post"
 			result="local.uploadResult">
 			<cfhttpparam type="file" name="img" file="#expandPath('/taffy/tests/tests/upload.png')#" />
