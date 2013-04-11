@@ -76,7 +76,7 @@
 
 	<target name="runtests" description="Make output directories and run the MXUnit task" depends="init,clean">
 		<!-- first, make sure Taffy is initialized -->
-		<get src="http://jenkins.local/taffy/tests/?dashboard&reload=true" dest="init.result" />
+		<get src="http://jenkins.local/taffy/tests/?dashboard&amp;reload=true" dest="init.result" />
 		<delete file="init.result" />
 
 		<!-- <delete dir="${test.output}" failonerror="false" /> -->
