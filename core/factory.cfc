@@ -68,6 +68,7 @@
 		<cfargument name="filename" />
 		<cfargument name="resourcesPath" />
 		<cfargument name="resourcesBasePath" />
+		<cfset var beanPath = "" />
 		<cfif len(resourcesBasePath) eq 0>
 			<cfset arguments.resourcesBasePath = "!@$%^&*()" />
 		</cfif>
