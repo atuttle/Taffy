@@ -72,7 +72,7 @@
 		<cfif len(resourcesBasePath) eq 0>
 			<cfset arguments.resourcesBasePath = "!@$%^&*()" />
 		</cfif>
-		<cfset var beanPath =
+		<cfset beanPath =
 			resourcesPath
 			&
 			"."
