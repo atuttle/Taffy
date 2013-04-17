@@ -780,7 +780,7 @@
 					<cfif application._taffy.externalBeanFactory.containsBean(local.beanName)>
 						<cfset local.bean = application._taffy.factory.getBean(application._taffy.endpoints[local.endpoint].beanName) />
 						<cfset local.dependency = application._taffy.externalBeanFactory.getBean(local.beanName) />
-						<cfset evaluate("local.bean.#method#(local.dependency)") />
+						<cfset evaluate("local.bean.#local.method#(local.dependency)") />
 					</cfif>
 				</cfif>
 			</cfloop>
