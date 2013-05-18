@@ -3,9 +3,11 @@
 		<p>
 			<label>
 				Resources:
-				<cfset mimes = structKeyList(application._taffy.settings.mimeExtensions) />
-				<cfset mimes = replaceNoCase(mimes, application._taffy.settings.defaultMime, "#application._taffy.settings.defaultMime#<em>*</em>" , "all")>
-				<small><cfoutput>#mimes#</cfoutput></small>
+				<cfif structKeyExists(application._taffy.settings, "mimeExtensions")>
+					<cfset mimes = structKeyList(application._taffy.settings.mimeExtensions) />
+					<cfset mimes = replaceNoCase(mimes, application._taffy.settings.defaultMime, "#application._taffy.settings.defaultMime#<em>*</em>" , "all")>
+					<small><cfoutput>#mimes#</cfoutput></small>
+				</cfif>
 			</label>
 			<select multiple="multiple" id="resources" size="5" class="bump">
 				<cfoutput>

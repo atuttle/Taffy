@@ -38,9 +38,11 @@
 	<h3>Implemented Encodings:</h3>
 	<ul>
 		<cfoutput>
-		<cfloop list="#structKeyList(application._taffy.settings.mimeExtensions)#" index="mime">
-			<li>#mime# <cfif mime eq application._taffy.settings.defaultMime><em>(default)</em></cfif></li>
-		</cfloop>
+			<cfif structKeyExistS(application._taffy.settings, "mimeExtensions")>
+				<cfloop list="#structKeyList(application._taffy.settings.mimeExtensions)#" index="mime">
+					<li>#mime# <cfif mime eq application._taffy.settings.defaultMime><em>(default)</em></cfif></li>
+				</cfloop>
+			</cfif>
 		</cfoutput>
 	</ul>
 </div>
