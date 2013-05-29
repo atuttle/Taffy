@@ -36,7 +36,7 @@
 	<cffunction name="setFileName" access="public" output="false" hint="Pass in a file-name (fully qualified, e.g. c:\temp\img.jpg) to have Taffy stream this file back to the client">
 		<cfargument name="file" type="string" required="true" />
 		<cfset variables.type = 2 />
-		<cfset variables.fileName = file />
+		<cfset variables.fileName = arguments.file />
 		<cfreturn this />
 	</cffunction>
 
@@ -47,7 +47,7 @@
 	<cffunction name="setFileData" access="public" output="false" hint="Pass in file data (eg a generated PDF object) - NOT a Filename! - to have Taffy stream the content back to the client">
 		<cfargument name="data" required="true" />
 		<cfset variables.type = 3 />
-		<cfset variables.fileData = data />
+		<cfset variables.fileData = arguments.data />
 		<cfreturn this />
 	</cffunction>
 
@@ -59,9 +59,9 @@
 		<cfargument name="data" required="true" />
 		<cfset variables.type = 4 />
 		<cfif not isBinary(arguments.data)>
-			<cfset data = toBinary(toBase64(arguments.data)) />
+			<cfset arguments.data = toBinary(toBase64(arguments.data)) />
 		</cfif>
-		<cfset variables.fileData = data />
+		<cfset variables.fileData = arguments.data />
 		<cfreturn this />
 	</cffunction>
 
