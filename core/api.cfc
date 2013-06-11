@@ -255,6 +255,11 @@
 					returnvariable="_taffyRequest.resultSerialized"
 				/>
 
+				<!--- apply jsonp wrapper if requested --->
+				<cfif structKeyExists(_taffyRequest, "jsonpCallback")>
+					<cfset _taffyRequest.resultSerialized = _taffyRequest.jsonpCallback & "(" & _taffyRequest.resultSerialized & ");" />
+				</cfif>
+
 				<!--- don't return data if etags are enabled and the data hasn't changed --->
 				<cfif application._taffy.settings.useEtags and _taffyRequest.verb eq "GET">
 					<cfif structKeyExists(_taffyRequest.headers, "If-None-Match")>
@@ -318,6 +323,7 @@
 		<cfset local.defaultConfig.unhandledPaths = "/flex2gateway" />
 		<cfset local.defaultConfig.allowCrossDomain = false />
 		<cfset local.defaultConfig.useEtags = false />
+		<cfset local.defaultConfig.jsonp = false />
 		<cfset local.defaultConfig.globalHeaders = structNew() />
 		<cfset local.defaultConfig.returnExceptionsAsJson = true />
 		<cfset local.defaultConfig.exceptionLogAdapter = "taffy.bonus.LogToEmail" />
@@ -497,6 +503,14 @@
 		</cfif>
 		<!--- also capture form POST data (higher priority that url variables of same name) --->
 		<cfset structAppend(requestObj.requestArguments, form) />
+
+		<!--- if JSONP is enabled, capture the requested callback name --->
+		<cfif application._taffy.settings.jsonp neq false>
+			<cfif structKeyExists(requestObj.requestArguments, application._taffy.settings.jsonp)>
+				<!--- variables.framework.jsonp contains the callback parameter name --->
+				<cfset requestObj.jsonpCallback = requestObj.requestArguments[application._taffy.settings.jsonp] />
+			</cfif>
+		</cfif>
 
 		<!--- use requested mime type or the default --->
 		<cfset requestObj.returnMimeExt = "" />

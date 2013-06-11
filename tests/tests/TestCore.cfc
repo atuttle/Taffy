@@ -487,6 +487,14 @@
 			application._taffy.settings.disableDashboard = restore1;
 			application._taffy.settings.disabledDashboardRedirect = restore2;
 		}
+
+		function properly_returns_wrapped_jsonp(){
+			application._taffy.settings.jsonp = "callback";
+			local.result = apiCall("get", "/echo/dude.json?callback=zomg", '');
+			debug(local.result);
+			assertEquals('zomg(', left(local.result.fileContent, 5), "Does not begin with call to jsonp callback");
+			assertEquals(");", right(local.result.fileContent, 2), "Does not end with `);`");
+		}
 	</cfscript>
 
 
