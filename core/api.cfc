@@ -235,7 +235,7 @@
 		<cfif application._taffy.settings.allowCrossDomain>
 			<cfheader name="Access-Control-Allow-Origin" value="*" />
 			<cfheader name="Access-Control-Allow-Methods" value="#local.allowVerbs#" />
-			<cfheader name="Access-Control-Allow-Headers" value="Origin, Authorization, X-Requested-With, Content-Type" />
+			<cfheader name="Access-Control-Allow-Headers" value="Origin, Authorization, X-Requested-With, Content-Type, X-HTTP-Method-Override" />
 		</cfif>
 		<cfset addHeaders(getGlobalHeaders()) />
 		<cfset addHeaders(_taffyRequest.resultHeaders) />
