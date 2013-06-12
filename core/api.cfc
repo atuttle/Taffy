@@ -235,7 +235,24 @@
 		<cfif application._taffy.settings.allowCrossDomain>
 			<cfheader name="Access-Control-Allow-Origin" value="*" />
 			<cfheader name="Access-Control-Allow-Methods" value="#local.allowVerbs#" />
-			<cfheader name="Access-Control-Allow-Headers" value="Origin, Authorization, X-Requested-With, Content-Type, X-HTTP-Method-Override" />
+			<!--- Why do we parrot back these headers? See: https://github.com/atuttle/Taffy/issues/144 --->
+			<cfif not structKeyExists(_taffyRequest.headers, "Access-Control-Request-Headers")>
+				<cfheader name="Access-Control-Allow-Headers" value="Origin, Authorization, X-Requested-With, Content-Type, X-HTTP-Method-Override" />
+			<cfelse>
+				<!--- parrot back all of the request headers to allow the request to continue (can we improve on this?) --->
+				<cfset local.allowedHeaders = {
+					"Origin"=1
+					,"Authorization"=1
+					,"X-Requested-With"=1
+					,"Content-Type"=1
+					,"X-HTTP-Method-Override"=1
+				} />
+				<cfset local.requestedHeaders = _taffyRequest.headers['Access-Control-Request-Headers'] />
+				<cfloop list="#local.requestedHeaders#" index="local.i">
+					<cfset local.allowedHeaders[ local.i ] = 1 />
+				</cfloop>
+				<cfheader name="Access-Control-Allow-Headers" value="#structKeyList(local.allowedHeaders)#" />
+			</cfif>
 		</cfif>
 		<cfset addHeaders(getGlobalHeaders()) />
 		<cfset addHeaders(_taffyRequest.resultHeaders) />

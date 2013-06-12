@@ -495,6 +495,17 @@
 			assertEquals('zomg(', left(local.result.fileContent, 5), "Does not begin with call to jsonp callback");
 			assertEquals(");", right(local.result.fileContent, 2), "Does not end with `);`");
 		}
+
+		function properly_handles_arbitrary_cors_headers(){
+			//see: https://github.com/atuttle/Taffy/issues/144
+			application._taffy.settings.allowCrossDomain = true;
+			local.h = { "Access-Control-Request-Headers" = "goat, pigeon, man-bear-pig"};
+			local.result = apiCall("get", "/echo/dude.json", "", local.h);
+			debug(local.result);
+			assertTrue(local.result.responseHeader["Access-Control-Allow-Headers"] contains "goat");
+			assertTrue(local.result.responseHeader["Access-Control-Allow-Headers"] contains "pigeon");
+			assertTrue(local.result.responseHeader["Access-Control-Allow-Headers"] contains "man-bear-pig");
+		}
 	</cfscript>
 
 
