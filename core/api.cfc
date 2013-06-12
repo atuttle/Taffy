@@ -205,7 +205,7 @@
 				<cfset _taffyRequest.resultHeaders = structNew() />
 				<cfset _taffyRequest.statusArgs = structNew() />
 				<cfset _taffyRequest.statusArgs.statusCode = 200 />
-				<cfset _taffyRequest.statusArgs.statusText = '200 OK' />
+				<cfset _taffyRequest.statusArgs.statusText = 'OK' />
 			</cfif>
 
 		</cfif>
