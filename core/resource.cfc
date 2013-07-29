@@ -63,7 +63,7 @@
 		-- otherwise it is assumed to be a cfc path and that cfc instance is returned
 	--->
 	<cffunction name="getRepInstance" access="private" output="false">
-		<cfargument name="repClass" type="string" />
+		<cfargument name="repClass" type="string" default="" />
 		<cfif repClass eq "">
 			<!--- recursion not the most efficient path here, but it's damn readable --->
 			<cfreturn getRepInstance(application._taffy.settings.representationClass) />
