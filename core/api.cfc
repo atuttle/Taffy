@@ -237,7 +237,7 @@
 			<cfheader name="Access-Control-Allow-Methods" value="#local.allowVerbs#" />
 			<!--- Why do we parrot back these headers? See: https://github.com/atuttle/Taffy/issues/144 --->
 			<cfif not structKeyExists(_taffyRequest.headers, "Access-Control-Request-Headers")>
-				<cfheader name="Access-Control-Allow-Headers" value="Origin, Authorization, X-Requested-With, Content-Type, X-HTTP-Method-Override" />
+				<cfheader name="Access-Control-Allow-Headers" value="Origin, Authorization, X-Requested-With, Content-Type, X-HTTP-Method-Override, Accept, Referrer, User-Agent" />
 			<cfelse>
 				<!--- parrot back all of the request headers to allow the request to continue (can we improve on this?) --->
 				<cfset local.allowedHeaders = {
@@ -246,6 +246,9 @@
 					,"X-Requested-With"=1
 					,"Content-Type"=1
 					,"X-HTTP-Method-Override"=1
+					,"Accept"=1
+					,"Referrer"=1
+					,"User-Agent"=1
 				} />
 				<cfset local.requestedHeaders = _taffyRequest.headers['Access-Control-Request-Headers'] />
 				<cfloop list="#local.requestedHeaders#" index="local.i">
