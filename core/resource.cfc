@@ -8,7 +8,7 @@
 	</cffunction>
 
 	<cffunction name="noData" access="private" output="false" hint="use this function to return only headers to the consumer, no data">
-		<cfreturn createObject("component", application._taffy.settings.representationClass).noData() />
+		<cfreturn getRepInstance().noData() />
 	</cffunction>
 
 	<cffunction name="streamFile" access="private" output="false" hint="Use this function to specify a file name (eg c:\tmp\kitten.jpg) to be streamed to the client. When you use this method it is *required* that you also use .withMime() to specify the mime type.">
