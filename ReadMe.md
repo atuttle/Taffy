@@ -1,6 +1,6 @@
-# Thanks for checking out Taffy!
+# Taffy: Convention-Over-Configuration REST framework for ColdFusion and Railo
 
-Taffy is a ColdFusion framework that helps you build RESTful web services with very little boilerplate code, very little configuration, and to be honest, very little effort.
+Taffy is a ColdFusion framework that helps you build RESTful web services with very little boilerplate code, very little configuration and very little effort.
 
 ## Build Status
 
@@ -15,6 +15,12 @@ Documentation is provided via the wiki, and [here's a nice clean index of what's
 ### You can contribute to the documentation
 
 If you would like to contribute to documentation, [please read this blog post][2]. If you still have questions, [ask them on our mailing list][1]. :)
+
+## Roadmap
+
+In addition to the issues list, Taffy uses a [public trello board](https://trello.com/b/Nz5nyqZg/) to track and plan the framework roadmap.
+
+[![Taffy Roadmap](https://trello.com/b/Nz5nyqZg.png)](https://trello.com/b/Nz5nyqZg/)
 
 ## Community
 
@@ -40,7 +46,7 @@ Part of the beauty of open source is that _you can affect change_. You can help 
 
 **What does that mean?**
 
-It means you can use Taffy pretty much any way you like. You can fork it. You can include it in a proprietary product, sell it, and not give us a dime. (Legal, if a bit rude.) Pretty much the only thing you can't do is hold us accountable if anything goes wrong.
+It means you can use Taffy pretty much any way you like. You can fork it. You can include it in a proprietary product, sell it, and not give us a dime. Pretty much the only thing you can't do is hold us accountable if anything goes wrong.
 
 [1]:https://groups.google.com/forum/#!forum/taffy-users
 [2]:http://fusiongrokker.com/post/how-you-can-contribute-to-taffy-documentation
