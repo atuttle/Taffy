@@ -2,6 +2,7 @@
 	<cfscript>
 		//bean cache
 		this.beans = structNew();
+		this.transients = structNew();
 		//functionality
 		function init(){
 			return this;
@@ -10,18 +11,29 @@
 		function containsBean(beanName){
 			return beanExists(arguments.beanName);
 		}
-		function beanExists(beanName){
-			return structKeyExists(this.beans, arguments.beanName);
+		function beanExists(beanName, includeTransients = true){
+			return structKeyExists(this.beans, arguments.beanName) or (includeTransients and transientExists(arguments.beanName));
+		}
+		function transientExists(beanName){
+			return structKeyExists(this.transients, arguments.beanName);
 		}
 		function getBean(beanName){
-			if (beanExists(arguments.beanName)){
+			if (beanExists(arguments.beanName, false)){
 				return this.beans[arguments.beanName];
+			}else if (transientExists(arguments.beanName)){
+				return createObject('component', this.transients[arguments.beanName]);
 			}else{
 				throwError(message="Bean name '#arguments.beanName#' not found.", type="Taffy.Factory.BeanNotFound");
 			}
 		}
 		function getBeanList(){
-			return structKeyList(this.beans);
+			var combined = structKeyList(this.beans);
+			var trans = structKeyList(this.transients);
+			if (len(combined) and len(trans)){
+				combined = combined & ",";
+			}
+			combined = combined & trans;
+			return combined;
 		}
 	</cfscript>
 	<cffunction name="loadBeansFromPath" access="public" output="false" returnType="void">
@@ -46,7 +58,12 @@
 			<cfset local.beanName = filePathToBeanName(local.beanQuery.directory, local.beanquery.name, arguments.resourcesBasePath) />
 			<cfset local.beanPath = filePathToBeanPath(local.beanQuery.directory, local.beanquery.name, arguments.resourcesPath, arguments.resourcesBasePath) />
 			<cftry>
-				<cfset this.beans[local.beanName] = createObject("component", local.beanPath) />
+				<cfset local.objBean = createObject("component", local.beanPath) />
+				<cfif isInstanceOf(local.objBean, "taffy.core.baseRepresentation")>
+					<cfset this.transients[local.beanName] = local.beanPath />
+				<cfelse>
+					<cfset this.beans[local.beanName] = local.objBean />
+				</cfif>
 				<cfcatch>
 					<!--- skip cfc's with errors, but save info about them for display in the dashboard --->
 					<cfset local.err = structNew() />
