@@ -44,5 +44,17 @@
 			assertTrue( ArrayLen(application._taffy.status.skippedResources) eq 0, "Expected skipped resources array to be empty but it wasn't" );
 		}
 
+		function treats_CRCs_as_transients(){
+			var local = {};
+			//this resource+method explicitly sets response status of 999
+			local.result = apiCall("get", "/echo/2.json", "foo=bar");
+			debug(local.result);
+			assertEquals(999, local.result.responseHeader.status_code);
+			//this resource+method usees the default response status => 200=passing test, 999=failing test
+			local.result = apiCall("get", "/echo/tunnel/2.json", "foo=bar");
+			debug(local.result);
+			assertEquals(200, local.result.responseHeader.status_code);
+		}
+
 	</cfscript>
 </cfcomponent>
