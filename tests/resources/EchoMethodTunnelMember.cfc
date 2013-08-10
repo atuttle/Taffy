@@ -6,7 +6,7 @@
 		<cfset var echo = {} />
 		<cfset echo.actualMethod = "get" />
 
-		<cfreturn representationOf(echo).withStatus(200) />
+		<cfreturn representationOf(echo) />
 	</cffunction>
 
 	<cffunction name="put">
