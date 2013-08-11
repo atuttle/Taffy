@@ -8,6 +8,17 @@ Taffy is a ColdFusion framework that helps you build RESTful web services with v
 
 Taffy has a comprehensive test suite and uses continuous integration to ensure that the code is always usable. If you'd like, you can [review the Jenkins build history for Taffy](http://fusiongrokker.com:8080/job/Taffy/).
 
+## Supported Versions
+
+* Taffy 1.3.x
+* Taffy 1.2.x
+
+If you file a bug or ask for support, usually our first question is "What version of Taffy are you using?" If it's an older release, we usually ask you to upgrade. Officially, we promise to support the current "minor" release and the prior "minor" release. When Taffy 2.0 is released, it and the preceding "minor" release (e.g. Taffy 1.4.x, if such a thing were to exist) would be supported.
+
+Supported versions get priority for bug fixes; and we make no promise to fix bugs filed against "unsupported" versions. If your version is supported, and your bug is reproducible and isolatable, we'll do everything within our power to address it.
+
+If upgrade is not an option in your case, and you still have an isolatable and reproducable bug, [contact me](http://fusiongrokker.com/page/contact-me) to discuss further options.
+
 ## Documentation
 
 Documentation is provided via the wiki, and [here's a nice clean index of what's in the wiki][3].
