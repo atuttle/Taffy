@@ -1,0 +1,98 @@
+@import 'bootstrap.min.less';
+
+body {
+	padding-bottom: 30px;
+}
+
+.ver {
+	font-size: 0.9em;
+	font-weight: bold;
+	display: inline-block;
+	position: relative;
+	top: -16px;
+	left: 187px;
+}
+
+#reload {
+	float: right;
+}
+
+.stackTrace {
+	display: none;
+}
+
+.alert {
+	code {
+		white-space: normal;
+	}
+}
+
+#resources {
+	margin-top: -20px;
+
+	.verb {
+		float: right;
+		margin-left: 5px;
+		padding-top: 4px;
+		margin-top: -2px;
+
+		&.label-default {
+			background-color: #ccc;
+		}
+	}
+	.submitRequest {
+		float: right;
+	}
+	.doc {
+		color: #9E9E9E;
+	}
+	.progress {
+		display: none;
+		margin-top: 10px;
+	}
+	.response {
+		display: none;
+	}
+	.responseTime {
+		float: right;
+		font-size: .8em;
+		margin-top: 5px;
+		margin-bottom: -2px;
+	}
+	.responseBody {
+		white-space: nowrap;
+	}
+	pre {
+		overflow-x: scroll;
+		width: 100%;
+	}
+	.headerName {
+		font-weight: bold;
+		text-align: right;
+	}
+	.headerName
+	,.headerVal {
+		font-size: 0.8em;
+		line-height: 1.6em;
+	}
+
+	select {
+		width: 85px;
+		display: inline-block;
+	}
+
+	textarea {
+		font-family: monospace;
+		font-size: 0.9em;
+	}
+
+}
+
+.response {
+	display: none;
+
+	label {
+		display: block;
+		text-align: right;
+	}
+}

@@ -61,7 +61,7 @@
 				AND listLast(cgi.script_name, "/") eq "index.cfm">
 				<cfif NOT application._taffy.settings.disableDashboard>
 					<cfset requestStartEvent() />
-					<cfinclude template="dashboard.cfm" />
+					<cfinclude template="../dashboard/dashboard.cfm" />
 					<cfabort />
 				<cfelse>
 					<cfif len(application._taffy.settings.disabledDashboardRedirect)>
@@ -145,7 +145,7 @@
 
 		<!--- display api dashboard if requested --->
 		<cfif structKeyExists(url, application._taffy.settings.dashboardKey) and not application._taffy.settings.disableDashboard>
-			<cfinclude template="dashboard.cfm" />
+			<cfinclude template="../dashboard/dashboard.cfm" />
 			<cfabort />
 		</cfif>
 
