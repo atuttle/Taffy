@@ -90,7 +90,7 @@
 
 											<cfif arrayLen(local.currentResource.tokens) gt 0>
 												<div class="reqTokens">
-													<h4>Path Tokens:</h4>
+													<h4>URI Tokens:</h4>
 													<form class="form-horizontal">
 														<cfloop from="1" to="#arrayLen(local.currentResource.tokens)#" index="local.token">
 															<div class="form-group row">
