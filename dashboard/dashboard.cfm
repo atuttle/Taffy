@@ -189,6 +189,7 @@
 									<div class="col-md-6">
 										<div class="well resource" data-uri="#local.currentResource.srcUri#">
 											<button class="btn btn-primary submitRequest">Send</button>
+											<button class="btn btn-success resetRequest">Reset</button>
 											<select class="form-control input-sm reqMethod">
 												<cfloop list="GET,POST,PUT,DELETE" index="local.verb">
 													<cfif structKeyExists(local.currentResource.methods, local.verb)>
@@ -242,7 +243,7 @@
 											</div>
 										</div><!-- /well (resource) -->
 									</div><!-- /col-md-6 -->
-									<div class="col-md-6">
+									<div class="col-md-6 docs">
 										<cfset local.metadata = getMetaData(application._taffy.factory.getBean(local.currentResource.beanName)) />
 										<cfset local.docData = getHintsFromMetadata(local.metadata) />
 										<cfif structKeyExists(local.docData, 'hint')><div class="doc">#docData.hint#</div><hr/></cfif>

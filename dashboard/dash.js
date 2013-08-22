@@ -22,11 +22,14 @@ $(function(){
 	});
 
 	$(".submitRequest").click(function(){
-		var resource = $(this).closest('.resource')
+		var submit = $(this)
+			,resource = submit.closest('.resource')
+			,reset = resource.find('.resetRequest')
 			,loading = resource.find('.progress')
 			,response = resource.find('.response');
 
 		loading.show();
+		submit.attr('disabled','disabled');
 
 		//interpolate the full request path
 		var uri = resource.data('uri')
@@ -41,6 +44,8 @@ $(function(){
 
 		submitRequest(verb, path, headers, body, function(timeSpent, status, headers, body){
 			loading.hide();
+			submit.removeAttr('disabled').hide();
+			reset.show();
 			headers = parseHeaders(headers);
 
 			if (headers['Content-Type'].indexOf('application/json') > -1 || headers['Content-Type'].indexOf('text/json') > -1){
@@ -63,6 +68,22 @@ $(function(){
 			response.find('.responseBody').html(body);
 		});
 
+	});
+
+	$(".resetRequest").click(function(){
+		var reset = $(this)
+			,resource = reset.closest('.resource')
+			,submit = resource.find('.submitRequest')
+			,response = resource.find('.response')
+			,tokens = resource.find('.reqTokens form input');
+
+		response.hide();
+		reset.hide();
+		submit.show();
+
+		tokens.each(function(){
+			$(this).val('');
+		});
 	});
 
 });
