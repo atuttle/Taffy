@@ -292,6 +292,12 @@
 			</div><!-- /panel-group -->
 			<br />
 			<div class="alert alert-info">Resources are listed in matching order. From top to bottom, the first URI to match the request is used.</div>
+			<cfif application._taffy.settings.reloadKey eq "reload" and application._taffy.settings.reloadPassword eq "true">
+				<div class="alert alert-warning">
+					<strong>Warning:</strong> Your reload key and password are using the framework default settings.
+					It's advised that you <a href="https://github.com/atuttle/Taffy/wiki/List-of-all-variables.framework-settings#reloadkey">change these in production</a>.
+				</div>
+			</cfif>
 		</div><!-- /row -->
 
 	</div><!-- /container -->
