@@ -165,10 +165,9 @@
 		<div class="row" id="resources">
 			<h3>Resources:</h3>
 			<div class="panel-group" id="resourcesAccordion">
-				<cfset local.resources = listSort(structKeyList(application._taffy.endpoints), 'textnocase') />
 				<cfoutput>
-					<cfloop list="#local.resources#" index="local.resource">
-						<cfset local.currentResource = application._taffy.endpoints[local.resource] />
+					<cfloop from="1" to="#arrayLen(application._taffy.uriMatchOrder)#" index="local.resource">
+						<cfset local.currentResource = application._taffy.endpoints[application._taffy.uriMatchOrder[local.resource]] />
 						<div class="panel panel-default">
 							<div class="panel-heading">
 								<h4 class="panel-title">
@@ -291,6 +290,8 @@
 					</cfloop>
 				</cfoutput>
 			</div><!-- /panel-group -->
+			<br />
+			<div class="alert alert-info">Resources are listed in matching order. From top to bottom, the first URI to match the request is used.</div>
 		</div><!-- /row -->
 
 	</div><!-- /container -->
