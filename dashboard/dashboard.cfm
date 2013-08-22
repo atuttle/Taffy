@@ -10,9 +10,126 @@
 
 		<div class="masthead">
 			<button id="reload" class="btn btn-info">Reload API Cache</button>
+			<button data-toggle="modal" data-target="#config" class="btn btn-default">Config</button>
 			<h1>API Dashboard</h1>
 			<span class="ver text-muted">Taffy <cfoutput>#application._taffy.version#</cfoutput></span>
 		</div>
+
+		<div class="modal fade" id="config" tabindex="-1" role="dialog" aria-labelledby="frameworkConfig" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<h4 class="modal-title" id="frameworkConfig">Framework Configuration</h4>
+					</div>
+					<div class="modal-body">
+						<cfoutput>
+
+							<div class="col-sm-6">
+								<strong>Reload on every request:</strong>
+							</div>
+							<div class="col-sm-6">
+								<a class="label label-default" href="https://github.com/atuttle/Taffy/wiki/List-of-all-variables.framework-settings##reloadoneveryrequest">?</a>
+								#yesNoFormat(application._taffy.settings.reloadOnEveryRequest)#
+							</div>
+
+							<div class="col-sm-6">
+								<strong>Return Exceptions as JSON:</strong>
+							</div>
+							<div class="col-sm-6">
+								<a class="label label-default" href="https://github.com/atuttle/Taffy/wiki/List-of-all-variables.framework-settings##returnexceptionsasjson">?</a>
+								#yesNoFormat(application._taffy.settings.returnExceptionsAsJson)#
+							</div>
+
+							<div class="col-sm-6">
+								<strong>CORS:</strong>
+							</div>
+							<div class="col-sm-6">
+								<a class="label label-default" href="https://github.com/atuttle/Taffy/wiki/List-of-all-variables.framework-settings##allowcrossdomain">?</a>
+								#yesNoFormat(application._taffy.settings.allowCrossDomain)#
+							</div>
+
+							<div class="col-sm-6">
+								<strong>E-Tags:</strong>
+							</div>
+							<div class="col-sm-6">
+								<a class="label label-default" href="https://github.com/atuttle/Taffy/wiki/List-of-all-variables.framework-settings##useetags">?</a>
+								#yesNoFormat(application._taffy.settings.useEtags)#
+							</div>
+
+							<div class="col-sm-6">
+								<strong>JSONP:</strong>
+							</div>
+							<div class="col-sm-6">
+								<a class="label label-default" href="https://github.com/atuttle/Taffy/wiki/List-of-all-variables.framework-settings##jsonp">?</a>
+								<cfif application._taffy.settings.jsonp eq false>
+									No
+								<cfelse>
+									?<strong>#application._taffy.settings.jsonp#=</strong>...
+								</cfif>
+							</div>
+
+							<div class="col-sm-6">
+								<strong>Endpoint URL Param:</strong>
+							</div>
+							<div class="col-sm-6">
+								<a class="label label-default" href="https://github.com/atuttle/Taffy/wiki/List-of-all-variables.framework-settings##endpointurlparam">?</a>
+								#application._taffy.settings.endpointURLParam#
+							</div>
+
+							<div class="col-sm-6">
+								<strong>Representation Class:</strong>
+							</div>
+							<div class="col-sm-6">
+								<a class="label label-default" href="https://github.com/atuttle/Taffy/wiki/List-of-all-variables.framework-settings##representationclass">?</a>
+								#application._taffy.settings.representationClass#
+							</div>
+
+							<div class="col-sm-6">
+								<strong>Return Formats:</strong>
+							</div>
+							<div class="col-sm-6">
+								<cfdump var="#application._taffy.settings.mimeTypes#" />
+							</div>
+
+							<div class="col-sm-6">
+								<strong>Global Headers:</strong>
+							</div>
+							<div class="col-sm-6">
+								<a class="label label-default" href="https://github.com/atuttle/Taffy/wiki/List-of-all-variables.framework-settings##globalheaders">?</a>
+								<cfdump var="#application._taffy.settings.globalHeaders#" />
+							</div>
+
+							<div class="col-sm-6">
+								<strong>Exception Log Adapter:</strong>
+							</div>
+							<div class="col-sm-6">
+								<a class="label label-default" href="https://github.com/atuttle/Taffy/wiki/List-of-all-variables.framework-settings##exceptionlogadapter">?</a>
+								#application._taffy.settings.exceptionLogAdapter#
+							</div>
+
+							<div class="col-sm-6">
+								<strong>Exception Log Adapter Config:</strong>
+							</div>
+							<div class="col-sm-6">
+								<a class="label label-default" href="https://github.com/atuttle/Taffy/wiki/List-of-all-variables.framework-settings##exceptionlogadapterconfig">?</a>
+								<cfdump var="#application._taffy.settings.exceptionLogAdapterConfig#" />
+							</div>
+
+							<div class="col-sm-6">
+								<strong>Unhandled Paths:</strong>
+							</div>
+							<div class="col-sm-6">
+								<a class="label label-default" href="https://github.com/atuttle/Taffy/wiki/List-of-all-variables.framework-settings##unhandledpaths">?</a>
+								<cfdump var="#listToArray(application._taffy.settings.unhandledPaths)#" />
+							</div>
+
+						</cfoutput>
+						<div class="clearfix"></div>
+					</div>
+				</div><!-- /.modal-content -->
+			</div><!-- /.modal-dialog -->
+		</div><!-- /.modal -->
 
 		<div class="row" id="alerts">
 			<cfif structKeyExists(application._taffy, "status")
