@@ -257,14 +257,14 @@
 											<cfloop from="1" to="#arrayLen(local.func.parameters)#" index="local.p">
 												<cfset local.param = local.func.parameters[local.p] />
 												<div class="row">
- 													<div class="col-md-11 col-md-offset-1">
+													<div class="col-md-11 col-md-offset-1">
 															<cfif not structKeyExists(local.param, 'required') or not local.param.required>
 																optional
 															<cfelse>
 																required
 															</cfif>
 															<cfif structKeyExists(local.param, "type")>
- 																#local.param.type#
+																#local.param.type#
 															</cfif>
 															<strong>#local.param.name#</strong>
 															<cfif structKeyExists(local.param, "default")>
@@ -279,7 +279,7 @@
 														<cfif structKeyExists(param, "hint")>
 															<br/><span class="doc">#local.param.hint#</span>
 														</cfif>
- 													</div>
+													</div>
 												</div>
 											</cfloop>
 										</cfloop>
