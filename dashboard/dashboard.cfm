@@ -57,6 +57,7 @@
 								<h4 class="panel-title">
 									<a href="###local.currentResource.beanName#" class="accordion-toggle" data-toggle="collapse" data-parent="##resourcesAccordion">
 										#local.currentResource.beanName#
+										<code class="uri hidden-xs">#local.currentResource.srcUri#</code>
 									</a>
 									<cfloop list="DELETE|warning,PUT|warning,POST|danger,GET|primary" index="local.verb">
 										<cfif structKeyExists(local.currentResource.methods, listFirst(local.verb,'|'))>
