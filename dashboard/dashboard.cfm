@@ -392,16 +392,9 @@
 				,headers: headers
 				,data: body
 				,contentType: dType
-			}).done(function(data, status, xhr){
+			}).always(function(a,b,c){
 				var after = Date.now(), t = after-before;
-				callback(
-					t
-					, xhr.status + " " + xhr.statusText		//status
-					, xhr.getAllResponseHeaders()				//headers
-					, xhr.responseText							//body
-				);
-			}).fail(function(xhr, status, err){
-				var after = Date.now(), t = after-before;
+				var xhr = a.getAllResponseHeaders ? a : c;
 				callback(
 					t
 					, xhr.status + " " + xhr.statusText		//status
