@@ -209,11 +209,12 @@
 											<cfif arrayLen(local.currentResource.tokens) gt 0>
 												<div class="reqTokens">
 													<h4>URI Tokens:</h4>
+													<div class='tokenErrors'></div>
 													<form class="form-horizontal">
 														<cfloop from="1" to="#arrayLen(local.currentResource.tokens)#" index="local.token">
 															<div class="form-group row">
 																<div class="col-md-3">
-																	<label for="token_#local.currentResource.beanName#_#local.currentResource.tokens[local.token]#">#local.currentResource.tokens[local.token]#:</label>
+																	<label class="control-label" for="token_#local.currentResource.beanName#_#local.currentResource.tokens[local.token]#">#local.currentResource.tokens[local.token]#:</label>
 																</div>
 																<div class="col-md-6">
 																	<input id="token_#local.currentResource.beanName#_#local.currentResource.tokens[local.token]#" name="#local.currentResource.tokens[local.token]#" type="text" class="form-control input-sm" />

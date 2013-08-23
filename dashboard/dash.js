@@ -28,6 +28,22 @@ $(function(){
 			,loading = resource.find('.progress')
 			,response = resource.find('.response');
 
+		//validate tokens
+		resource.find('.has-error').removeClass('has-error');
+		var tokenErrors = resource.find('.tokenErrors');
+		var tokens = resource.find('.reqTokens input');
+		tokenErrors.empty();
+		for (var t=0;t<tokens.length;t++){
+			var tok = $(tokens[t]);
+			if (tok.val().length === 0){
+				tok.closest('.form-group').addClass('has-error').focus();
+				tokenErrors.append('<div class="alert alert-danger">' + tok.attr('name') + ' is required</div>');
+			}
+		}
+		if (resource.find('.has-error').length > 0){
+			return false;
+		}
+
 		loading.show();
 		submit.attr('disabled','disabled');
 
