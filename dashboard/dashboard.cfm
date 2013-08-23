@@ -345,7 +345,7 @@
 					,cache: false
 				}).done(function(data){
 					//notify reload success
-					$("#alerts").append('<div class="alert alert-success" id="reloadSuccess">API Cache Successfully Reloaded</div>');
+					$("#alerts").append('<div class="alert alert-success" id="reloadSuccess">API Cache Successfully Reloaded. Refresh to see changes.</div>');
 					btn.removeAttr('disabled').html('Reload API Cache');
 					setTimeout(function(){
 						$("#reloadSuccess").fadeOut('fast', function(){
