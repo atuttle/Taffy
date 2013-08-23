@@ -17,7 +17,9 @@ $(function(){
 		if (method === 'GET' || method === 'DELETE'){
 			resource.find('.reqBody').hide();
 		}else{
-			resource.find('.reqBody').show();
+			var args = window.taffy.resources[resource.data('beanName')][method.toLowerCase()];
+			var ta = resource.find('.reqBody').show().find('textarea');
+			ta.val(JSON.stringify(args, null, 3));
 		}
 	});
 

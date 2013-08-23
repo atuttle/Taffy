@@ -6,6 +6,10 @@
 	<link rel="stylesheet" type="text/css" media="screen" href="/taffy/dashboard/asset.cfm?a=dash.css" />
 </head>
 <body>
+	<script>
+		window.taffy = { resources: {} };
+	</script>
+
 	<div class="container">
 
 		<div class="masthead">
@@ -187,7 +191,7 @@
 							<div class="panel-collapse collapse" id="#local.currentResource.beanName#">
 								<div class="panel-body">
 									<div class="col-md-6">
-										<div class="well resource" data-uri="#local.currentResource.srcUri#">
+										<div class="well resource" data-uri="#local.currentResource.srcUri#" data-bean-name="#local.currentResource.beanName#">
 											<button class="btn btn-primary submitRequest">Send</button>
 											<button class="btn btn-success resetRequest">Reset</button>
 											<select class="form-control input-sm reqMethod">
@@ -228,6 +232,27 @@
 											<div class="reqBody">
 												<h4>Request Body:</h4>
 												<textarea id="#local.currentResource.beanName#_RequestBody" class="form-control input-sm" rows="5"></textarea>
+												<cfset local.md = getMetaData(application._taffy.factory.getBean(local.currentResource.beanName)) />
+												<cfset local.functions = local.md.functions />
+												<!--- only save body templates for POST & PUT --->
+												<cfloop from="1" to="#arrayLen(local.functions)#" index="local.f">
+													<cfif local.functions[local.f].name eq "POST" or local.functions[local.f].name eq "PUT">
+														<cfset local.args = {} />
+														<!--- get a list of all function arguments --->
+														<cfloop from="1" to="#arrayLen(local.functions[local.f].parameters)#" index="local.parm">
+															<cfset local.args[local.functions[local.f].parameters[local.parm].name] = '' />
+														</cfloop>
+														<!--- omit uri tokens --->
+														<cfloop from="1" to="#arrayLen(local.currentResource.tokens)#" index="local.token">
+															<cfset structDelete(local.args, local.currentResource.tokens[local.token]) />
+														</cfloop>
+														<!--- save to page JS for runtime reference --->
+														<script>
+															taffy.resources['#local.currentResource.beanName#'] = taffy.resources['#local.currentResource.beanName#'] || {};
+															taffy.resources['#local.currentResource.beanName#']['#lcase(local.functions[local.f].name)#'] = #serializeJson(local.args)#;
+														</script>
+													</cfif>
+												</cfloop>
 											</div>
 											<div class="progress progress-striped active">
 												<div class="progress-bar"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
