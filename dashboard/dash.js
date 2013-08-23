@@ -23,6 +23,21 @@ $(function(){
 		}
 	});
 
+	//interpolate resource uri token values as they are typed
+	$(".reqTokens input").on('keyup', function(e){
+		var $this = $(this)
+			,tokens = params( $this.closest('.reqTokens form').serialize() )
+			,resource = $this.closest('.resource')
+			,uri = resource.data('uri')
+
+		for (var t in tokens){
+			if (tokens[t] === '')
+				delete tokens[t];
+		}
+		var result = uri.supplant(tokens);
+		resource.find('.resourceUri').html(result);
+	});
+
 	$(".submitRequest").click(function(){
 		var submit = $(this)
 			,resource = submit.closest('.resource')
@@ -94,10 +109,12 @@ $(function(){
 		var reset = $(this)
 			,resource = reset.closest('.resource')
 			,response = resource.find('.response')
-			,tokens = resource.find('.reqTokens form input');
+			,tokens = resource.find('.reqTokens form input')
+			,uri = resource.data('uri');
 
 		response.hide();
 		reset.hide();
+		resource.find('.resourceUri').html(uri);
 
 		tokens.each(function(){
 			$(this).val('');

@@ -201,7 +201,7 @@
 													</cfif>
 												</cfloop>
 											</select>
-											<code>#local.currentResource.srcUri#</code>
+											<code class='resourceUri'>#local.currentResource.srcUri#</code>
 
 											<h4>Accept:</h4>
 											<select class="form-control input-sm reqFormat">
