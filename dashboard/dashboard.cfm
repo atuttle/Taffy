@@ -318,13 +318,34 @@
 				</cfoutput>
 			</div><!-- /panel-group -->
 			<br />
-			<div class="alert alert-info">Resources are listed in matching order. From top to bottom, the first URI to match the request is used.</div>
+			<cfif arrayLen(application._taffy.uriMatchOrder) eq 0>
+				<div class="panel panel-warning">
+					<div class="panel-heading">Taffy is running but you haven't defined any resources yet.</div>
+					<div class="panel-body">
+						<p>
+							It looks like you don't have any resources defined. Get started by creating the folder
+							<code><cfoutput>#guessResourcesFullPath()#</cfoutput></code>, in which you should place your
+							Resource CFC's.
+						</p>
+						<p>
+							Or you could set up a bean factory, like <a href="http://www.coldspringframework.org/">ColdSpring</a>
+							or <a href="https://github.com/seancorfield/di1">DI/1</a>. Want to know more about using bean factories with Taffy?
+							<a href="https://github.com/atuttle/Taffy/wiki/So-you-want-to:-use-an-external-bean-factory-like-coldspring-to-completely-manage-resources"
+							>Check out the wiki!</a>
+						</p>
+						<p>
+							If all else fails, I recommend starting with <a href="https://github.com/atuttle/Taffy/wiki/Getting-Started">Getting Started</a>.
+						</p>
+					</div>
+				</div>
+			</cfif>
 			<cfif application._taffy.settings.reloadKey eq "reload" and application._taffy.settings.reloadPassword eq "true">
 				<div class="alert alert-warning">
 					<strong>Warning:</strong> Your reload key and password are using the framework default settings.
 					It's advised that you <a href="https://github.com/atuttle/Taffy/wiki/List-of-all-variables.framework-settings#reloadkey">change these in production</a>.
 				</div>
 			</cfif>
+			<div class="alert alert-info">Resources are listed in matching order. From top to bottom, the first URI to match the request is used.</div>
 		</div><!-- /row -->
 
 	</div><!-- /container -->

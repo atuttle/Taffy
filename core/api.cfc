@@ -144,9 +144,23 @@
 		</cfif>
 
 		<!--- display api dashboard if requested --->
-		<cfif structKeyExists(url, application._taffy.settings.dashboardKey) and not application._taffy.settings.disableDashboard>
-			<cfinclude template="../dashboard/dashboard.cfm" />
-			<cfabort />
+		<cfif
+			NOT structKeyExists(url,application._taffy.settings.endpointURLParam)
+			AND NOT structKeyExists(form,application._taffy.settings.endpointURLParam)
+			AND len(cgi.path_info) lte 1
+			AND listLast(cgi.script_name, "/") eq "index.cfm">
+			<cfif NOT application._taffy.settings.disableDashboard>
+				<cfset requestStartEvent() />
+				<cfinclude template="../dashboard/dashboard.cfm" />
+				<cfabort />
+			<cfelse>
+				<cfif len(application._taffy.settings.disabledDashboardRedirect)>
+					<cflocation url="#application._taffy.settings.disabledDashboardRedirect#" addtoken="false" />
+					<cfabort />
+				<cfelse>
+					<cfset throwError(403, "Forbidden") />
+				</cfif>
+			</cfif>
 		</cfif>
 
 		<!--- get request details --->
@@ -345,6 +359,7 @@
 		<cfset local.defaultConfig.useEtags = false />
 		<cfset local.defaultConfig.jsonp = false />
 		<cfset local.defaultConfig.globalHeaders = structNew() />
+		<cfset local.defaultConfig.mimeTypes = structNew() />
 		<cfset local.defaultConfig.returnExceptionsAsJson = true />
 		<cfset local.defaultConfig.exceptionLogAdapter = "taffy.bonus.LogToEmail" />
 		<cfset local.defaultConfig.exceptionLogAdapterConfig = StructNew() />
@@ -356,6 +371,7 @@
 		<cfset application._taffy.status = structNew() />
 		<cfset application._taffy.status.internalBeanFactoryUsed = false />
 		<cfset application._taffy.status.externalBeanFactoryUsed = false />
+		<cfset application._taffy.uriMatchOrder = [] />
 		<!--- allow setting overrides --->
 		<cfset application._taffy.settings = structNew() />
 		<cfset structAppend(application._taffy.settings, local.defaultConfig, true) /><!--- initialize to default values --->
@@ -380,6 +396,7 @@
 		/>
 		<!--- if resources folder exists, use internal bean factory --->
 		<cfset _taffyRequest.resourcePath = guessResourcesFullPath() />
+		<cfset local.noResources = false />
 		<cfif directoryExists(_taffyRequest.resourcePath)>
 			<!--- setup internal bean factory --->
 			<cfset application._taffy.factory = createObject("component", "taffy.core.factory").init() />
@@ -400,26 +417,18 @@
 			<!--- since external factory is only factory, check it for taffy resources --->
 			<cfset local.beanList = getBeanListFromExternalFactory() />
 			<cfset cacheBeanMetaData(application._taffy.externalBeanFactory, local.beanList) />
-
-		<cfelse>
-			<h1>Taffy is up and running!</h1>
-			<p>It looks like you don't have any resources defined. Get started by creating the folder
-			<code style="background-color: #F5DA81"><cfoutput>#guessResourcesFullPath()#</cfoutput></code> in which you should place your
-			Resource CFC's.</p>
-			<p>Or you could set up a bean factory, like <a href="http://www.coldspringframework.org/">ColdSpring</a>
-			or <a href="https://github.com/seancorfield/di1">DI/1</a>. Want to know more about using bean factories with Taffy?
-			<a href="https://github.com/atuttle/Taffy/wiki/So-you-want-to:-use-an-external-bean-factory-like-coldspring-to-completely-manage-resources"
-			>Check out the wiki!</a></p>
-			<p>If all else fails, I recommend starting with <a href="https://github.com/atuttle/Taffy/wiki/Getting-Started">Getting Started</a>.</p>
-			<cfabort />
+ 		<cfelse>
+ 			<cfset local.noResources = true />
 		</cfif>
-		<!--- sort URIs --->
-		<cfset sortURIMatchOrder() />
-		<!--- automatically introspect mime types from cfc metadata of default representation class --->
-		<cfset inspectMimeTypes(application._taffy.settings.representationClass) />
-		<!--- check to make sure a default mime type is set --->
-		<cfif application._taffy.settings.defaultMime eq "">
-			<cfset throwError(400, "You have not specified a default mime type!") />
+		<cfif not local.noResources>
+			<!--- sort URIs --->
+			<cfset sortURIMatchOrder() />
+			<!--- automatically introspect mime types from cfc metadata of default representation class --->
+			<cfset inspectMimeTypes(application._taffy.settings.representationClass) />
+			<!--- check to make sure a default mime type is set --->
+			<cfif application._taffy.settings.defaultMime eq "">
+				<cfset throwError(400, "You have not specified a default mime type!") />
+			</cfif>
 		</cfif>
 	</cffunction>
 
