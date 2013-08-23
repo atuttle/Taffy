@@ -93,7 +93,11 @@
 								<strong>Return Formats:</strong>
 							</div>
 							<div class="col-sm-6">
-								<cfdump var="#application._taffy.settings.mimeTypes#" />
+								<ul>
+									<cfloop list="#structKeyList(application._taffy.settings.mimeTypes)#" index="local.m">
+										<li>#local.m#</li>
+									</cfloop>
+								</ul>
 							</div>
 
 							<div class="col-sm-6">
@@ -101,7 +105,15 @@
 							</div>
 							<div class="col-sm-6">
 								<a class="label label-default" href="https://github.com/atuttle/Taffy/wiki/List-of-all-variables.framework-settings##globalheaders">?</a>
-								<cfdump var="#application._taffy.settings.globalHeaders#" />
+								<dl>
+									<cfloop list="#structKeyList(application._taffy.settings.globalHeaders)#" index="local.h">
+										<dt>#local.h#</dt>
+										<dd>#application._taffy.settings.globalHeaders[local.h]#</dd>
+									</cfloop>
+								</dl>
+								<cfif structIsEmpty(application._taffy.settings.globalHeaders)>
+									None
+								</cfif>
 							</div>
 
 							<div class="col-sm-6">
@@ -117,7 +129,12 @@
 							</div>
 							<div class="col-sm-6">
 								<a class="label label-default" href="https://github.com/atuttle/Taffy/wiki/List-of-all-variables.framework-settings##exceptionlogadapterconfig">?</a>
-								<cfdump var="#application._taffy.settings.exceptionLogAdapterConfig#" />
+								<dl>
+									<cfloop list="#structKeyList(application._taffy.settings.exceptionLogAdapterConfig)#" index="local.k">
+										<dt>#local.k#</dt>
+										<dd>#application._taffy.settings.exceptionLogAdapterConfig[local.k]#</dd>
+									</cfloop>
+								</dl>
 							</div>
 
 							<div class="col-sm-6">
@@ -125,7 +142,11 @@
 							</div>
 							<div class="col-sm-6">
 								<a class="label label-default" href="https://github.com/atuttle/Taffy/wiki/List-of-all-variables.framework-settings##unhandledpaths">?</a>
-								<cfdump var="#listToArray(application._taffy.settings.unhandledPaths)#" />
+								<ul>
+									<cfloop list="#application._taffy.settings.unhandledPaths#" index="local.p">
+										<li>#local.p#</li>
+									</cfloop>
+								</ul>
 							</div>
 
 						</cfoutput>
