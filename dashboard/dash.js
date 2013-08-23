@@ -54,6 +54,8 @@ $(function(){
 			,form = params( resource.find('.reqTokens form').serialize() )
 			,path = uri.supplant(form);
 
+		response.hide();
+
 		var verb = resource.find('.reqMethod option:checked').val();
 		var body = resource.find('.reqBody textarea').val();
 		var headers = {
@@ -62,7 +64,7 @@ $(function(){
 
 		submitRequest(verb, path, headers, body, function(timeSpent, status, headers, body){
 			loading.hide();
-			submit.removeAttr('disabled').hide();
+			submit.removeAttr('disabled');
 			reset.show();
 			headers = parseHeaders(headers);
 
@@ -74,9 +76,9 @@ $(function(){
 						 .replace(/\s/g,'&nbsp;');
 			}
 
-			response.show();
 			var headerRow = response.find('.responseHeaders');
 			headerRow.empty();
+			response.show();
 			for (var h in headers){
 				headerRow.append('<div class="row"><div class="col-md-4 headerName">' + h + ':</div><div class="col-md-8 headerVal">' + headers[h] + '</div></div>');
 			}
@@ -91,13 +93,11 @@ $(function(){
 	$(".resetRequest").click(function(){
 		var reset = $(this)
 			,resource = reset.closest('.resource')
-			,submit = resource.find('.submitRequest')
 			,response = resource.find('.response')
 			,tokens = resource.find('.reqTokens form input');
 
 		response.hide();
 		reset.hide();
-		submit.show();
 
 		tokens.each(function(){
 			$(this).val('');
