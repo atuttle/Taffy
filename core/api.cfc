@@ -137,6 +137,7 @@
 		<cfargument name="targetPage" type="string" required="true" />
 
 		<cfset var _taffyRequest = {} />
+		<cfset var local = {} />
 
 		<!--- enable/disable debug output per settings --->
 		<cfif not structKeyExists(url, application._taffy.settings.debugKey)>
@@ -240,16 +241,10 @@
 				<cfheader name="Access-Control-Allow-Headers" value="Origin, Authorization, X-Requested-With, Content-Type, X-HTTP-Method-Override, Accept, Referrer, User-Agent" />
 			<cfelse>
 				<!--- parrot back all of the request headers to allow the request to continue (can we improve on this?) --->
-				<cfset local.allowedHeaders = {
-					"Origin"=1
-					,"Authorization"=1
-					,"X-Requested-With"=1
-					,"Content-Type"=1
-					,"X-HTTP-Method-Override"=1
-					,"Accept"=1
-					,"Referrer"=1
-					,"User-Agent"=1
-				} />
+				<cfset local.allowedHeaders = {} />
+				<cfloop list="Origin,Authorization,X-Requested-With,Content-Type,X-HTTP-Method-Override,Accept,Referrer,User-Agent" index="local.h">
+					<cfset local.allowedHeaders[local.h] = 1 />
+				</cfloop>
 				<cfset local.requestedHeaders = _taffyRequest.headers['Access-Control-Request-Headers'] />
 				<cfloop list="#local.requestedHeaders#" index="local.i">
 					<cfset local.allowedHeaders[ local.i ] = 1 />
