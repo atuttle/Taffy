@@ -1,8 +1,6 @@
 <cfcomponent hint="Base class for taffy REST application's Application.cfc">
 
 	<!--- these methods are meant to be (optionally) overrided in your application.cfc --->
-	<cffunction name="applicationStartEvent" output="false" hint="override this function to run your own code inside onApplicationStart()"></cffunction>
-	<cffunction name="requestStartEvent" output="false" hint="override this function to run your own code inside onRequestStart()"></cffunction>
 	<cffunction name="configureTaffy" output="false" hint="override this function to set Taffy config settings"></cffunction>
 	<cffunction name="getEnvironment" output="false" hint="override this function to define the current API environment"><cfreturn "" /></cffunction>
 
@@ -20,14 +18,13 @@
 		<cfreturn true />
 	</cffunction>
 
-	<!--- DO NOT OVERRIDE THIS FUNCTION - SEE applicationStartEvent ABOVE --->
+	<!--- Your Application.cfc should override this method AND call super.onApplicationStart() --->
 	<cffunction name="onApplicationStart">
-		<cfset applicationStartEvent() />
 		<cfset setupFramework() />
 		<cfreturn true />
 	</cffunction>
 
-	<!--- DO NOT OVERRIDE THIS FUNCTION - SEE requestStartEvent ABOVE --->
+	<!--- Your Application.cfc should override this method AND call super.onRequestStart(targetpath) --->
 	<cffunction name="onRequestStart">
 		<cfargument name="targetPath" />
 		<cfset var local = structNew() />
@@ -60,7 +57,6 @@
 				AND len(cgi.path_info) lte 1
 				AND listLast(cgi.script_name, "/") eq "index.cfm">
 				<cfif NOT application._taffy.settings.disableDashboard>
-					<cfset requestStartEvent() />
 					<cfinclude template="../dashboard/dashboard.cfm" />
 					<cfabort />
 				<cfelse>
@@ -77,8 +73,6 @@
 			<cfset structDelete(this, 'onRequest') />
 			<cfset structDelete(variables, 'onRequest') />
 		</cfif>
-		<!--- allow child application.cfc to do stuff --->
-		<cfset requestStartEvent() />
 		<cfreturn true />
 	</cffunction>
 
@@ -151,7 +145,6 @@
 			AND len(cgi.path_info) lte 1
 			AND listLast(cgi.script_name, "/") eq "index.cfm">
 			<cfif NOT application._taffy.settings.disableDashboard>
-				<cfset requestStartEvent() />
 				<cfinclude template="../dashboard/dashboard.cfm" />
 				<cfabort />
 			<cfelse>
