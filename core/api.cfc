@@ -1006,6 +1006,10 @@
 		</cfif>
 	</cffunction>
 
+	<cffunction name="getGlobalHeaders" access="private" output="false" returntype="Struct">
+		<cfreturn application._taffy.settings.globalHeaders />
+	</cffunction>
+
 	<cfif NOT isDefined("getComponentMetadata")>
 		<!--- workaround for platforms where getComponentMetadata doesn't exist --->
 		<cffunction name="tmp">
