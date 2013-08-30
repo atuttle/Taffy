@@ -1,9 +1,9 @@
-<cfcomponent extends="taffy.core.resource" taffy:uri="/echo/{id}">
+<cfcomponent extends="taffy.core.resource" taffy:uri="/echo/{id}" hint="I am the component hint.">
 
 	<cfproperty name="customJsonRepresentation" default="initial" />
 
-	<cffunction name="get">
-		<cfargument name="id" />
+	<cffunction name="get" hint="I am the function hint.">
+		<cfargument name="id" hint="I am the argument hint." />
 		<cfset local.headers = {}/>
 		<cfset local.headers['x-dude'] = "dude!" />
 		<cfset local.res = {} />
