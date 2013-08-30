@@ -6,8 +6,10 @@ $(function(){
 		var method = resource.find('.reqMethod option:checked').html();
 		if (method === 'GET' || method === 'DELETE'){
 			resource.find('.reqBody').hide('fast');
+			resource.find('.queryParams').show('fast');
 		}else{
 			resource.find('.reqBody').show('fast');
+			resource.find('.queryParams').hide('fast');
 		}
 	});
 	//hide request body form field for GET/DELETE on method change
@@ -16,18 +18,33 @@ $(function(){
 		var method = resource.find('.reqMethod option:checked').html();
 		if (method === 'GET' || method === 'DELETE'){
 			resource.find('.reqBody').hide('fast');
+			resource.find('.queryParams').show('fast');
 		}else{
 			var args = window.taffy.resources[resource.data('beanName')][method.toLowerCase()];
 			var ta = resource.find('.reqBody').show('fast').find('textarea');
 			ta.val(JSON.stringify(args, null, 3));
+			resource.find('.queryParams').hide('fast').find('input').val('');
 		}
 	});
 
-	//interpolate resource uri token values as they are typed
-	$(".reqTokens input").on('keyup', function(e){
+	$(".addParam").click(function(){
+		var resource = $(this).closest('.resource')
+			,params = resource.find('.queryParams');
+		var tmpl = '<div class="qparam row form-group"><div class="col-md-4"><input class="form-control input-small paramName" /></div><div class="col-md-1 micro">=</div><div class="col-md-4"><input class="form-control input-small paramValue" /></div><div class="col-md-2"><button class="btn delParam" tabindex="-1">-</button></div></div>';
+		params.append(tmpl);
+	});
+
+	$(".resource").on('click', '.delParam', function(){
+		var row = $(this).closest('.row');
+		row.remove();
+	});
+
+	//interpolate resource uri token values as they're typed
+	$(".resource").on('keyup', 'input', function(e){
 		var $this = $(this)
-			,tokens = params( $this.closest('.reqTokens form').serialize() )
 			,resource = $this.closest('.resource')
+			,tokens = params( resource.find('.reqTokens form').serialize() )
+			,q = qParams(resource)
 			,uri = resource.data('uri')
 
 		for (var t in tokens){
@@ -35,6 +52,7 @@ $(function(){
 				delete tokens[t];
 		}
 		var result = uri.supplant(tokens);
+		result += (q.length) ? '?' + q : '';
 		resource.find('.resourceUri').html(result);
 	});
 
@@ -57,7 +75,7 @@ $(function(){
 				tokenErrors.append('<div class="alert alert-danger">' + tok.attr('name') + ' is required</div>');
 			}
 		}
-		if (resource.find('.has-error').length > 0){
+		if (resource.find('.reqTokens .has-error').length > 0){
 			return false;
 		}
 
@@ -72,7 +90,7 @@ $(function(){
 		response.hide();
 
 		var verb = resource.find('.reqMethod option:checked').val();
-		var body = resource.find('.reqBody textarea').val();
+		var body = (verb === 'GET' || verb === 'DELETE') ? params(qParams(resource)) : resource.find('.reqBody textarea').val();
 		var headers = {
 			Accept: resource.find('.reqFormat option:checked').val()
 		};
@@ -110,6 +128,7 @@ $(function(){
 			,resource = reset.closest('.resource')
 			,response = resource.find('.response')
 			,tokens = resource.find('.reqTokens form input')
+			,params = resource.find('.queryParams input')
 			,uri = resource.data('uri');
 
 		response.hide();
@@ -119,9 +138,27 @@ $(function(){
 		tokens.each(function(){
 			$(this).val('');
 		});
+		params.each(function(){
+			$(this).val('');
+		})
 	});
 
 });
+
+function qParams(resource){
+	var validParams = [];
+	resource.find('.qparam').each(function(){
+		var $this = $(this), n = $this.find('.paramName'), v = $this.find('.paramValue');
+		var nameLen = n.val().length, valLen = v.val().length;
+		if (nameLen && valLen){
+			validParams.push(encodeURIComponent(n.val()) + '=' + encodeURIComponent(v.val()));
+			$this.removeClass('has-error');
+		}else{
+			$this.addClass('has-error');
+		}
+	});
+	return validParams.join('&');
+}
 
 function toggleStackTrace(id){
 	console.log('toggling %s', id);

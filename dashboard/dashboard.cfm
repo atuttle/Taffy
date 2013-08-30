@@ -224,6 +224,22 @@
 											</select>
 											<code class='resourceUri'>#local.currentResource.srcUri#</code>
 
+											<div class="queryParams">
+												<h4>Query String Parameters: <span class="text-muted">(optional)</span></h4>
+												<div class="qparam row form-group">
+													<div class="col-md-4">
+														<input class="form-control input-small paramName" />
+													</div>
+													<div class="col-md-1 micro">=</div>
+													<div class="col-md-4">
+														<input class="form-control input-small paramValue" />
+													</div>
+													<div class="col-md-2">
+														<button class="btn addParam" tabindex="-1">+</button>
+													</div>
+												</div>
+											</div>
+
 											<h4>Accept:</h4>
 											<select class="form-control input-sm reqFormat">
 												<cfloop list="#structKeyList(application._taffy.settings.mimeTypes)#" index="local.mime">
@@ -235,7 +251,7 @@
 
 											<cfif arrayLen(local.currentResource.tokens) gt 0>
 												<div class="reqTokens">
-													<h4>URI Tokens:</h4>
+													<h4>URI Tokens: <span class="text-muted">(required)</span></h4>
 													<div class='tokenErrors'></div>
 													<form class="form-horizontal">
 														<cfloop from="1" to="#arrayLen(local.currentResource.tokens)#" index="local.token">
@@ -423,7 +439,7 @@
 				url += '&' + resource.split('?')[1];
 			}
 
-			if( body && body.indexOf('{') == 0 ){
+			if( body && typeof body === 'string' && body.indexOf('{') == 0 ){
 				dType = "application/json";
 			}
 
