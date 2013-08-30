@@ -185,7 +185,7 @@
 					</cfloop>
 				</cfoutput>
 			</cfif>
-		</div>
+		</div><!-- /#alerts -->
 
 		<div class="row" id="resources">
 			<h3>Resources:</h3>
@@ -227,7 +227,9 @@
 											<h4>Accept:</h4>
 											<select class="form-control input-sm reqFormat">
 												<cfloop list="#structKeyList(application._taffy.settings.mimeTypes)#" index="local.mime">
-													<option value="#local.mime#">#application._taffy.settings.mimeTypes[local.mime]#</option>
+													<option value="#local.mime#"
+														<cfif application._taffy.settings.defaultMime eq application._taffy.settings.mimeTypes[local.mime]>selected="selected"</cfif>
+													>#application._taffy.settings.mimeTypes[local.mime]#</option>
 												</cfloop>
 											</select>
 
@@ -367,7 +369,7 @@
 				</div>
 			</cfif>
 			<div class="alert alert-info">Resources are listed in matching order. From top to bottom, the first URI to match the request is used.</div>
-		</div><!-- /row -->
+		</div><!-- /#resources -->
 
 	</div><!-- /container -->
 
