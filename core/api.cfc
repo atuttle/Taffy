@@ -802,8 +802,8 @@
 	<cffunction name="resolveDependencies" access="private" output="false" returnType="void" hint="used to resolve dependencies of internal beans using external bean factory">
 		<cfset var local = StructNew() />
 		<cfloop list="#structKeyList(application._taffy.endpoints)#" index="local.endpoint">
-			<cfset local.beanName = application._taffy.factory.getBean(application._taffy.endpoints[local.endpoint].beanName) />
-			<cfset local.md = getMetadata( local.beanName ) />
+			<cfset local.bean = application._taffy.factory.getBean(application._taffy.endpoints[local.endpoint].beanName) />
+			<cfset local.md = getMetadata( local.bean ) />
 			<cfset local.methods = local.md.functions />
 			<!--- get list of method names --->
 			<cfset local.methodNames = "" />
@@ -816,12 +816,20 @@
 					<!--- we've found a dependency, try to resolve it --->
 					<cfset local.beanName = right(local.method, len(local.method) - 3) />
 					<cfif application._taffy.externalBeanFactory.containsBean(local.beanName)>
-						<cfset local.bean = application._taffy.factory.getBean(application._taffy.endpoints[local.endpoint].beanName) />
 						<cfset local.dependency = application._taffy.externalBeanFactory.getBean(local.beanName) />
 						<cfset evaluate("local.bean.#local.method#(local.dependency)") />
 					</cfif>
 				</cfif>
 			</cfloop>
+			<!--- also resolve properties --->
+			<cfif structKeyExists(local.md, "properties") and isArray(local.md.properties)>
+				<cfloop from="1" to="#arrayLen(local.md.properties)#" index="local.p">
+					<cfset local.propName = local.md.properties[local.p].name />
+					<cfif application._taffy.externalBeanFactory.containsBean(local.propName)>
+						<cfset local.bean[local.propName] = application._taffy.externalBeanFactory.getBean(local.propName) />
+					</cfif>
+				</cfloop>
+			</cfif>
 		</cfloop>
 	</cffunction>
 
