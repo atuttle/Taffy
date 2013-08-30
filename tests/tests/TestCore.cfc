@@ -179,6 +179,7 @@
 		}
 
 		function returns_error_when_default_mime_not_implemented(){
+			makePublic(variables.taffy, "setDefaultMime");
 			variables.taffy.setDefaultMime("DoesNotExist");
 			local.result = apiCall("get", "/echo/2", "foo=bar");
 			debug(local.result);
@@ -187,6 +188,7 @@
 		}
 
 		function returns_error_when_requested_mime_not_supported(){
+			makePublic(variables.taffy, "setDefaultMime");
 			variables.taffy.setDefaultMime("application/json");
 			local.h = structNew();
 			local.h['Accept'] = "application/NOPE";
@@ -197,6 +199,7 @@
 		}
 
 		function extension_takes_precedence_over_accept_header(){
+			makePublic(variables.taffy, "setDefaultMime");
 			variables.taffy.setDefaultMime("text/json");
 			local.headers = structNew();
 			local.headers["Accept"] = "text/xml";
@@ -308,6 +311,7 @@
 		function put_body_is_url_encoded_params(){
 			var local = {};
 
+			makePublic(variables.taffy, "setDefaultMime");
 			variables.taffy.setDefaultMime("application/json");
 			local.result = apiCall(
 				"put",
@@ -512,6 +516,7 @@
 	<cffunction name="can_upload_a_file">
 		<cfset var local = structNew() />
 		<!--- <cfset debug(cgi) /> --->
+		<cfset makePublic(variables.taffy, "setDefaultMime") />
 		<cfset variables.taffy.setDefaultMime("text/json") />
 		<cfhttp
 			url="http://#cgi.server_name#:#cgi.server_port#/taffy/tests/index.cfm/upload.json"

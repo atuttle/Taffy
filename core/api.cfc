@@ -1,7 +1,6 @@
 <cfcomponent hint="Base class for taffy REST application's Application.cfc">
 
-	<!--- these methods are meant to be (optionally) overrided in your application.cfc --->
-	<cffunction name="configureTaffy" output="false" hint="override this function to set Taffy config settings"></cffunction>
+	<!--- this method is meant to be (optionally) overrided in your application.cfc --->
 	<cffunction name="getEnvironment" output="false" hint="override this function to define the current API environment"><cfreturn "" /></cffunction>
 
 	<!---
@@ -367,7 +366,6 @@
 		<cfif structKeyExists(variables.framework, "beanFactory")>
 			<cfset setBeanFactory(variables.framework.beanFactory) />
 		</cfif>
-		<cfset configureTaffy()/><!--- result of configureTaffy() takes precedence --->
 		<!--- allow environment-specific config --->
 		<cfset local.env = getEnvironment() />
 		<cfif len(local.env) gt 0>
@@ -971,7 +969,7 @@
 	<!---
 		helper methods: stuff used in Application.cfc
 	--->
-	<cffunction name="setBeanFactory" access="public" output="false" returntype="void">
+	<cffunction name="setBeanFactory" access="private" output="false" returntype="void">
 		<cfargument name="beanFactory" required="true" hint="Instance of bean factory object" />
 		<cfargument name="beanList" required="false" default="" />
 		<cfif isSimpleValue(arguments.beanFactory) and len(arguments.beanFactory) eq 0>
@@ -982,86 +980,29 @@
 		<cfset application._taffy.status.externalBeanFactoryUsed = true />
 	</cffunction>
 
-	<cffunction name="getBeanFactory" access="public" output="false">
+	<cffunction name="getBeanFactory" access="private" output="false">
 		<cfreturn application._taffy.factory />
 	</cffunction>
 
-	<cffunction name="setUnhandledPaths" access="public" output="false" returntype="void">
-		<cfargument name="unhandledPaths" type="string" required="true" hint="new list of unhandled paths, comma-delimited (commas may not be part of any list item)" />
-		<cfset application._taffy.settings.unhandledPaths = arguments.unhandledPaths />
-	</cffunction>
-
-	<cffunction name="setDefaultMime" access="public" output="false" returntype="void" hint="deprecated-1.1">
+	<cffunction name="setDefaultMime" access="private" output="false" returntype="void" hint="deprecated-1.1">
 		<cfargument name="DefaultMimeType" type="string" required="true" hint="mime time to set as default for this api" />
 		<cfset application._taffy.settings.defaultMime = arguments.DefaultMimeType />
 	</cffunction>
 
-	<cffunction name="setDebugKey" access="public" output="false" returnType="void">
-		<cfargument name="keyName" type="string" required="true" hint="url parameter you want to use to enable ColdFusion debug output" />
-		<cfset application._taffy.settings.debugKey = arguments.keyName />
-	</cffunction>
-
-	<cffunction name="setDashboardKey" access="public" output="false" returnType="void">
-		<cfargument name="keyName" type="string" required="true" hint="url parameter you want to use to show the Taffy dashboard" />
-		<cfset application._taffy.settings.dashboardKey = arguments.keyName />
-	</cffunction>
-
-	<cffunction name="enableDashboard" access="public" output="false" returntype="void" hint="Enable and disable usage of the dashboard via the dashboard key existing as a url parameter">
-		<cfargument name="enabled" type="boolean" required="true" />
-		<cfset application._taffy.settings.disableDashboard = !(arguments.enabled) />
-	</cffunction>
-
-	<cffunction name="setReloadKey" access="public" output="false" returnType="void">
-		<cfargument name="keyName" type="string" required="true" hint="url parameter you want to use to reload Taffy (clear cache, reset settings)" />
-		<cfset application._taffy.settings.reloadKey = arguments.keyName />
-	</cffunction>
-
-	<cffunction name="setReloadPassword" access="public" output="false" returnType="void">
-		<cfargument name="password" type="string" required="true" hint="value required for the reload key to initiate a reload. if it doesn't match, then the framework will not reload." />
-		<cfset application._taffy.settings.reloadPassword = arguments.password />
-	</cffunction>
-
-	<cffunction name="registerMimeType" access="public" output="false" returntype="void" hint="deprecated-1.1">
+	<cffunction name="registerMimeType" access="private" output="false" returntype="void" hint="deprecated-1.1">
 		<cfargument name="extension" type="string" required="true" hint="ex: json" />
 		<cfargument name="mimeType" type="string" required="true" hint="ex: text/json" />
 		<cfset application._taffy.settings.mimeExtensions[arguments.extension] = arguments.mimeType />
 		<cfset application._taffy.settings.mimeTypes[arguments.mimeType] = arguments.extension />
 	</cffunction>
 
-	<cffunction name="registerExtensionRepresentation" access="public" output="false" returntype="void">
-		<cfargument name="extensionList" type="string" required="true" hint="ex: json" />
-		<cfargument name="representation" type="string" required="true" hint="ex: cfc.SomeRep" />
-		<cfloop from="1" to="#ListLen(arguments.extensionList)#" index="i">
-			<cfset application._taffy.settings.extensionRepresentations["#ListGetAt(arguments.extensionList,i)#"] = arguments.representation />
-		</cfloop>
-	</cffunction>
-
-	<cffunction name="setDefaultRepresentationClass" access="public" output="false" returnType="void" hint="Override the global default representation object with a custom class">
-		<cfargument name="customClassDotPath" type="string" required="true" hint="Dot-notation path to your custom class to use as the default" />
-		<cfset application._taffy.settings.representationClass = arguments.customClassDotPath />
-	</cffunction>
-
 	<cffunction name="newRepresentation" access="public" output="false">
-		<cfargument name="class" type="string" default="#application._taffy.settings.representationClass#" />
-		<cfif application._taffy.factory.containsBean(arguments.class)>
-			<cfreturn application._taffy.factory.getBean(arguments.class) />
+		<cfset var repClass = application._taffy.settings.representationClass />
+		<cfif application._taffy.factory.containsBean(repClass)>
+			<cfreturn application._taffy.factory.getBean(repClass) />
 		<cfelse>
-			<cfreturn createObject("component", arguments.class) />
+			<cfreturn createObject("component", repClass) />
 		</cfif>
-	</cffunction>
-
-	<cffunction name="enableCrossDomainAccess" access="public" output="false" returntype="void">
-		<cfargument name="enabled" type="boolean" default="true" />
-		<cfset application._taffy.settings.allowCrossDomain = arguments.enabled />
-	</cffunction>
-
-	<cffunction name="getGlobalHeaders" access="public" output="false" returntype="Struct">
-		<cfreturn application._taffy.settings.globalHeaders />
-	</cffunction>
-
-	<cffunction name="setGlobalHeaders" access="public" output="false" returntype="void">
-		<cfargument name="headers" type="struct" required="true" />
-		<cfset application._taffy.settings.globalHeaders = arguments.headers />
 	</cffunction>
 
 	<cfif NOT isDefined("getComponentMetadata")>
