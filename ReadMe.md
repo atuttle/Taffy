@@ -10,8 +10,8 @@ Taffy has a comprehensive test suite and uses continuous integration to ensure t
 
 ## Supported Versions
 
+* Taffy 2.0.x
 * Taffy 1.3.x
-* Taffy 1.2.x
 
 If you file a bug or ask for support, usually our first question is "What version of Taffy are you using?" If it's an older release, we usually ask you to upgrade. Officially, we promise to support the current "minor" release and the prior "minor" release. When Taffy 2.0 is released, it and the preceding "minor" release (e.g. Taffy 1.4.x, if such a thing were to exist) would be supported.
 
