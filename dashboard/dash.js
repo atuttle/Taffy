@@ -103,10 +103,12 @@ $(function(){
 
 			if (headers['Content-Type'].indexOf('application/json') > -1 || headers['Content-Type'].indexOf('text/json') > -1){
 				//indentation!
-				body = JSON.stringify( JSON.parse(body), null, 3 )
-						 .split('\n')
-						 .join('<br/>')
-						 .replace(/\s/g,'&nbsp;');
+				if (body.length){
+					body = JSON.stringify( JSON.parse(body), null, 3 )
+							 .split('\n')
+							 .join('<br/>')
+							 .replace(/\s/g,'&nbsp;');
+				}
 			}
 
 			var headerRow = response.find('.responseHeaders');
