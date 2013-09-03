@@ -576,6 +576,25 @@
 		<cfset local.returnData.tokens = ArrayNew(1) />
 		<cfset local.uriMatcher = "" />
 
+		<cfset local.regexes.segment = "([^\/]+)" /> <!--- anything but a slash --->
+		<cfset local.regexes.segmentWithOptFormat = "(?:(?:([^\/\.]+)(?:\.)([a-zA-Z0-9]+))\/?|([^\/\.]+))" />
+		<cfset local.regexes.optFormatWithOptSlash = "((?:\.)[^\.\?\/]+)?\/?" /><!--- for ".json[/]" support --->
+		<!---
+			above regex explained:
+			(?:
+				(?:
+					([^\/]+)(?:\.)([a-zA-Z0-9]+)      --foo.json
+				)
+				\/?                                   --optional trailing slash
+				|(                                    --or
+					([^\/]+)                          --foo
+				)
+			)
+
+			we make it this complicated so that we can capture the ".json" separately from the "foo"
+			... fucking regex, man!
+		--->
+
 		<cfloop array="#local.uriChunks#" index="local.chunk">
 			<cfif left(local.chunk, 1) neq "{" or right(local.chunk, 1) neq "}">
 				<!--- not a token --->
@@ -588,7 +607,7 @@
 					<cfset local.pattern = '(' & listRest(local.chunk, ':') & ')' /><!--- make sure we capture the value --->
 					<cfset local.tokenName = listFirst(local.chunk, ':') />
 				<cfelse>
-					<cfset local.pattern = "([^\/]+)" />
+					<cfset local.pattern = local.regexes.segment />
 					<cfset local.tokenName = local.chunk />
 				</cfif>
 				<cfset local.uriMatcher = local.uriMatcher & '/' & local.pattern />
@@ -598,35 +617,14 @@
 
 		<!--- if uriRegex ends with a token, slip the format piece in there too... --->
 		<cfset local.uriRegex = "^" & local.uriMatcher />
-		<cfif right(local.uriRegex, 8) eq "([^\/]+)">
-			<cfset local.uriRegex = left(local.uriRegex, len(local.uriRegex)-8) & "(?:(?:([^\/\.]+)(?:\.)([a-zA-Z0-9]+))|([^\/\.]+))" />
-			<!---
-				above regex explained:
-				(?:
-					(?:
-						([^\/]+)(?:\.)([a-zA-Z0-9]+)	--foo.json
-					)|(									--or
-						([^\/]+)						--foo
-					)
-				)
-
-				we make it this complicated so that we can capture the ".json" separately from the "foo"
-				... fucking regex, man!
-			--->
+		<cfif right(local.uriRegex, 8) eq local.regexes.segment>
+			<cfset local.uriRegex = left(local.uriRegex, len(local.uriRegex)-8) & local.regexes.segmentWithOptFormat />
 		</cfif>
 
 		<!--- require the uri to terminate after specified content --->
-		<cfset local.uriRegex = local.uriRegex & "((?:\.)[^\.\?]+)?" />			<!--- anything other than these characters will be considered a mime-type request: / \ ? . --->
-		
-		<!--- older taffy used to support trailing slash in the URI,i.e. /someResource/, this is to maintain compatibility --->
-		<cfif right(arguments.uri,1) EQ "/">
-			<cfset local.uriRegex = local.uriRegex & "/" />			
-		</cfif>
-		
-		<cfset local.uriRegex = local.uriRegex & "$" /> <!--- terminate the uri (query string not included in cgi.path_info, does not need to be accounted for here) --->
+		<cfset local.uriRegex = local.uriRegex & local.regexes.optFormatWithOptSlash & "$" />
 
 		<cfset local.returnData.uriRegex = local.uriRegex />
-
 		<cfreturn local.returnData />
 	</cffunction>
 
