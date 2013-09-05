@@ -3,7 +3,9 @@
 <head>
 	<title>Taffy Dashboard</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<link rel="stylesheet" type="text/css" media="screen" href="/taffy/dashboard/asset.cfm?a=dash.css" />
+	<style>
+		<cfinclude template="dash.css" />
+	</style>
 </head>
 <body>
 	<script>
@@ -389,10 +391,11 @@
 
 	</div><!-- /container -->
 
-	<script src="/taffy/dashboard/asset.cfm?a=jquery.min.js"></script>
-	<script src="/taffy/dashboard/asset.cfm?a=bootstrap.min.js"></script>
-	<script src="/taffy/dashboard/asset.cfm?a=dash.js"></script>
 	<script type="text/javascript">
+		<cfinclude template="jquery.min.js" />
+		<cfinclude template="bootstrap.min.js" />
+		<cfinclude template="dash.js" />
+
 		$(function(){
 			var baseurl = '<cfoutput>#cgi.script_name#?dashboard</cfoutput>';
 			$("#reload").click(function(){
