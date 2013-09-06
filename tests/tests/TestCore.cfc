@@ -511,10 +511,10 @@
 
 	<cffunction name="can_upload_a_file">
 		<cfset var local = structNew() />
-		<!--- <cfset debug(cgi) /> --->
-		<cfset variables.taffy.setDefaultMime("text/json") />
+		<cfset local.apiRootURL	= getDirectoryFromPath(cgi.script_name) />
+		<cfset local.apiRootURL	= listDeleteAt(local.apiRootURL,listLen(local.apiRootURL,'/'),'/') />
 		<cfhttp
-			url="http://#cgi.server_name#:#cgi.server_port#/taffy/tests/index.cfm/upload.json"
+			url="http://#cgi.server_name#:#cgi.server_port##local.apiRootURL#/index.cfm/upload"
 			method="post"
 			result="local.uploadResult">
 			<cfhttpparam type="file" name="img" file="#expandPath('/taffy/tests/tests/upload.png')#" />
