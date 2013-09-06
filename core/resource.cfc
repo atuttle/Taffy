@@ -3,8 +3,7 @@
 	<!--- helper functions --->
 	<cffunction name="representationOf" access="public" output="false" hint="returns an object capable of serializing the data in a variety of formats">
 		<cfargument name="data" required="true" hint="any simple or complex data that should be returned for the request" />
-		<cfargument name="customRepresentationClass" type="string" required="false" default="" hint="pass in the dot.notation.cfc.path for your custom representation object" />
-		<cfreturn getRepInstance(arguments.customRepresentationClass).setData(arguments.data) />
+		<cfreturn getRepInstance().setData(arguments.data) />
 	</cffunction>
 
 	<cffunction name="noData" access="private" output="false" hint="use this function to return only headers to the consumer, no data">
@@ -13,20 +12,17 @@
 
 	<cffunction name="streamFile" access="private" output="false" hint="Use this function to specify a file name (eg c:\tmp\kitten.jpg) to be streamed to the client. When you use this method it is *required* that you also use .withMime() to specify the mime type.">
 		<cfargument name="fileName" required="true" hint="fully qualified file path (eg c:\tmp\kitten.jpg)" />
-		<cfargument name="customRepresentationClass" type="string" required="false" default="" hint="pass in the dot.notation.cfc.path for your custom representation object" />
-		<cfreturn getRepInstance(arguments.customRepresentationClass).setFileName(arguments.fileName) />
+		<cfreturn getRepInstance().setFileName(arguments.fileName) />
 	</cffunction>
 
 	<cffunction name="streamBinary" access="private" output="false" hint="Use this function to stream binary data, like a generated PDF object, to the client. When you use this method it is *required* that you also use .withMime() to specify the mime type.">
 		<cfargument name="binaryData" required="true" hint="binary file data (eg a PDF object) that you want to return to the client" />
-		<cfargument name="customRepresentationClass" type="string" required="false" default="" hint="pass in the dot.notation.cfc.path for your custom representation object" />
-		<cfreturn getRepInstance(arguments.customRepresentationClass).setFileData(arguments.binaryData) />
+		<cfreturn getRepInstance().setFileData(arguments.binaryData) />
 	</cffunction>
 
 	<cffunction name="streamImage" access="private" output="false" hint="Use this function to stream binary data, like a generated PDF object, to the client. When you use this method it is *required* that you also use .withMime() to specify the mime type.">
 		<cfargument name="binaryData" required="true" hint="binary file data (eg a PDF object or image data) that you want to return to the client" />
-		<cfargument name="customRepresentationClass" type="string" required="false" default="" hint="pass in the dot.notation.cfc.path for your custom representation object" />
-		<cfreturn getRepInstance(arguments.customRepresentationClass).setImageData(arguments.binaryData) />
+		<cfreturn getRepInstance().setImageData(arguments.binaryData) />
 	</cffunction>
 
 	<cffunction name="saveLog">

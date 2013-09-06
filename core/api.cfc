@@ -1,9 +1,6 @@
 <cfcomponent hint="Base class for taffy REST application's Application.cfc">
 
-	<!--- these methods are meant to be (optionally) overrided in your application.cfc --->
-	<cffunction name="applicationStartEvent" output="false" hint="override this function to run your own code inside onApplicationStart()"></cffunction>
-	<cffunction name="requestStartEvent" output="false" hint="override this function to run your own code inside onRequestStart()"></cffunction>
-	<cffunction name="configureTaffy" output="false" hint="override this function to set Taffy config settings"></cffunction>
+	<!--- this method is meant to be (optionally) overrided in your application.cfc --->
 	<cffunction name="getEnvironment" output="false" hint="override this function to define the current API environment"><cfreturn "" /></cffunction>
 
 	<!---
@@ -20,14 +17,13 @@
 		<cfreturn true />
 	</cffunction>
 
-	<!--- DO NOT OVERRIDE THIS FUNCTION - SEE applicationStartEvent ABOVE --->
+	<!--- Your Application.cfc should override this method AND call super.onApplicationStart() --->
 	<cffunction name="onApplicationStart">
-		<cfset applicationStartEvent() />
 		<cfset setupFramework() />
 		<cfreturn true />
 	</cffunction>
 
-	<!--- DO NOT OVERRIDE THIS FUNCTION - SEE requestStartEvent ABOVE --->
+	<!--- Your Application.cfc should override this method AND call super.onRequestStart(targetpath) --->
 	<cffunction name="onRequestStart">
 		<cfargument name="targetPath" />
 		<cfset var local = structNew() />
@@ -60,8 +56,7 @@
 				AND len(cgi.path_info) lte 1
 				AND listLast(cgi.script_name, "/") eq "index.cfm">
 				<cfif NOT application._taffy.settings.disableDashboard>
-					<cfset requestStartEvent() />
-					<cfinclude template="dashboard.cfm" />
+					<cfinclude template="../dashboard/dashboard.cfm" />
 					<cfabort />
 				<cfelse>
 					<cfif len(application._taffy.settings.disabledDashboardRedirect)>
@@ -77,8 +72,6 @@
 			<cfset structDelete(this, 'onRequest') />
 			<cfset structDelete(variables, 'onRequest') />
 		</cfif>
-		<!--- allow child application.cfc to do stuff --->
-		<cfset requestStartEvent() />
 		<cfreturn true />
 	</cffunction>
 
@@ -145,9 +138,22 @@
 		</cfif>
 
 		<!--- display api dashboard if requested --->
-		<cfif structKeyExists(url, application._taffy.settings.dashboardKey) and not application._taffy.settings.disableDashboard>
-			<cfinclude template="dashboard.cfm" />
-			<cfabort />
+		<cfif
+			NOT structKeyExists(url,application._taffy.settings.endpointURLParam)
+			AND NOT structKeyExists(form,application._taffy.settings.endpointURLParam)
+			AND len(cgi.path_info) lte 1
+			AND listLast(cgi.script_name, "/") eq "index.cfm">
+			<cfif NOT application._taffy.settings.disableDashboard>
+				<cfinclude template="../dashboard/dashboard.cfm" />
+				<cfabort />
+			<cfelse>
+				<cfif len(application._taffy.settings.disabledDashboardRedirect)>
+					<cflocation url="#application._taffy.settings.disabledDashboardRedirect#" addtoken="false" />
+					<cfabort />
+				<cfelse>
+					<cfset throwError(403, "Forbidden") />
+				</cfif>
+			</cfif>
 		</cfif>
 
 		<!--- get request details --->
@@ -322,6 +328,7 @@
 		<cfparam name="variables.framework" default="#structNew()#" />
 		<cfheader name="X-TAFFY-RELOADED" value="true" />
 		<cfset application._taffy = structNew() />
+		<cfset application._taffy.version = "2.0.1" />
 		<cfset application._taffy.endpoints = structNew() />
 		<!--- default settings --->
 		<cfset local.defaultConfig = structNew() />
@@ -340,6 +347,7 @@
 		<cfset local.defaultConfig.useEtags = false />
 		<cfset local.defaultConfig.jsonp = false />
 		<cfset local.defaultConfig.globalHeaders = structNew() />
+		<cfset local.defaultConfig.mimeTypes = structNew() />
 		<cfset local.defaultConfig.returnExceptionsAsJson = true />
 		<cfset local.defaultConfig.exceptionLogAdapter = "taffy.bonus.LogToEmail" />
 		<cfset local.defaultConfig.exceptionLogAdapterConfig = StructNew() />
@@ -351,6 +359,7 @@
 		<cfset application._taffy.status = structNew() />
 		<cfset application._taffy.status.internalBeanFactoryUsed = false />
 		<cfset application._taffy.status.externalBeanFactoryUsed = false />
+		<cfset application._taffy.uriMatchOrder = [] />
 		<!--- allow setting overrides --->
 		<cfset application._taffy.settings = structNew() />
 		<cfset structAppend(application._taffy.settings, local.defaultConfig, true) /><!--- initialize to default values --->
@@ -358,7 +367,6 @@
 		<cfif structKeyExists(variables.framework, "beanFactory")>
 			<cfset setBeanFactory(variables.framework.beanFactory) />
 		</cfif>
-		<cfset configureTaffy()/><!--- result of configureTaffy() takes precedence --->
 		<!--- allow environment-specific config --->
 		<cfset local.env = getEnvironment() />
 		<cfif len(local.env) gt 0>
@@ -375,6 +383,7 @@
 		/>
 		<!--- if resources folder exists, use internal bean factory --->
 		<cfset _taffyRequest.resourcePath = guessResourcesFullPath() />
+		<cfset local.noResources = false />
 		<cfif directoryExists(_taffyRequest.resourcePath)>
 			<!--- setup internal bean factory --->
 			<cfset application._taffy.factory = createObject("component", "taffy.core.factory").init() />
@@ -395,26 +404,18 @@
 			<!--- since external factory is only factory, check it for taffy resources --->
 			<cfset local.beanList = getBeanListFromExternalFactory() />
 			<cfset cacheBeanMetaData(application._taffy.externalBeanFactory, local.beanList) />
-
-		<cfelse>
-			<h1>Taffy is up and running!</h1>
-			<p>It looks like you don't have any resources defined. Get started by creating the folder
-			<code style="background-color: #F5DA81"><cfoutput>#guessResourcesFullPath()#</cfoutput></code> in which you should place your
-			Resource CFC's.</p>
-			<p>Or you could set up a bean factory, like <a href="http://www.coldspringframework.org/">ColdSpring</a>
-			or <a href="https://github.com/seancorfield/di1">DI/1</a>. Want to know more about using bean factories with Taffy?
-			<a href="https://github.com/atuttle/Taffy/wiki/So-you-want-to:-use-an-external-bean-factory-like-coldspring-to-completely-manage-resources"
-			>Check out the wiki!</a></p>
-			<p>If all else fails, I recommend starting with <a href="https://github.com/atuttle/Taffy/wiki/Getting-Started">Getting Started</a>.</p>
-			<cfabort />
+ 		<cfelse>
+ 			<cfset local.noResources = true />
 		</cfif>
-		<!--- sort URIs --->
-		<cfset sortURIMatchOrder() />
-		<!--- automatically introspect mime types from cfc metadata of default representation class --->
-		<cfset inspectMimeTypes(application._taffy.settings.representationClass) />
-		<!--- check to make sure a default mime type is set --->
-		<cfif application._taffy.settings.defaultMime eq "">
-			<cfset throwError(400, "You have not specified a default mime type!") />
+		<cfif not local.noResources>
+			<!--- sort URIs --->
+			<cfset sortURIMatchOrder() />
+			<!--- automatically introspect mime types from cfc metadata of default representation class --->
+			<cfset inspectMimeTypes(application._taffy.settings.representationClass) />
+			<!--- check to make sure a default mime type is set --->
+			<cfif application._taffy.settings.defaultMime eq "">
+				<cfset throwError(400, "You have not specified a default mime type!") />
+			</cfif>
 		</cfif>
 	</cffunction>
 
@@ -575,6 +576,25 @@
 		<cfset local.returnData.tokens = ArrayNew(1) />
 		<cfset local.uriMatcher = "" />
 
+		<cfset local.regexes.segment = "([^\/]+)" /> <!--- anything but a slash --->
+		<cfset local.regexes.segmentWithOptFormat = "(?:(?:([^\/\.]+)(?:\.)([a-zA-Z0-9]+))\/?|([^\/\.]+))" />
+		<cfset local.regexes.optFormatWithOptSlash = "((?:\.)[^\.\?\/]+)?\/?" /><!--- for ".json[/]" support --->
+		<!---
+			above regex explained:
+			(?:
+				(?:
+					([^\/]+)(?:\.)([a-zA-Z0-9]+)      --foo.json
+				)
+				\/?                                   --optional trailing slash
+				|(                                    --or
+					([^\/]+)                          --foo
+				)
+			)
+
+			we make it this complicated so that we can capture the ".json" separately from the "foo"
+			... fucking regex, man!
+		--->
+
 		<cfloop array="#local.uriChunks#" index="local.chunk">
 			<cfif left(local.chunk, 1) neq "{" or right(local.chunk, 1) neq "}">
 				<!--- not a token --->
@@ -587,7 +607,7 @@
 					<cfset local.pattern = '(' & listRest(local.chunk, ':') & ')' /><!--- make sure we capture the value --->
 					<cfset local.tokenName = listFirst(local.chunk, ':') />
 				<cfelse>
-					<cfset local.pattern = "([^\/]+)" />
+					<cfset local.pattern = local.regexes.segment />
 					<cfset local.tokenName = local.chunk />
 				</cfif>
 				<cfset local.uriMatcher = local.uriMatcher & '/' & local.pattern />
@@ -597,30 +617,14 @@
 
 		<!--- if uriRegex ends with a token, slip the format piece in there too... --->
 		<cfset local.uriRegex = "^" & local.uriMatcher />
-		<cfif right(local.uriRegex, 8) eq "([^\/]+)">
-			<cfset local.uriRegex = left(local.uriRegex, len(local.uriRegex)-8) & "(?:(?:([^\/\.]+)(?:\.)([a-zA-Z0-9]+))|([^\/\.]+))" />
-			<!---
-				above regex explained:
-				(?:
-					(?:
-						([^\/]+)(?:\.)([a-zA-Z0-9]+)	--foo.json
-					)|(									--or
-						([^\/]+)						--foo
-					)
-				)
-
-				we make it this complicated so that we can capture the ".json" separately from the "foo"
-				... fucking regex, man!
-			--->
+		<cfif right(local.uriRegex, 8) eq local.regexes.segment>
+			<cfset local.uriRegex = left(local.uriRegex, len(local.uriRegex)-8) & local.regexes.segmentWithOptFormat />
 		</cfif>
 
 		<!--- require the uri to terminate after specified content --->
-		<cfset local.uriRegex = local.uriRegex
-							  & "((?:\.)[^\.\?]+)?"	<!--- anything other than these characters will be considered a mime-type request: / \ ? . --->
-							  & "$" />			<!--- terminate the uri (query string not included in cgi.path_info, does not need to be accounted for here) --->
+		<cfset local.uriRegex = local.uriRegex & local.regexes.optFormatWithOptSlash & "$" />
 
 		<cfset local.returnData.uriRegex = local.uriRegex />
-
 		<cfreturn local.returnData />
 	</cffunction>
 
@@ -793,8 +797,8 @@
 	<cffunction name="resolveDependencies" access="private" output="false" returnType="void" hint="used to resolve dependencies of internal beans using external bean factory">
 		<cfset var local = StructNew() />
 		<cfloop list="#structKeyList(application._taffy.endpoints)#" index="local.endpoint">
-			<cfset local.beanName = application._taffy.factory.getBean(application._taffy.endpoints[local.endpoint].beanName) />
-			<cfset local.md = getMetadata( local.beanName ) />
+			<cfset local.bean = application._taffy.factory.getBean(application._taffy.endpoints[local.endpoint].beanName) />
+			<cfset local.md = getMetadata( local.bean ) />
 			<cfset local.methods = local.md.functions />
 			<!--- get list of method names --->
 			<cfset local.methodNames = "" />
@@ -807,12 +811,20 @@
 					<!--- we've found a dependency, try to resolve it --->
 					<cfset local.beanName = right(local.method, len(local.method) - 3) />
 					<cfif application._taffy.externalBeanFactory.containsBean(local.beanName)>
-						<cfset local.bean = application._taffy.factory.getBean(application._taffy.endpoints[local.endpoint].beanName) />
 						<cfset local.dependency = application._taffy.externalBeanFactory.getBean(local.beanName) />
 						<cfset evaluate("local.bean.#local.method#(local.dependency)") />
 					</cfif>
 				</cfif>
 			</cfloop>
+			<!--- also resolve properties --->
+			<cfif structKeyExists(local.md, "properties") and isArray(local.md.properties)>
+				<cfloop from="1" to="#arrayLen(local.md.properties)#" index="local.p">
+					<cfset local.propName = local.md.properties[local.p].name />
+					<cfif application._taffy.externalBeanFactory.containsBean(local.propName)>
+						<cfset local.bean[local.propName] = application._taffy.externalBeanFactory.getBean(local.propName) />
+					</cfif>
+				</cfloop>
+			</cfif>
 		</cfloop>
 	</cffunction>
 
@@ -961,7 +973,7 @@
 	<!---
 		helper methods: stuff used in Application.cfc
 	--->
-	<cffunction name="setBeanFactory" access="public" output="false" returntype="void">
+	<cffunction name="setBeanFactory" access="private" output="false" returntype="void">
 		<cfargument name="beanFactory" required="true" hint="Instance of bean factory object" />
 		<cfargument name="beanList" required="false" default="" />
 		<cfif isSimpleValue(arguments.beanFactory) and len(arguments.beanFactory) eq 0>
@@ -972,86 +984,33 @@
 		<cfset application._taffy.status.externalBeanFactoryUsed = true />
 	</cffunction>
 
-	<cffunction name="getBeanFactory" access="public" output="false">
+	<cffunction name="getBeanFactory" access="private" output="false">
 		<cfreturn application._taffy.factory />
 	</cffunction>
 
-	<cffunction name="setUnhandledPaths" access="public" output="false" returntype="void">
-		<cfargument name="unhandledPaths" type="string" required="true" hint="new list of unhandled paths, comma-delimited (commas may not be part of any list item)" />
-		<cfset application._taffy.settings.unhandledPaths = arguments.unhandledPaths />
-	</cffunction>
-
-	<cffunction name="setDefaultMime" access="public" output="false" returntype="void" hint="deprecated-1.1">
+	<cffunction name="setDefaultMime" access="private" output="false" returntype="void" hint="deprecated-1.1">
 		<cfargument name="DefaultMimeType" type="string" required="true" hint="mime time to set as default for this api" />
 		<cfset application._taffy.settings.defaultMime = arguments.DefaultMimeType />
 	</cffunction>
 
-	<cffunction name="setDebugKey" access="public" output="false" returnType="void">
-		<cfargument name="keyName" type="string" required="true" hint="url parameter you want to use to enable ColdFusion debug output" />
-		<cfset application._taffy.settings.debugKey = arguments.keyName />
-	</cffunction>
-
-	<cffunction name="setDashboardKey" access="public" output="false" returnType="void">
-		<cfargument name="keyName" type="string" required="true" hint="url parameter you want to use to show the Taffy dashboard" />
-		<cfset application._taffy.settings.dashboardKey = arguments.keyName />
-	</cffunction>
-
-	<cffunction name="enableDashboard" access="public" output="false" returntype="void" hint="Enable and disable usage of the dashboard via the dashboard key existing as a url parameter">
-		<cfargument name="enabled" type="boolean" required="true" />
-		<cfset application._taffy.settings.disableDashboard = !(arguments.enabled) />
-	</cffunction>
-
-	<cffunction name="setReloadKey" access="public" output="false" returnType="void">
-		<cfargument name="keyName" type="string" required="true" hint="url parameter you want to use to reload Taffy (clear cache, reset settings)" />
-		<cfset application._taffy.settings.reloadKey = arguments.keyName />
-	</cffunction>
-
-	<cffunction name="setReloadPassword" access="public" output="false" returnType="void">
-		<cfargument name="password" type="string" required="true" hint="value required for the reload key to initiate a reload. if it doesn't match, then the framework will not reload." />
-		<cfset application._taffy.settings.reloadPassword = arguments.password />
-	</cffunction>
-
-	<cffunction name="registerMimeType" access="public" output="false" returntype="void" hint="deprecated-1.1">
+	<cffunction name="registerMimeType" access="private" output="false" returntype="void" hint="deprecated-1.1">
 		<cfargument name="extension" type="string" required="true" hint="ex: json" />
 		<cfargument name="mimeType" type="string" required="true" hint="ex: text/json" />
 		<cfset application._taffy.settings.mimeExtensions[arguments.extension] = arguments.mimeType />
 		<cfset application._taffy.settings.mimeTypes[arguments.mimeType] = arguments.extension />
 	</cffunction>
 
-	<cffunction name="registerExtensionRepresentation" access="public" output="false" returntype="void">
-		<cfargument name="extensionList" type="string" required="true" hint="ex: json" />
-		<cfargument name="representation" type="string" required="true" hint="ex: cfc.SomeRep" />
-		<cfloop from="1" to="#ListLen(arguments.extensionList)#" index="i">
-			<cfset application._taffy.settings.extensionRepresentations["#ListGetAt(arguments.extensionList,i)#"] = arguments.representation />
-		</cfloop>
-	</cffunction>
-
-	<cffunction name="setDefaultRepresentationClass" access="public" output="false" returnType="void" hint="Override the global default representation object with a custom class">
-		<cfargument name="customClassDotPath" type="string" required="true" hint="Dot-notation path to your custom class to use as the default" />
-		<cfset application._taffy.settings.representationClass = arguments.customClassDotPath />
-	</cffunction>
-
 	<cffunction name="newRepresentation" access="public" output="false">
-		<cfargument name="class" type="string" default="#application._taffy.settings.representationClass#" />
-		<cfif application._taffy.factory.containsBean(arguments.class)>
-			<cfreturn application._taffy.factory.getBean(arguments.class) />
+		<cfset var repClass = application._taffy.settings.representationClass />
+		<cfif application._taffy.factory.containsBean(repClass)>
+			<cfreturn application._taffy.factory.getBean(repClass) />
 		<cfelse>
-			<cfreturn createObject("component", arguments.class) />
+			<cfreturn createObject("component", repClass) />
 		</cfif>
 	</cffunction>
 
-	<cffunction name="enableCrossDomainAccess" access="public" output="false" returntype="void">
-		<cfargument name="enabled" type="boolean" default="true" />
-		<cfset application._taffy.settings.allowCrossDomain = arguments.enabled />
-	</cffunction>
-
-	<cffunction name="getGlobalHeaders" access="public" output="false" returntype="Struct">
+	<cffunction name="getGlobalHeaders" access="private" output="false" returntype="Struct">
 		<cfreturn application._taffy.settings.globalHeaders />
-	</cffunction>
-
-	<cffunction name="setGlobalHeaders" access="public" output="false" returntype="void">
-		<cfargument name="headers" type="struct" required="true" />
-		<cfset application._taffy.settings.globalHeaders = arguments.headers />
 	</cffunction>
 
 	<cfif NOT isDefined("getComponentMetadata")>
