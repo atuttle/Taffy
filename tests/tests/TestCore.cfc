@@ -521,6 +521,20 @@
 			assertTrue(local.result.responseHeader["Access-Control-Allow-Headers"] contains "pigeon");
 			assertTrue(local.result.responseHeader["Access-Control-Allow-Headers"] contains "man-bear-pig");
 		}
+
+		function properly_handles_arbitrary_cors_headers_on_error(){
+			//see: https://github.com/atuttle/Taffy/issues/159
+			application._taffy.settings.allowCrossDomain = true;
+			local.h = { "Access-Control-Request-Headers" = "goat, pigeon, man-bear-pig"};
+			local.result = apiCall("get", "/throwException.json", "", local.h);
+			debug(local.result);
+			assertTrue(structKeyExists(local.result.responseHeader, "Access-Control-Allow-Origin"));
+			assertTrue(structKeyExists(local.result.responseHeader, "Access-Control-Allow-Methods"));
+			assertTrue(structKeyExists(local.result.responseHeader, "Access-Control-Allow-Headers"));
+			assertTrue(local.result.responseHeader["Access-Control-Allow-Headers"] contains "goat");
+			assertTrue(local.result.responseHeader["Access-Control-Allow-Headers"] contains "pigeon");
+			assertTrue(local.result.responseHeader["Access-Control-Allow-Headers"] contains "man-bear-pig");
+		}
 	</cfscript>
 
 
