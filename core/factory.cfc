@@ -11,9 +11,6 @@
 		function containsBean(beanName){
 			return beanExists(arguments.beanName);
 		}
-		function beanExists(beanName, includeTransients = true){
-			return structKeyExists(this.beans, arguments.beanName) or (includeTransients and transientExists(arguments.beanName));
-		}
 		function transientExists(beanName){
 			return structKeyExists(this.transients, arguments.beanName);
 		}
@@ -36,6 +33,13 @@
 			return combined;
 		}
 	</cfscript>
+	<cffunction name="beanExists" output="false">
+		<cfargument required="true" name="beanName">
+		<cfargument name="includeTransients" default="true">
+		<cfscript>
+			return structKeyExists(this.beans, arguments.beanName) or (includeTransients and transientExists(arguments.beanName));
+		</cfscript>
+	</cffunction>
 	<cffunction name="loadBeansFromPath" access="public" output="false" returnType="void">
 		<cfargument name="beanPath" type="string" required="true" hint="Absolute path to folder containing beans" />
 		<cfargument name="resourcesPath" type="string" default="resources" />
