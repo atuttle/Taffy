@@ -37,7 +37,12 @@
 		<cfargument name="q" type="query" required="yes" />
 		<cfscript>
 			var local = {};
-			local.Columns = arguments.q.getMetaData().getColumnLabels();
+			if (structKeyExists(server, "railo")) {
+				local.Columns = listToArray(arguments.q.getColumnList(false));
+			}
+			else {
+				local.Columns = arguments.q.getMetaData().getColumnLabels();
+			}
 			local.QueryArray = ArrayNew(1);
 			for (local.RowIndex = 1; local.RowIndex <= arguments.q.RecordCount; local.RowIndex++){
 				local.Row = {};
