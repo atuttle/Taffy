@@ -35,6 +35,7 @@
 
 	<cffunction name="queryToArray" access="private" returntype="array" output="false">
 		<cfargument name="q" type="query" required="yes" />
+		<cfargument type="string" name="exclude" default="" hint="list of query columns to exclude from conversion" />
 		<cfscript>
 			var local = {};
 			if (structKeyExists(server, "railo")) {
@@ -43,6 +44,7 @@
 			else {
 				local.Columns = arguments.q.getMetaData().getColumnLabels();
 			}
+			local.Columns.removeAll(listToArray(arguments.exclude));
 			local.QueryArray = ArrayNew(1);
 			for (local.RowIndex = 1; local.RowIndex <= arguments.q.RecordCount; local.RowIndex++){
 				local.Row = {};
