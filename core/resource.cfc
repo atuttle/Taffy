@@ -44,14 +44,15 @@
 			else {
 				local.Columns = arguments.q.getMetaData().getColumnLabels();
 			}
-			local.Columns.removeAll(listToArray(arguments.exclude));
 			local.QueryArray = ArrayNew(1);
 			for (local.RowIndex = 1; local.RowIndex <= arguments.q.RecordCount; local.RowIndex++){
 				local.Row = {};
 				local.numCols = ArrayLen( local.Columns );
 				for (local.ColumnIndex = 1; local.ColumnIndex <= local.numCols; local.ColumnIndex++){
 					local.ColumnName = local.Columns[ local.ColumnIndex ];
-					local.Row[ local.ColumnName ] = arguments.q[ local.ColumnName ][ local.RowIndex ];
+					if (!listFindNoCase(arguments.exclude, local.ColumnName)) {
+						local.Row[ local.ColumnName ] = arguments.q[ local.ColumnName ][ local.RowIndex ];
+					}
 				}
 				ArrayAppend( local.QueryArray, local.Row );
 			}
