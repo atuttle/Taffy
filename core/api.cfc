@@ -54,7 +54,7 @@
 				NOT structKeyExists(url,application._taffy.settings.endpointURLParam)
 				AND NOT structKeyExists(form,application._taffy.settings.endpointURLParam)
 				AND len(cgi.path_info) lte 1
-				AND listLast(cgi.script_name, "/") eq "index.cfm">
+				AND listFindNoCase(cgi.script_name, "index.cfm", "/") EQ listLen(cgi.script_name, "/")>
 				<cfif NOT application._taffy.settings.disableDashboard>
 					<cfinclude template="../dashboard/dashboard.cfm" />
 					<cfabort />
@@ -142,7 +142,7 @@
 			NOT structKeyExists(url,application._taffy.settings.endpointURLParam)
 			AND NOT structKeyExists(form,application._taffy.settings.endpointURLParam)
 			AND len(cgi.path_info) lte 1
-			AND listLast(cgi.script_name, "/") eq "index.cfm">
+			AND listFindNoCase(cgi.script_name, "index.cfm", "/") EQ listLen(cgi.script_name, "/")>
 			<cfif NOT application._taffy.settings.disableDashboard>
 				<cfinclude template="../dashboard/dashboard.cfm" />
 				<cfabort />

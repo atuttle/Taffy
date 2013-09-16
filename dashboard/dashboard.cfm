@@ -344,7 +344,7 @@
 															<cfelse>
 																<!--- no default value --->
 															</cfif>
-														<cfif structKeyExists(param, "hint")>
+														<cfif structKeyExists(local.param, "hint")>
 															<br/><span class="doc">#local.param.hint#</span>
 														</cfif>
 													</div>
