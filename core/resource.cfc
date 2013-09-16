@@ -35,7 +35,6 @@
 
 	<cffunction name="queryToArray" access="private" returntype="array" output="false">
 		<cfargument name="q" type="query" required="yes" />
-		<cfargument type="string" name="exclude" default="" hint="list of query columns to exclude from conversion" />
 		<cfscript>
 			var local = {};
 			if (structKeyExists(server, "railo")) {
@@ -50,10 +49,8 @@
 				local.numCols = ArrayLen( local.Columns );
 				for (local.ColumnIndex = 1; local.ColumnIndex <= local.numCols; local.ColumnIndex++){
 					local.ColumnName = local.Columns[ local.ColumnIndex ];
-					if (!listFindNoCase(arguments.exclude, local.ColumnName)) {
-						local.Row[ local.ColumnName ] = arguments.q[ local.ColumnName ][ local.RowIndex ];
+					local.Row[ local.ColumnName ] = arguments.q[ local.ColumnName ][ local.RowIndex ];
 					}
-				}
 				ArrayAppend( local.QueryArray, local.Row );
 			}
 			return( local.QueryArray );
