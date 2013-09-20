@@ -50,7 +50,7 @@
 				for (local.ColumnIndex = 1; local.ColumnIndex <= local.numCols; local.ColumnIndex++){
 					local.ColumnName = local.Columns[ local.ColumnIndex ];
 					local.Row[ local.ColumnName ] = arguments.q[ local.ColumnName ][ local.RowIndex ];
-					}
+				}
 				ArrayAppend( local.QueryArray, local.Row );
 			}
 			return( local.QueryArray );
