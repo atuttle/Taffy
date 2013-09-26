@@ -50,10 +50,11 @@
 		</cfif>
 		<cfif !isUnhandledPathRequest(arguments.targetPath)>
 			<!--- if browsing to root of api, show dashboard --->
+			<cfset local.path = replaceNoCase(cgi.path_info, cgi.script_name, "") />
 			<cfif
 				NOT structKeyExists(url,application._taffy.settings.endpointURLParam)
 				AND NOT structKeyExists(form,application._taffy.settings.endpointURLParam)
-				AND len(cgi.path_info) lte 1
+				AND len(local.path) lte 1
 				AND listFindNoCase(cgi.script_name, "index.cfm", "/") EQ listLen(cgi.script_name, "/")>
 				<cfif NOT application._taffy.settings.disableDashboard>
 					<cfinclude template="../dashboard/dashboard.cfm" />
