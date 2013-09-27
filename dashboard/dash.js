@@ -8,7 +8,9 @@ $(function(){
 			resource.find('.reqBody').hide('fast');
 			resource.find('.queryParams').show('fast');
 		}else{
-			resource.find('.reqBody').show('fast');
+			var args = window.taffy.resources[resource.data('beanName')][method.toLowerCase()];
+			var ta = resource.find('.reqBody').show('fast').find('textarea');
+			ta.val(JSON.stringify(args, null, 3));
 			resource.find('.queryParams').hide('fast');
 		}
 	});
