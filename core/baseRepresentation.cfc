@@ -108,7 +108,7 @@
 		<cfreturn variables.miscHeaders />
 	</cffunction>
 	
-	<cffunction name="withDeleteFile" access="public" output="false" hint="used to delete the streamed file">
+	<cffunction name="andDeleteFile" access="public" output="false" hint="used to delete the streamed file">
 		<cfargument name="doDeleteFile" type="boolean" required="true" />
 		<cfset variables.deleteFile = arguments.doDeleteFile />
 		<cfreturn this />
