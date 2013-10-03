@@ -21,6 +21,7 @@
 			<span class="ver text-muted">Taffy <cfoutput>#application._taffy.version#</cfoutput></span>
 		</div>
 
+		<!--- config modal --->
 		<div class="modal fade" id="config" tabindex="-1" role="dialog" aria-labelledby="frameworkConfig" aria-hidden="true">
 			<div class="modal-dialog">
 				<div class="modal-content">
@@ -158,6 +159,7 @@
 			</div><!-- /.modal-dialog -->
 		</div><!-- /.modal -->
 
+		<!--- alerts --->
 		<div class="row" id="alerts">
 			<cfif structKeyExists(application._taffy, "status")
 					and structKeyExists(application._taffy.status, "skippedResources")
@@ -200,7 +202,6 @@
 								<h4 class="panel-title">
 									<a href="###local.currentResource.beanName#" class="accordion-toggle" data-toggle="collapse" data-parent="##resourcesAccordion">
 										#local.currentResource.beanName#
-										<code class="uri hidden-xs">#local.currentResource.srcUri#</code>
 									</a>
 									<cfloop list="DELETE|warning,PUT|warning,POST|danger,GET|primary" index="local.verb">
 										<cfif structKeyExists(local.currentResource.methods, listFirst(local.verb,'|'))>
@@ -209,6 +210,7 @@
 											<span class="verb label label-default">#ucase(listFirst(local.verb,'|'))#</span>
 										</cfif>
 									</cfloop>
+									<code style="float:right; margin-top: -15px; display: inline-block;">#local.currentResource.srcUri#</code>
 								</h4>
 							</div>
 							<div class="panel-collapse collapse" id="#local.currentResource.beanName#">
