@@ -14,6 +14,7 @@
 		<cfargument name="requestArguments" />
 		<cfargument name="mimeExt" />
 		<cfargument name="headers" />
+		<cfargument name="methodMetadata" />
 		<cfreturn true />
 	</cffunction>
 
@@ -197,11 +198,12 @@
 
 		<!--- ...after we let the api developer know all of the request details first... --->
 		<cfset _taffyRequest.continue = onTaffyRequest(
-			_taffyRequest.verb,
-			_taffyRequest.matchDetails.beanName,
-			_taffyRequest.requestArguments,
-			_taffyRequest.returnMimeExt,
-			_taffyRequest.headers
+			_taffyRequest.verb
+			,_taffyRequest.matchDetails.beanName
+			,_taffyRequest.requestArguments
+			,_taffyRequest.returnMimeExt
+			,_taffyRequest.headers
+			,_taffyRequest.methodMetadata
 		) />
 
 		<cfif not structKeyExists(_taffyRequest, "continue")>
@@ -558,6 +560,8 @@
 			<cfset requestObj.returnMimeExt = application._taffy.settings.defaultMime />
 		</cfif>
 		<cfset structDelete(requestObj.requestArguments, "_taffy_mime") />
+		<!--- get the method metadata (if any) for onTaffyRequest --->
+		<cfset requestObj.methodMetadata = application._taffy.endpoints[requestObj.matchingRegex].metadata[requestObj.method] />
 		<cfreturn requestObj />
 	</cffunction>
 
@@ -792,6 +796,18 @@
 							<cfset  application._taffy.endpoints[local.metaInfo.uriRegex].methods[local.f["taffy:verb"]] = local.f.name />
 						<cfelseif structKeyExists(local.f,"taffy_verb")>
 							<cfset  application._taffy.endpoints[local.metaInfo.uriRegex].methods[local.f["taffy_verb"]] = local.f.name />
+						</cfif>
+
+						<!--- cache any extra function metadata for use in onTaffyRequest --->
+						<cfset local.extraMetadata = duplicate(local.f) />
+						<cfset structDelete(local.extraMetadata, "name") />
+						<cfset structDelete(local.extraMetadata, "parameters") />
+						<cfset structDelete(local.extraMetadata, "hint") />
+						<cfparam name="application._taffy.endpoints['#local.metaInfo.uriRegex#'].metadata" default="#structNew()#" />
+						<cfif not structIsEmpty(local.extraMetadata)>
+							<cfset application._taffy.endpoints[local.metaInfo.uriRegex].metadata[local.f.name] = local.extraMetadata />
+						<cfelse>
+							<cfset application._taffy.endpoints[local.metaInfo.uriRegex].metadata[local.f.name] = "" />
 						</cfif>
 					</cfloop>
 				</cfif>
