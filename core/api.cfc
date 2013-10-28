@@ -807,7 +807,7 @@
 						<cfif not structIsEmpty(local.extraMetadata)>
 							<cfset application._taffy.endpoints[local.metaInfo.uriRegex].metadata[local.f.name] = local.extraMetadata />
 						<cfelse>
-							<cfset application._taffy.endpoints[local.metaInfo.uriRegex].metadata[local.f.name] = "" />
+							<cfset application._taffy.endpoints[local.metaInfo.uriRegex].metadata[local.f.name] = StructNew() />
 						</cfif>
 					</cfloop>
 				</cfif>
