@@ -561,7 +561,12 @@
 		</cfif>
 		<cfset structDelete(requestObj.requestArguments, "_taffy_mime") />
 		<!--- get the method metadata (if any) for onTaffyRequest --->
-		<cfset requestObj.methodMetadata = application._taffy.endpoints[requestObj.matchingRegex].metadata[requestObj.method] />
+		<cfif requestObj.method neq "">
+			<cfset requestObj.methodMetadata = application._taffy.endpoints[requestObj.matchingRegex].metadata[requestObj.method] />
+		<cfelse>
+			<!--- method will be "" when un-implemented method is requested (e.g. OPTIONS) --->
+			<cfset requestObj.methodMetadata = StructNew() />
+		</cfif>
 		<cfreturn requestObj />
 	</cffunction>
 
