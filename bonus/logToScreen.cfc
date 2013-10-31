@@ -12,14 +12,10 @@
 
 	<cffunction name="saveLog">
 		<cfargument name="exception" />
-		<!---
-			TODO: This adapter does not currently support authentication-required email, supplying a specific server, etc.
-			That would be a great and relatively easy thing for you to contribute back! :)
-		--->
 		<cfcontent type="text/html" />
-		<cfdump var="#variables#">
-		<cfdump var="#arguments#">
-		<cfabort>
+		<cfdump var="#variables#" />
+		<cfdump var="#arguments#" />
+		<cfabort />
 	</cffunction>
 
 </cfcomponent>
