@@ -13,7 +13,6 @@
 	<cffunction name="saveLog">
 		<cfargument name="exception" />
 		<cfcontent type="text/html" />
-		<cfdump var="#variables#" />
 		<cfdump var="#arguments#" />
 		<cfabort />
 	</cffunction>
