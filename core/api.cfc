@@ -339,7 +339,7 @@
 		<cfparam name="variables.framework" default="#structNew()#" />
 		<cfheader name="X-TAFFY-RELOADED" value="true" />
 		<cfset application._taffy = structNew() />
-		<cfset application._taffy.version = "2.0.4" />
+		<cfset application._taffy.version = "2.1.0" />
 		<cfset application._taffy.endpoints = structNew() />
 		<!--- default settings --->
 		<cfset local.defaultConfig = structNew() />
