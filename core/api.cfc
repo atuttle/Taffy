@@ -99,6 +99,10 @@
 				<cfset root = exception />
 			</cfif>
 
+			<cfif structKeyExists(root, "TagContext")>
+				<cfset data.stacktrace = root.tagContext />
+			</cfif>
+
 			<cfif application._taffy.settings.returnExceptionsAsJson eq true>
 				<!--- try to find the relevant details --->
 				<cfif structKeyExists(root, "message")>
