@@ -3,7 +3,7 @@
 You're here because creating REST APIs with the native functionality in ColdFusion 10 and Railo is verbose, complex, and developer-hostile.
 Or maybe you're still on an older version of ColdFusion. **You've come to the right place.**
 
-It's is low friction, extremely simple to get started, and it's compatible as far back as ColdFusion 8.
+Taffy is is low friction, extremely simple to get started, and it's compatible as far back as ColdFusion 8.
 
 It's is terse because it uses convention over configuration, and doesn't require writing a bunch of boilerplate code. How terse? [A functional API can fit into a tweet](https://twitter.com/cf_taffy/statuses/327415972581486592).
 
