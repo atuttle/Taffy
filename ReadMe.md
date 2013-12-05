@@ -1,6 +1,13 @@
-# Taffy: Convention-Over-Configuration REST framework for ColdFusion and Railo
+# [Taffy](http://taffy.io): The REST framework for ColdFusion and Railo
 
-Taffy is a ColdFusion framework that helps you build RESTful web services with very little boilerplate code, very little configuration and very little effort.
+You're here because creating REST APIs with the native functionality in ColdFusion 10 and Railo is verbose, complex, and developer-hostile.
+Or maybe you're still on an older version of ColdFusion. **You've come to the right place.**
+
+It's is low friction, extremely simple to get started, and it's compatible as far back as ColdFusion 8.
+
+It's is terse because it uses convention over configuration, and doesn't require writing a bunch of boilerplate code. How terse? [A functional API can fit into a tweet](https://twitter.com/cf_taffy/statuses/327415972581486592).
+
+It's easy to debug because error messages are returned as JSON by default and it optionally integrates with your favorite IoC libraries like **ColdSpring** and **DI/1**.
 
 ## Build Status
 
@@ -8,20 +15,21 @@ Taffy is a ColdFusion framework that helps you build RESTful web services with v
 
 Taffy has a comprehensive test suite and uses continuous integration to ensure that the code is always usable. If you'd like, you can [review the Jenkins build history for Taffy](http://fusiongrokker.com:8080/job/Taffy/).
 
-## Supported Versions
+## Currently Supported Versions
 
+* Taffy 2.1.x
 * Taffy 2.0.x
 * Taffy 1.3.x
 
-If you file a bug or ask for support, usually our first question is "What version of Taffy are you using?" If it's an older release, we usually ask you to upgrade. Officially, we promise to support the current "minor" release and the prior "minor" release. When Taffy 2.0 is released, it and the preceding "minor" release (e.g. Taffy 1.4.x, if such a thing were to exist) would be supported.
+If you file a bug or ask for support, usually our first question is "What version of Taffy are you using?" If it's an older release, we usually ask you to upgrade. Officially, we promise to support the current and previous **minor** releases and the last **minor** release of the previous **major** release. Taffy follows versioning guidelines defined in [semver](http://semver.org/).
 
-Supported versions get priority for bug fixes; and we make no promise to fix bugs filed against "unsupported" versions. If your version is supported, and your bug is reproducible and isolatable, we'll do everything within our power to address it.
+Supported versions get priority for bug fixes; and we make no promise to fix bugs filed against **unsupported** versions. If your version is supported, and your bug is reproducible and isolatable, we'll do everything within our power to address it.
 
-If upgrade is not an option in your case, and you still have an isolatable and reproducable bug, [contact me](http://fusiongrokker.com/page/contact-me) to discuss further options.
+If you're on an unsupported version, upgrade is not an option in your case, and you still have an isolatable and reproducable bug, [contact me](http://fusiongrokker.com/page/contact-me) to discuss further options.
 
 ## Documentation
 
-Documentation is provided via the wiki, and [here's a nice clean index of what's in the wiki][3].
+Documentation is mostly available at [docs.taffy.io](http://docs.taffy.io), with a few of the more detailed guides remaining [in the wiki][3] for now.
 
 ### You can contribute to the documentation
 
@@ -29,7 +37,7 @@ If you would like to contribute to documentation, [please read this blog post][2
 
 ## Roadmap
 
-In addition to the issues list, Taffy uses a [public trello board](https://trello.com/b/Nz5nyqZg/) to track and plan the framework roadmap.
+In addition to the [GitHub issues list](https://github.com/atuttle/Taffy/issues), we use a [public trello board](https://trello.com/b/Nz5nyqZg/) to track and plan the framework roadmap.
 
 [![Taffy Roadmap](https://trello.com/b/Nz5nyqZg.png)](https://trello.com/b/Nz5nyqZg/)
 
@@ -37,7 +45,7 @@ In addition to the issues list, Taffy uses a [public trello board](https://trell
 
 We have [a mailing list for Taffy Users][1]. Feel free to ask for help, discuss potential bugs, and share new ideas there.
 
-I also frequent the #ColdFusion channels on both Freenode and DALNet (IRC).
+I also frequent/idle in the **#ColdFusion** channel [on Freenode](https://kiwiirc.com/client/irc.freenode.net/) (IRC).
 
 ## Open Source!
 
