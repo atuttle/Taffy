@@ -31,24 +31,33 @@
 				<hr>
 
 				<section id="main_content">
-					<p>I created Taffy because I was not happy with the amount of code it took to create REST API's with ColdFusion. I wanted 
-						something terse, something that used convention over configuration, and something that didn't require writing a bunch 
-						of boilerplate code. Nothing existed that filled that void, so I wrote it.</p>
+					<p>You're here because creating REST APIs with the native functionality in ColdFusion 10 and Railo is verbose, complex, and
+					developer-hostile. Or maybe you're still on an older version of ColdFusion.</p>
+
+					<p><stron>You've come to the right place.</stron> <em>Taffy is low friction, extremely simple to get started, and it's
+					compatible as far back as ColdFusion 8.</em>
+
+					<p>Taffy is terse because it uses convention over configuration, and doesn't require writing a bunch of boilerplate code. How
+					terse? A functional API can fit into a tweet:</p>
+
+					<blockquote class="twitter-tweet" lang="en"><p>component extends=&quot;taffy.core.api&quot;{}&#10;component extends=&quot;taffy.core.resource&quot; taffy_uri=&quot;/hi&quot;{function get(){return representationOf(&#39;hi&#39;);}}</p>&mdash; Taffy (@cf_taffy) <a href="https://twitter.com/cf_taffy/statuses/327415972581486592">April 25, 2013</a></blockquote>
+					<script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+					<p>It's easy to debug and it optionally integrates with your favorite IoC libraries like ColdSpring and DI/1.</p>
 
 					<h3>Current Version</h3>
 
-					<p>Version 2.0.2 was released on September 19th, 2013. 
-						(<a href="https://github.com/atuttle/Taffy/releases">changelog</a>)</p>
+					<p><strong>Version 2.1.0</strong> was released on November 22nd, 2013. (<a href="https://github.com/atuttle/Taffy/releases">changelog</a>)</p>
 
 					<h3>Documentation</h3>
 
-					<p>Everything is documented in the <a href="https://github.com/atuttle/Taffy/wiki/_pages">GitHub Wiki</a>. But browsing the 
-						list of pages in a wiki is a bit of a morass. To help with that, I've created a sort of 
+					<p>Everything is documented in the <a href="https://github.com/atuttle/Taffy/wiki/_pages">GitHub Wiki</a>. But browsing the
+						list of pages in a wiki is a bit of a morass. To help with that, I've created a sort of
 						<a href="documentation.html">Index of the wiki</a>.</p>
 
 					<h3>Mailing List</h3>
 
-					<p>Many people who use Taffy subscribe to the <a href="http://groups.google.com/group/taffy-users">Taffy Users Google Group</a>. 
+					<p>Many people who use Taffy subscribe to the <a href="http://groups.google.com/group/taffy-users">Taffy Users Google Group</a>.
 						If you're having any trouble, it's a great place to get advice or debugging help.</p>
 				</section>
 
