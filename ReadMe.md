@@ -24,13 +24,13 @@ Taffy has a comprehensive test suite and uses continuous integration to ensure t
 
 If you file a bug or ask for support please indicate which version of Taffy you're using. If it's an older release, we usually ask you to upgrade. Officially, we promise to support the current and previous **minor** releases and the last **minor** release of the previous **major** release. Taffy follows versioning guidelines defined in [semver](http://semver.org/).
 
-Supported versions get priority for bug fixes; and we make no promise to fix bugs filed against **unsupported** versions. If your version is supported, and your bug is reproducible and isolatable, we'll do everything within our power to address it.
+Supported versions get priority for bug fixes. No promises are made to fix bugs filed against **unsupported** versions. If your version is supported and your bug is reproducible and isolatable, we'll do everything within our power to address it.
 
 If you're on an unsupported version, upgrade is not an option in your case, and you still have an isolatable and reproducable bug, [contact me](http://fusiongrokker.com/page/contact-me) to discuss further options.
 
 ## Documentation
 
-Documentation is mostly available at [docs.taffy.io](http://docs.taffy.io), with a few of the more detailed guides remaining [in the wiki][3] for now.
+Primary documentation is available at [docs.taffy.io](http://docs.taffy.io), with a few of the more detailed guides remaining [in the wiki][3] for now.
 
 ### You can contribute to the documentation
 
