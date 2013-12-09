@@ -1,11 +1,12 @@
 # [Taffy](http://taffy.io): The REST framework for ColdFusion and Railo
 
-You're here because creating REST APIs with the native functionality in ColdFusion 10 and Railo is verbose, complex, and developer-hostile.
-Or maybe you're still on an older version of ColdFusion. **You've come to the right place.**
+You're here because creating REST APIs with the native functionality in ColdFusion 10 and Railo is verbose, complex, and developer-hostile. Or maybe you're still on an older version of ColdFusion.
 
-Taffy is is low friction, extremely simple to get started, and it's compatible as far back as ColdFusion 8.
+**You've come to the right place.**
 
-It's is terse because it uses convention over configuration, and doesn't require writing a bunch of boilerplate code. How terse? [A functional API can fit into a tweet](https://twitter.com/cf_taffy/statuses/327415972581486592).
+Taffy is low friction, extremely simple to get started, and it's compatible as far back as ColdFusion 8.
+
+It's terse because it uses convention over configuration, and doesn't require writing a bunch of boilerplate code. How terse? [A functional API can fit into a tweet](https://twitter.com/cf_taffy/statuses/327415972581486592).
 
 It's easy to debug because error messages are returned as JSON by default and it optionally integrates with your favorite IoC libraries like **ColdSpring** and **DI/1**.
 
@@ -21,7 +22,7 @@ Taffy has a comprehensive test suite and uses continuous integration to ensure t
 * Taffy 2.0.x
 * Taffy 1.3.x
 
-If you file a bug or ask for support, usually our first question is "What version of Taffy are you using?" If it's an older release, we usually ask you to upgrade. Officially, we promise to support the current and previous **minor** releases and the last **minor** release of the previous **major** release. Taffy follows versioning guidelines defined in [semver](http://semver.org/).
+If you file a bug or ask for support please indicate which version of Taffy you're using. If it's an older release, we usually ask you to upgrade. Officially, we promise to support the current and previous **minor** releases and the last **minor** release of the previous **major** release. Taffy follows versioning guidelines defined in [semver](http://semver.org/).
 
 Supported versions get priority for bug fixes; and we make no promise to fix bugs filed against **unsupported** versions. If your version is supported, and your bug is reproducible and isolatable, we'll do everything within our power to address it.
 
