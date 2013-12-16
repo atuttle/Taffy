@@ -139,6 +139,10 @@
 		<cfset var _taffyRequest = {} />
 		<cfset var local = {} />
 
+		<cfset _taffyRequest.metrics = {} />
+		<cfset var m = _taffyRequest.metrics />
+		<cfset m.init = getTickCount() />
+
 		<!--- enable/disable debug output per settings --->
 		<cfif not structKeyExists(url, application._taffy.settings.debugKey)>
 			<cfsetting showdebugoutput="false" />
@@ -164,7 +168,11 @@
 		</cfif>
 
 		<!--- get request details --->
-		<cfset _taffyRequest = parseRequest() />
+		<cfset m.beforeParse = getTickCount() />
+		<cfset local.parsed = parseRequest() />
+		<cfset m.afterParse = getTickCount() />
+		<cfset structAppend(_taffyRequest, local.parsed) />
+		<cfset m.parseTime = m.afterParse - m.beforeParse />
 
 		<!--- CORS headers (so that CORS can pass even if the resource throws an exception) --->
 		<cfset local.allowVerbs = uCase(structKeyList(_taffyRequest.matchDetails.methods)) />
@@ -201,6 +209,7 @@
 		--->
 
 		<!--- ...after we let the api developer know all of the request details first... --->
+		<cfset m.beforeOnTaffyRequest = getTickCount() />
 		<cfset _taffyRequest.continue = onTaffyRequest(
 			_taffyRequest.verb
 			,_taffyRequest.matchDetails.beanName
@@ -209,6 +218,8 @@
 			,_taffyRequest.headers
 			,_taffyRequest.methodMetadata
 		) />
+		<cfset m.afterOnTaffyRequest = getTickCount() />
+		<cfset m.otrTime = m.afterOnTaffyRequest - m.beforeOnTaffyRequest />
 
 		<cfif not structKeyExists(_taffyRequest, "continue")>
 			<!--- developer forgot to return true --->
@@ -227,17 +238,16 @@
 			<!--- inspection complete and request allowed by developer; send request to service --->
 
 			<cfif structKeyExists(_taffyRequest.matchDetails.methods, _taffyRequest.verb)>
-				<!--- time it --->
-				<cfset _taffyRequest.metrics.beforeResource = getTickCount() />
 				<!--- returns a representation-object --->
+				<cfset m.beforeResource = getTickCount() />
 				<cfinvoke
 					component="#application._taffy.factory.getBean(_taffyRequest.matchDetails.beanName)#"
 					method="#_taffyRequest.method#"
 					argumentcollection="#_taffyRequest.requestArguments#"
 					returnvariable="_taffyRequest.result"
 				/>
-				<!--- time it --->
-				<cfset _taffyRequest.metrics.afterResource = getTickCount() />
+				<cfset m.afterResource = getTickCount() />
+				<cfset m.resourceTime = m.afterResource - m.beforeResource />
 			<cfelseif NOT listFind(local.allowVerbs,_taffyRequest.verb)>
 				<!--- if the verb is not implemented, refuse the request --->
 				<cfheader name="ALLOW" value="#local.allowVerbs#" />
@@ -269,10 +279,6 @@
 			/>
 		</cfif>
 
-		<cfif structKeyExists(_taffyRequest, "metrics") and structKeyExists(_taffyRequest.metrics, "afterResource")>
-			<cfset _taffyRequest.resultHeaders['X-TAFFY-TIME-IN-RESOURCE'] = (_taffyRequest.metrics.afterResource - _taffyRequest.metrics.beforeResource) />
-		</cfif>
-
 		<cfsetting enablecfoutputonly="true" />
 		<cfcontent reset="true" type="#getReturnMimeAsHeader(_taffyRequest.returnMimeExt)#; charset=utf-8" />
 		<cfheader statuscode="#_taffyRequest.statusArgs.statusCode#" statustext="#_taffyRequest.statusArgs.statusText#" />
@@ -283,17 +289,26 @@
 		<!--- add ALLOW header for current resource, which describes available verbs --->
 		<cfheader name="ALLOW" value="#local.allowVerbs#" />
 
+		<!--- metrics headers that should always apply --->
+		<cfheader name="X-TIME-IN-PARSE" value="#m.parseTime#" />
+		<cfheader name="X-TIME-IN-ONTAFFYREQUEST" value="#m.otrTime#" />
+		<cfheader name="X-TIME-IN-RESOURCE" value="#m.resourceTime#" />
+
 		<!--- result data --->
 		<cfif structKeyExists(_taffyRequest,'result')>
 			<cfset _taffyRequest.resultType = _taffyRequest.result.getType() />
 
 			<cfif _taffyRequest.resultType eq "textual">
 				<!--- serialize the representation's data into the requested mime type --->
+				<cfset _taffyRequest.metrics.beforeSerialize = getTickCount() />
 				<cfinvoke
 					component="#_taffyRequest.result#"
 					method="getAs#_taffyRequest.returnMimeExt#"
 					returnvariable="_taffyRequest.resultSerialized"
 				/>
+				<cfset _taffyRequest.metrics.afterSerialize = getTickCount() />
+				<cfset m.serializeTime = m.afterSerialize - m.beforeSerialize />
+				<cfheader name="X-TIME-IN-SERIALIZE" value="#m.serializeTime#" />
 
 				<!--- apply jsonp wrapper if requested --->
 				<cfif structKeyExists(_taffyRequest, "jsonpCallback")>
@@ -315,6 +330,10 @@
 					</cfif>
 				</cfif>
 
+				<cfset m.done = getTickCount() />
+				<cfset m.taffyTime = m.done - m.init - m.parseTime - m.otrTime - m.resourceTime - m.serializeTime />
+				<cfheader name="X-TIME-IN-TAFFY" value="#m.taffyTime#" />
+
 				<cfcontent reset="true" type="#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#; charset=utf-8" />
 				<cfif _taffyRequest.resultSerialized neq ('"' & '"')>
 					<cfoutput>#_taffyRequest.resultSerialized#</cfoutput>
@@ -325,12 +344,21 @@
 				</cfif>
 
 			<cfelseif _taffyRequest.resultType eq "filename">
+				<cfset m.done = getTickCount() />
+				<cfset m.taffyTime = m.done - m.init - m.parseTime - m.otrTime - m.resourceTime - m.serializeTime />
+				<cfheader name="X-TIME-IN-TAFFY" value="#m.taffyTime#" />
 				<cfcontent reset="true" file="#_taffyRequest.result.getFileName()#" type="#_taffyRequest.result.getFileMime()#" deletefile="#_taffyRequest.result.getDeleteFile()#" />
 
 			<cfelseif _taffyRequest.resultType eq "filedata">
+				<cfset m.done = getTickCount() />
+				<cfset m.taffyTime = m.done - m.init - m.parseTime - m.otrTime - m.resourceTime - m.serializeTime />
+				<cfheader name="X-TIME-IN-TAFFY" value="#m.taffyTime#" />
 				<cfcontent reset="true" variable="#_taffyRequest.result.getFileData()#" type="#_taffyRequest.result.getFileMime()#" />
 
 			<cfelseif _taffyRequest.resultType eq "imagedata">
+				<cfset m.done = getTickCount() />
+				<cfset m.taffyTime = m.done - m.init - m.parseTime - m.otrTime - m.resourceTime - m.serializeTime />
+				<cfheader name="X-TIME-IN-TAFFY" value="#m.taffyTime#" />
 				<cfcontent reset="true" variable="#_taffyRequest.result.getImageData()#" type="#_taffyRequest.result.getFileMime()#" />
 
 			</cfif>
