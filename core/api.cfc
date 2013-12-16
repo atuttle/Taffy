@@ -227,6 +227,8 @@
 			<!--- inspection complete and request allowed by developer; send request to service --->
 
 			<cfif structKeyExists(_taffyRequest.matchDetails.methods, _taffyRequest.verb)>
+				<!--- time it --->
+				<cfset _taffyRequest.metrics.beforeResource = getTickCount() />
 				<!--- returns a representation-object --->
 				<cfinvoke
 					component="#application._taffy.factory.getBean(_taffyRequest.matchDetails.beanName)#"
@@ -234,6 +236,8 @@
 					argumentcollection="#_taffyRequest.requestArguments#"
 					returnvariable="_taffyRequest.result"
 				/>
+				<!--- time it --->
+				<cfset _taffyRequest.metrics.afterResource = getTickCount() />
 			<cfelseif NOT listFind(local.allowVerbs,_taffyRequest.verb)>
 				<!--- if the verb is not implemented, refuse the request --->
 				<cfheader name="ALLOW" value="#local.allowVerbs#" />
@@ -263,6 +267,10 @@
 				method="getHeaders"
 				returnvariable="_taffyRequest.resultHeaders"
 			/>
+		</cfif>
+
+		<cfif structKeyExists(_taffyRequest, "metrics") and structKeyExists(_taffyRequest.metrics, "afterResource")>
+			<cfset _taffyRequest.resultHeaders['X-TAFFY-TIME-IN-RESOURCE'] = (_taffyRequest.metrics.afterResource - _taffyRequest.metrics.beforeResource) />
 		</cfif>
 
 		<cfsetting enablecfoutputonly="true" />
