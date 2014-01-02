@@ -20,7 +20,11 @@
 
 	<!--- Your Application.cfc should override this method AND call super.onApplicationStart() --->
 	<cffunction name="onApplicationStart">
+		<cfset var before = getTickCount() />
+		<cfset var after = 0 />
 		<cfset setupFramework() />
+		<cfset after = getTickCount() />
+		<cfheader name="X-TIME-TO-RELOAD" value="#(after-before)#" />
 		<cfreturn true />
 	</cffunction>
 
