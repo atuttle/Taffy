@@ -349,19 +349,19 @@
 
 			<cfelseif _taffyRequest.resultType eq "filename">
 				<cfset m.done = getTickCount() />
-				<cfset m.taffyTime = m.done - m.init - m.parseTime - m.otrTime - m.resourceTime - m.serializeTime />
+				<cfset m.taffyTime = m.done - m.init - m.parseTime - m.otrTime - m.resourceTime />
 				<cfheader name="X-TIME-IN-TAFFY" value="#m.taffyTime#" />
 				<cfcontent reset="true" file="#_taffyRequest.result.getFileName()#" type="#_taffyRequest.result.getFileMime()#" deletefile="#_taffyRequest.result.getDeleteFile()#" />
 
 			<cfelseif _taffyRequest.resultType eq "filedata">
 				<cfset m.done = getTickCount() />
-				<cfset m.taffyTime = m.done - m.init - m.parseTime - m.otrTime - m.resourceTime - m.serializeTime />
+				<cfset m.taffyTime = m.done - m.init - m.parseTime - m.otrTime - m.resourceTime />
 				<cfheader name="X-TIME-IN-TAFFY" value="#m.taffyTime#" />
 				<cfcontent reset="true" variable="#_taffyRequest.result.getFileData()#" type="#_taffyRequest.result.getFileMime()#" />
 
 			<cfelseif _taffyRequest.resultType eq "imagedata">
 				<cfset m.done = getTickCount() />
-				<cfset m.taffyTime = m.done - m.init - m.parseTime - m.otrTime - m.resourceTime - m.serializeTime />
+				<cfset m.taffyTime = m.done - m.init - m.parseTime - m.otrTime - m.resourceTime />
 				<cfheader name="X-TIME-IN-TAFFY" value="#m.taffyTime#" />
 				<cfcontent reset="true" variable="#_taffyRequest.result.getImageData()#" type="#_taffyRequest.result.getFileMime()#" />
 
