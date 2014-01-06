@@ -132,12 +132,16 @@
 							</div>
 							<div class="col-sm-6">
 								<a class="label label-default" href="https://github.com/atuttle/Taffy/wiki/List-of-all-variables.framework-settings##exceptionlogadapterconfig">?</a>
-								<dl>
-									<cfloop list="#structKeyList(application._taffy.settings.exceptionLogAdapterConfig)#" index="local.k">
-										<dt>#local.k#</dt>
-										<dd>#application._taffy.settings.exceptionLogAdapterConfig[local.k]#</dd>
-									</cfloop>
-								</dl>
+								<cfif isSimpleValue(application._taffy.settings.exceptionLogAdapterConfig)>
+									#application._taffy.settings.exceptionLogAdapterConfig#
+								<cfelse>
+									<dl>
+										<cfloop list="#structKeyList(application._taffy.settings.exceptionLogAdapterConfig)#" index="local.k">
+											<dt>#local.k#</dt>
+											<dd>#application._taffy.settings.exceptionLogAdapterConfig[local.k]#</dd>
+										</cfloop>
+									</dl>
+								</cfif>
 							</div>
 
 							<div class="col-sm-6">
