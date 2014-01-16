@@ -329,6 +329,8 @@
 							<cfheader statuscode="304" statustext="Not Modified" />
 							<cfcontent reset="true" type="#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#; charset=utf-8" />
 							<cfreturn true />
+						<cfelse>
+							<cfheader name="Etag" value="#_taffyRequest.serverEtag#" />
 						</cfif>
 					<cfelse>
 						<cfheader name="Etag" value="#_taffyRequest.result.getData().hashCode()#" />
