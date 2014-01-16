@@ -32,6 +32,7 @@
 	<cffunction name="onRequestStart">
 		<cfargument name="targetPath" />
 		<cfset var local = structNew() />
+		<cfset request.unhandled = false />
 		<cfset local.reloadedInThisRequest = false />
 		<!--- this will probably happen if taffy is sharing an app name with an existing application so that you can use its application context --->
 		<cfif not structKeyExists(application, "_taffy")>
@@ -77,6 +78,7 @@
 			<!--- allow pass-thru for selected paths --->
 			<cfset structDelete(this, 'onRequest') />
 			<cfset structDelete(variables, 'onRequest') />
+			<cfset request.unhandled = true />
 		</cfif>
 		<cfreturn true />
 	</cffunction>
@@ -88,6 +90,10 @@
 		<cfset var root = '' />
 		<cfset var logger = '' />
 		<cftry>
+			<cfif structKeyExists(request, 'unhandled') and request.unhandled eq true>
+				<cfreturn super.onError( arguments.exception ) />
+			</cfif>
+
 			<cfset logger = createObject("component", application._taffy.settings.exceptionLogAdapter).init(
 				application._taffy.settings.exceptionLogAdapterConfig
 			) />
