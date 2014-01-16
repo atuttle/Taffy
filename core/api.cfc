@@ -238,6 +238,7 @@
 			<!--- inspection complete but request has been aborted by developer; return custom response --->
 			<cfset _taffyRequest.result = duplicate(_taffyRequest.continue) />
 			<cfset structDelete(_taffyRequest, "continue")/>
+			<cfset m.resourceTime = 0 />
 		<cfelse>
 			<!--- inspection complete and request allowed by developer; send request to service --->
 
