@@ -6,8 +6,10 @@
 		variables.framework = {};
 		variables.framework.representationClass = "taffy.bonus.AnythingToXmlRepresentation";
 
-		function applicationStartEvent(){
+		function onApplicationStart(){
 			application.anythingToXml = createObject("component", "anythingtoxml.AnythingToXML").init();
+
+			return super.onApplicationStart();
 		}
 
 	</cfscript>

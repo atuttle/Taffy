@@ -9,9 +9,10 @@
 		variables.framework.reloadPassword = "true";
 		variables.framework.representationClass = "taffy.core.nativeJsonRepresentation";
 
-		// do your onApplicationStart stuff here
-		function applicationStartEvent(){
+		function onApplicationStart(){
 			application.lastReset = now();
+
+			return super.onApplicationStart();
 		}
 
 	</cfscript>

@@ -12,15 +12,16 @@
 		variables.framework.reloadPassword = "true";
 		variables.framework.representationClass = "taffy.core.genericRepresentation";
 
-		// do your onApplicationStart stuff here
-		function applicationStartEvent(){
+		function onApplicationStart(){
 			initColdSpring();
+
+			return super.onApplicationStart();
 		}
 
 		function initColdSpring() {
 			application.oBeanFactory = CreateObject("component","coldspring.beans.DefaultXmlBeanFactory").init();
 			application.oBeanFactory.loadBeansFromXMLFile("/config/coldspring.xml");
 		}
-		
+
 	</cfscript>
 </cfcomponent>
