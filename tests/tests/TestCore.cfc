@@ -535,6 +535,16 @@
 			assertTrue(local.result.responseHeader["Access-Control-Allow-Headers"] contains "pigeon");
 			assertTrue(local.result.responseHeader["Access-Control-Allow-Headers"] contains "man-bear-pig");
 		}
+
+		function non_struct_json_body_sent_to_resource_as_underscore_body(){
+			//see: https://github.com/atuttle/Taffy/issues/169
+			local.result = apiCall("post", "/echo/5", "[1,2,3]");
+			debug(local.result);
+			local.response = deserializeJSON(local.result.fileContent);
+			assertTrue(structKeyExists(local.response, "_body"));
+			assertTrue(isArray(local.response._body));
+			assertTrue(arrayLen(local.response._body) == 3);
+		}
 	</cfscript>
 
 

@@ -541,10 +541,15 @@
 					<cfset throwError(msg="Input JSON is not well formed: #requestObj.body#") />
 				</cfif>
 				<cfset local.tmp = deserializeJSON(requestObj.body) />
-				<cfif structKeyExists(local.tmp, "data")>
-					<cfset requestObj.bodyArgs = local.tmp.data />
+				<cfif not isStruct(local.tmp)>
+					<cfset requestObj.bodyArgs = {} />
+					<cfset requestObj.bodyArgs['_body'] = local.tmp />
 				<cfelse>
-					<cfset requestObj.bodyArgs = local.tmp />
+					<cfif structKeyExists(local.tmp, "data")>
+						<cfset requestObj.bodyArgs = local.tmp.data />
+					<cfelse>
+						<cfset requestObj.bodyArgs = local.tmp />
+					</cfif>
 				</cfif>
 				<cfset requestObj.queryString = cgi.query_string />
 			<cfelseif findNoCase("multipart/form-data", requestObj.contentType)>
