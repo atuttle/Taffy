@@ -409,12 +409,8 @@
 		<cfset local.defaultConfig.globalHeaders = structNew() />
 		<cfset local.defaultConfig.mimeTypes = structNew() />
 		<cfset local.defaultConfig.returnExceptionsAsJson = true />
-		<cfset local.defaultConfig.exceptionLogAdapter = "taffy.bonus.LogToEmail" />
+		<cfset local.defaultConfig.exceptionLogAdapter = "taffy.bonus.LogToScreen" />
 		<cfset local.defaultConfig.exceptionLogAdapterConfig = StructNew() />
-		<cfset local.defaultConfig.exceptionLogAdapterConfig.emailFrom = "api-error@yourdomain.com" />
-		<cfset local.defaultConfig.exceptionLogAdapterConfig.emailTo = "you@yourdomain.com" />
-		<cfset local.defaultConfig.exceptionLogAdapterConfig.emailSubj = "Exception Trapped in API" />
-		<cfset local.defaultConfig.exceptionLogAdapterConfig.emailType = "html" />
 		<!--- status --->
 		<cfset application._taffy.status = structNew() />
 		<cfset application._taffy.status.internalBeanFactoryUsed = false />
