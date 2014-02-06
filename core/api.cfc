@@ -303,7 +303,9 @@
 		<!--- metrics headers that should always apply --->
 		<cfheader name="X-TIME-IN-PARSE" value="#m.parseTime#" />
 		<cfheader name="X-TIME-IN-ONTAFFYREQUEST" value="#m.otrTime#" />
-		<cfheader name="X-TIME-IN-RESOURCE" value="#m.resourceTime#" />
+		<cfif structKeyExists(m, "resourceTime")>
+			<cfheader name="X-TIME-IN-RESOURCE" value="#m.resourceTime#" />
+		</cfif>
 
 		<!--- result data --->
 		<cfif structKeyExists(_taffyRequest,'result')>
