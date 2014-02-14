@@ -280,7 +280,11 @@
 												<h4>Request Body:</h4>
 												<textarea id="#local.currentResource.beanName#_RequestBody" class="form-control input-sm" rows="5"></textarea>
 												<cfset local.md = getMetaData(application._taffy.factory.getBean(local.currentResource.beanName)) />
-												<cfset local.functions = local.md.functions />
+												<cfif structKeyExists(local.md,"functions")>
+													<cfset local.functions = local.md.functions />
+												<cfelse>
+													<cfset local.functions = arrayNew(1) />
+												</cfif>
 												<!--- only save body templates for POST & PUT --->
 												<cfloop from="1" to="#arrayLen(local.functions)#" index="local.f">
 													<cfif local.functions[local.f].name eq "POST" or local.functions[local.f].name eq "PUT">
