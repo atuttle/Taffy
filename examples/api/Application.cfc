@@ -10,11 +10,13 @@
 		variables.framework.representationClass = "taffy.core.genericRepresentation";
 		variables.framework.returnExceptionsAsJson = true;
 
-		// do your onApplicationStart stuff here
-		function applicationStartEvent(){}
+		function onApplicationStart(){
+			return super.onApplicationStart();
+		}
 
-		// do your onRequestStart stuff here
-		function requestStartEvent(){}
+		function onRequestStart(){
+			return super.onRequestStart();
+		}
 
 		// this function is called after the request has been parsed and all request details are known
 		function onTaffyRequest(verb, cfc, requestArguments, mimeExt){

@@ -31,15 +31,17 @@
 	}
 
 
-	function applicationStartEvent()
+	function onApplicationStart()
 	{
+		return super.onApplicationStart();
 	}
 
-	function requestStartEvent()
+	function onRequestStart()
 	{
+		return super.onRequestStart();
 	}
 
-	function onTaffyRequest(verb,cfc,requestArguments,mimeExt,headers)
+	function onTaffyRequest(verb,cfc,requestArguments,mimeExt,headers,methodMetadata)
 	{
 	}
 

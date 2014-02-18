@@ -21,6 +21,7 @@
 			<span class="ver text-muted">Taffy <cfoutput>#application._taffy.version#</cfoutput></span>
 		</div>
 
+		<!--- config modal --->
 		<div class="modal fade" id="config" tabindex="-1" role="dialog" aria-labelledby="frameworkConfig" aria-hidden="true">
 			<div class="modal-dialog">
 				<div class="modal-content">
@@ -131,12 +132,16 @@
 							</div>
 							<div class="col-sm-6">
 								<a class="label label-default" href="https://github.com/atuttle/Taffy/wiki/List-of-all-variables.framework-settings##exceptionlogadapterconfig">?</a>
-								<dl>
-									<cfloop list="#structKeyList(application._taffy.settings.exceptionLogAdapterConfig)#" index="local.k">
-										<dt>#local.k#</dt>
-										<dd>#application._taffy.settings.exceptionLogAdapterConfig[local.k]#</dd>
-									</cfloop>
-								</dl>
+								<cfif isSimpleValue(application._taffy.settings.exceptionLogAdapterConfig)>
+									#application._taffy.settings.exceptionLogAdapterConfig#
+								<cfelse>
+									<dl>
+										<cfloop list="#structKeyList(application._taffy.settings.exceptionLogAdapterConfig)#" index="local.k">
+											<dt>#local.k#</dt>
+											<dd>#application._taffy.settings.exceptionLogAdapterConfig[local.k]#</dd>
+										</cfloop>
+									</dl>
+								</cfif>
 							</div>
 
 							<div class="col-sm-6">
@@ -158,6 +163,7 @@
 			</div><!-- /.modal-dialog -->
 		</div><!-- /.modal -->
 
+		<!--- alerts --->
 		<div class="row" id="alerts">
 			<cfif structKeyExists(application._taffy, "status")
 					and structKeyExists(application._taffy.status, "skippedResources")
@@ -200,7 +206,6 @@
 								<h4 class="panel-title">
 									<a href="###local.currentResource.beanName#" class="accordion-toggle" data-toggle="collapse" data-parent="##resourcesAccordion">
 										#local.currentResource.beanName#
-										<code class="uri hidden-xs">#local.currentResource.srcUri#</code>
 									</a>
 									<cfloop list="DELETE|warning,PUT|warning,POST|danger,GET|primary" index="local.verb">
 										<cfif structKeyExists(local.currentResource.methods, listFirst(local.verb,'|'))>
@@ -209,6 +214,7 @@
 											<span class="verb label label-default">#ucase(listFirst(local.verb,'|'))#</span>
 										</cfif>
 									</cfloop>
+									<code style="float:right; margin-top: -15px; display: inline-block;">#local.currentResource.srcUri#</code>
 								</h4>
 							</div>
 							<div class="panel-collapse collapse" id="#local.currentResource.beanName#">
@@ -274,7 +280,11 @@
 												<h4>Request Body:</h4>
 												<textarea id="#local.currentResource.beanName#_RequestBody" class="form-control input-sm" rows="5"></textarea>
 												<cfset local.md = getMetaData(application._taffy.factory.getBean(local.currentResource.beanName)) />
-												<cfset local.functions = local.md.functions />
+												<cfif structKeyExists(local.md,"functions")>
+													<cfset local.functions = local.md.functions />
+												<cfelse>
+													<cfset local.functions = arrayNew(1) />
+												</cfif>
 												<!--- only save body templates for POST & PUT --->
 												<cfloop from="1" to="#arrayLen(local.functions)#" index="local.f">
 													<cfif local.functions[local.f].name eq "POST" or local.functions[local.f].name eq "PUT">
@@ -344,7 +354,7 @@
 															<cfelse>
 																<!--- no default value --->
 															</cfif>
-														<cfif structKeyExists(param, "hint")>
+														<cfif structKeyExists(local.param, "hint")>
 															<br/><span class="doc">#local.param.hint#</span>
 														</cfif>
 													</div>

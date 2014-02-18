@@ -521,6 +521,30 @@
 			assertTrue(local.result.responseHeader["Access-Control-Allow-Headers"] contains "pigeon");
 			assertTrue(local.result.responseHeader["Access-Control-Allow-Headers"] contains "man-bear-pig");
 		}
+
+		function properly_handles_arbitrary_cors_headers_on_error(){
+			//see: https://github.com/atuttle/Taffy/issues/159
+			application._taffy.settings.allowCrossDomain = true;
+			local.h = { "Access-Control-Request-Headers" = "goat, pigeon, man-bear-pig"};
+			local.result = apiCall("get", "/throwException.json", "", local.h);
+			debug(local.result);
+			assertTrue(structKeyExists(local.result.responseHeader, "Access-Control-Allow-Origin"));
+			assertTrue(structKeyExists(local.result.responseHeader, "Access-Control-Allow-Methods"));
+			assertTrue(structKeyExists(local.result.responseHeader, "Access-Control-Allow-Headers"));
+			assertTrue(local.result.responseHeader["Access-Control-Allow-Headers"] contains "goat");
+			assertTrue(local.result.responseHeader["Access-Control-Allow-Headers"] contains "pigeon");
+			assertTrue(local.result.responseHeader["Access-Control-Allow-Headers"] contains "man-bear-pig");
+		}
+
+		function non_struct_json_body_sent_to_resource_as_underscore_body(){
+			//see: https://github.com/atuttle/Taffy/issues/169
+			local.result = apiCall("post", "/echo/5", "[1,2,3]");
+			debug(local.result);
+			local.response = deserializeJSON(local.result.fileContent);
+			assertTrue(structKeyExists(local.response, "_body"));
+			assertTrue(isArray(local.response._body));
+			assertTrue(arrayLen(local.response._body) == 3);
+		}
 	</cfscript>
 
 

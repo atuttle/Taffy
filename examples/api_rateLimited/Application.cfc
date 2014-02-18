@@ -3,10 +3,12 @@
 
 		this.name = "rate_limiting_example";
 
-		function applicationStartEvent(){
+		function onApplicationStart(){
 			application.accessLog = queryNew('apiKey,accessTime','varchar,time');
 			application.accessLimit = 100; //requests
 			application.accessPeriod = 60; //seconds
+
+			return super.onApplicationStart();
 		}
 
 		function onTaffyRequest(verb, cfc, requestArguments, mimeExt){

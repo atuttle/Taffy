@@ -5,11 +5,12 @@ component extends="taffy.core.api" {
 	variables.framework = {};
 	variables.framework.beanFactory = "";
 
-	//do your onApplicationStart stuff here
-	function applicationStartEvent(){
+	function onApplicationStart(){
 		include "../mixin/appInit.cfm";
 
 		variables.framework.beanFactory = application.beanFactory;
+
+		return super.onApplicationStart();
 	}
 
 }

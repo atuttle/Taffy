@@ -14,7 +14,7 @@ Please include all of the following information in your ticket:
 
 ## Documentation
 
-Please see [how you can contribute to the wiki via pull requests](http://fusiongrokker.com/post/how-you-can-contribute-to-taffy-documentation).
+Documentation is managed [in its own repository](https://github.com/atuttle/TaffyDocs) and changes are automatically published once they are merged into the master branch.
 
 There's no such thing as perfect documentation. It can never be thorough enough, never perfectly organized. If you find something confusing or outdated, please at least be so kind as to file a bug report for it, if you can't or won't fix it.
 

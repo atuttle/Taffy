@@ -30,9 +30,13 @@
 	} />
 
 
-	<cffunction name="applicationStartEvent"></cffunction>
+	<cffunction name="onApplicationStart">
+		<cfreturn super.onApplicationStart() />
+	</cffunction>
 
-	<cffunction name="requestStartEvent"></cffunction>
+	<cffunction name="onRequestStart">
+		<cfreturn super.onRequestStart() />
+	</cffunction>
 
 	<cffunction name="onTaffyRequest">
 		<cfargument name="verb" />
@@ -40,6 +44,7 @@
 		<cfargument name="requestArguments" />
 		<cfargument name="mimeExt" />
 		<cfargument name="headers" />
+		<cfargument name="methodMetadata" />
 	</cffunction>
 
 </cfcomponent>]]></endtext>

@@ -8,7 +8,9 @@ $(function(){
 			resource.find('.reqBody').hide('fast');
 			resource.find('.queryParams').show('fast');
 		}else{
-			resource.find('.reqBody').show('fast');
+			var args = window.taffy.resources[resource.data('beanName')][method.toLowerCase()];
+			var ta = resource.find('.reqBody').show('fast').find('textarea');
+			ta.val(JSON.stringify(args, null, 3));
 			resource.find('.queryParams').hide('fast');
 		}
 	});
@@ -114,8 +116,13 @@ $(function(){
 			var headerRow = response.find('.responseHeaders');
 			headerRow.empty();
 			response.show();
+			var sortable = [];
 			for (var h in headers){
-				headerRow.append('<div class="row"><div class="col-md-4 headerName">' + h + ':</div><div class="col-md-8 headerVal">' + headers[h] + '</div></div>');
+				sortable.push(h);
+			}
+			sortable.sort();
+			for (var h in sortable){
+				headerRow.append('<div class="row"><div class="col-md-5 headerName">' + sortable[h] + ':</div><div class="col-md-7 headerVal">' + headers[sortable[h]] + '</div></div>');
 			}
 
 			response.find('.responseTime').html('Request took ' + timeSpent + 'ms');

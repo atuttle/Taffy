@@ -6,9 +6,10 @@
 	<cfset variables.statusCode = 200 />
 	<cfset variables.statusText = "OK" />
 	<cfset variables.miscHeaders = StructNew() />
+	<cfset variables.deleteFile = false />
 	<!--- 1= textual, 2= filename, 3= file data --->
 	<cfset variables.type = 1 />
-	<cfset variales.types = StructNew() />
+	<cfset variables.types = StructNew() />
 	<cfset variables.types[1] = "textual" />
 	<cfset variables.types[2] = "filename" />
 	<cfset variables.types[3] = "filedata" />
@@ -105,6 +106,16 @@
 
 	<cffunction name="getHeaders" access="public" output="false" returntype="Struct">
 		<cfreturn variables.miscHeaders />
+	</cffunction>
+
+	<cffunction name="andDeleteFile" access="public" output="false" hint="used to delete the streamed file">
+		<cfargument name="doDeleteFile" type="boolean" required="true" />
+		<cfset variables.deleteFile = arguments.doDeleteFile />
+		<cfreturn this />
+	</cffunction>
+
+	<cffunction name="getDeleteFile" access="public" output="false" returntype="boolean">
+		<cfreturn variables.deleteFile />
 	</cffunction>
 
 </cfcomponent>
