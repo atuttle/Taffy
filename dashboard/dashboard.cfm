@@ -467,7 +467,7 @@
 				,contentType: dType
 			}).always(function(a,b,c){
 				var after = Date.now(), t = after-before;
-				var xhr = a.getAllResponseHeaders ? a : c;
+				var xhr = (a && a.getAllResponseHeaders) ? a : c;
 				callback(
 					t
 					, xhr.status + " " + xhr.statusText		//status
