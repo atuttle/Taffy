@@ -452,8 +452,13 @@
 				url += '&' + resource.split('?')[1];
 			}
 
-			if( body && typeof body === 'string' && body.indexOf('{') == 0 ){
-				dType = "application/json";
+			if( body && typeof body === 'string' ){
+				try {
+					JSON.parse(body);
+					dType = "application/json";
+				} catch (e) {
+					//Not a valid JSON string
+				}
 			}
 
 			var before = Date.now();
