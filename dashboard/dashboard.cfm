@@ -291,7 +291,17 @@
 														<cfset local.args = {} />
 														<!--- get a list of all function arguments --->
 														<cfloop from="1" to="#arrayLen(local.functions[local.f].parameters)#" index="local.parm">
-															<cfset local.args[local.functions[local.f].parameters[local.parm].name] = '' />
+															<cfif local.functions[local.f].parameters[local.parm].type eq 'struct'>
+																<cfset local.args[local.functions[local.f].parameters[local.parm].name] = structNew() />
+															<cfelseif local.functions[local.f].parameters[local.parm].type eq 'array'>
+																<cfset local.args[local.functions[local.f].parameters[local.parm].name] = arrayNew(1) />
+															<cfelseif local.functions[local.f].parameters[local.parm].type eq 'numeric'>
+																<cfset local.args[local.functions[local.f].parameters[local.parm].name] = 0 />
+															<cfelseif local.functions[local.f].parameters[local.parm].type eq 'boolean'>
+																<cfset local.args[local.functions[local.f].parameters[local.parm].name] = true />
+															<cfelse>
+																<cfset local.args[local.functions[local.f].parameters[local.parm].name] = '' />
+															</cfif>
 														</cfloop>
 														<!--- omit uri tokens --->
 														<cfloop from="1" to="#arrayLen(local.currentResource.tokens)#" index="local.token">
