@@ -291,7 +291,9 @@
 														<cfset local.args = {} />
 														<!--- get a list of all function arguments --->
 														<cfloop from="1" to="#arrayLen(local.functions[local.f].parameters)#" index="local.parm">
-															<cfif local.functions[local.f].parameters[local.parm].type eq 'struct'>
+															<cfif not structKeyExists(local.functions[local.f].parameters[local.parm],"type")>
+																<cfset local.args[local.functions[local.f].parameters[local.parm].name] = '' />
+															<cfelseif local.functions[local.f].parameters[local.parm].type eq 'struct'>
 																<cfset local.args[local.functions[local.f].parameters[local.parm].name] = structNew() />
 															<cfelseif local.functions[local.f].parameters[local.parm].type eq 'array'>
 																<cfset local.args[local.functions[local.f].parameters[local.parm].name] = arrayNew(1) />
