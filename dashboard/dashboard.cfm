@@ -218,11 +218,12 @@
 								</h4>
 							</div>
 							<div class="panel-collapse collapse" id="#local.currentResource.beanName#">
-								<div class="panel-body">
-									<div class="col-md-6">
+								<div class="panel-body resourceWrapper">
+									<div class="col-md-6 runner">
 										<div class="well resource" data-uri="#local.currentResource.srcUri#" data-bean-name="#local.currentResource.beanName#">
 											<button class="btn btn-primary submitRequest">Send</button>
 											<button class="btn btn-success resetRequest">Reset</button>
+											<button class="btn btn-default showDocs">Show Docs</button>
 											<select class="form-control input-sm reqMethod">
 												<cfloop list="GET,POST,PUT,DELETE" index="local.verb">
 													<cfif structKeyExists(local.currentResource.methods, local.verb)>
@@ -333,6 +334,7 @@
 										</div><!-- /well (resource) -->
 									</div><!-- /col-md-6 -->
 									<div class="col-md-6 docs">
+										<div class="row"><div class="col-md-12"><button class="btn btn-default hideDocs">Hide Docs</button></div></div>
 										<cfset local.metadata = getMetaData(application._taffy.factory.getBean(local.currentResource.beanName)) />
 										<cfset local.docData = getHintsFromMetadata(local.metadata) />
 										<cfif structKeyExists(local.docData, 'hint')><div class="doc">#docData.hint#</div><hr/></cfif>
@@ -447,6 +449,19 @@
 						});
 					}, 2000);
 				});
+			});
+
+			$(".hideDocs").on("click", function(){
+				var docs = $(this).closest('.docs');
+				var runner = $(this).closest('.resourceWrapper').find('.runner');
+				docs.hide();
+				runner.removeClass("col-md-6").addClass("col-md-12");
+			});
+			$(".showDocs").on("click", function(){
+				var docs = $(this).closest('.resourceWrapper').find('.docs');
+				var runner = $(this).closest('.runner');
+				runner.removeClass("col-md-12").addClass("col-md-6");
+				docs.show();
 			});
 		});
 		function submitRequest( verb, resource, headers, body, callback ){
