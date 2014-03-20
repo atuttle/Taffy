@@ -61,11 +61,12 @@
 		<cfargument name="q" type="query" required="yes" />
 		
 		<cfscript>
+			var local = {};
+			
 			if (q.recordcount > 1){
 			 throw message="Unable to convert query resultset with more than one record to a simple struct, use queryToArray() instead";
 			}
 		
-			var local = {};
 			if (structKeyExists(server, "railo")) {
 				local.Columns = listToArray(arguments.q.getColumnList(false));
 			}
