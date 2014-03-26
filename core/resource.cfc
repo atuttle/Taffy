@@ -56,32 +56,31 @@
 			return( local.QueryArray );
 		</cfscript>
 	</cffunction>
-	
+
 	<cffunction name="queryToStruct" access="private" returntype="struct" output="false">
 		<cfargument name="q" type="query" required="yes" />
-		
+		<cfset var local = {} />
+
+		<cfif q.recordcount gt 1>
+			<cfthrow message="Unable to convert query resultset with more than one record to a simple struct, use queryToArray() instead" />
+		</cfif>
+
 		<cfscript>
-			var local = {};
-			
-			if (q.recordcount > 1){
-			 throw message="Unable to convert query resultset with more than one record to a simple struct, use queryToArray() instead";
-			}
-		
 			if (structKeyExists(server, "railo")) {
 				local.Columns = listToArray(arguments.q.getColumnList(false));
 			}
 			else {
 				local.Columns = arguments.q.getMetaData().getColumnLabels();
 			}
-			
+
 			local.QueryStruct = {};
 			local.numCols = ArrayLen( local.Columns );
-			
+
 			for (local.ColumnIndex = 1; local.ColumnIndex <= local.numCols; local.ColumnIndex++){
 				local.ColumnName = local.Columns[ local.ColumnIndex ];
 				local.QueryStruct[ local.ColumnName ] = arguments.q[ local.ColumnName ][1];
 			}
-			
+
 			return( local.QueryStruct );
 		</cfscript>
 	</cffunction>
