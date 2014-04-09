@@ -49,7 +49,11 @@
 				local.numCols = ArrayLen( local.Columns );
 				for (local.ColumnIndex = 1; local.ColumnIndex <= local.numCols; local.ColumnIndex++){
 					local.ColumnName = local.Columns[ local.ColumnIndex ];
-					local.Row[ local.ColumnName ] = arguments.q[ local.ColumnName ][ local.RowIndex ];
+				        if (isDate(arguments.q[ local.ColumnName ][ local.RowIndex ])) {
+				        	local.Row[ local.ColumnName ] = dateFormat(arguments.q[ local.ColumnName ][ local.RowIndex ],'yyyy-mm-dd')&'T'&timeFormat(arguments.q[ local.ColumnName ][ local.RowIndex ], 'HH:mm:ss.lZ');
+				    	} else {
+				    		local.Row[ local.ColumnName ] = arguments.q[ local.ColumnName ][ local.RowIndex ];
+					}	        
 				}
 				ArrayAppend( local.QueryArray, local.Row );
 			}
