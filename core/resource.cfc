@@ -35,6 +35,7 @@
 
 	<cffunction name="queryToArray" access="private" returntype="array" output="false">
 		<cfargument name="q" type="query" required="yes" />
+		<cfargument name="cb" type="any" required="no" />
 		<cfscript>
 			var local = {};
 			if (structKeyExists(server, "railo")) {
@@ -49,7 +50,11 @@
 				local.numCols = ArrayLen( local.Columns );
 				for (local.ColumnIndex = 1; local.ColumnIndex <= local.numCols; local.ColumnIndex++){
 					local.ColumnName = local.Columns[ local.ColumnIndex ];
-					local.Row[ local.ColumnName ] = arguments.q[ local.ColumnName ][ local.RowIndex ];
+					if ( isDefined( "cb" ) ) {
+			        	local.Row[ local.ColumnName ] = cb(arguments.q[ local.ColumnName ][ local.RowIndex ]);
+			    	} else {
+			    		local.Row[ local.ColumnName ] = arguments.q[ local.ColumnName ][ local.RowIndex ];
+					};        
 				}
 				ArrayAppend( local.QueryArray, local.Row );
 			}
