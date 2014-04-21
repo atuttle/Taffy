@@ -64,6 +64,7 @@
 
 	<cffunction name="queryToStruct" access="private" returntype="struct" output="false">
 		<cfargument name="q" type="query" required="yes" />
+		<cfargument name="cb" type="any" required="no" />
 		<cfset var local = {} />
 
 		<cfif q.recordcount gt 1>
@@ -83,7 +84,11 @@
 
 			for (local.ColumnIndex = 1; local.ColumnIndex <= local.numCols; local.ColumnIndex++){
 				local.ColumnName = local.Columns[ local.ColumnIndex ];
-				local.QueryStruct[ local.ColumnName ] = arguments.q[ local.ColumnName ][1];
+				if ( isDefined( "cb" ) ) {
+					local.QueryStruct[ local.ColumnName ] = cb(arguments.q[ local.ColumnName ][1]);
+		    	} else {
+					local.QueryStruct[ local.ColumnName ] = arguments.q[ local.ColumnName ][1];
+				};        
 			}
 
 			return( local.QueryStruct );
