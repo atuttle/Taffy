@@ -85,7 +85,7 @@
 			for (local.ColumnIndex = 1; local.ColumnIndex <= local.numCols; local.ColumnIndex++){
 				local.ColumnName = local.Columns[ local.ColumnIndex ];
 				if ( structKeyExists( arguments, "cb" ) ) {
-					local.QueryStruct[ local.ColumnName ] = cb( arguments.q[ local.ColumnName ][1] );
+					local.QueryStruct[ local.ColumnName ] = cb( local.ColumnName, arguments.q[ local.ColumnName ][1] );
 				} else {
 					local.QueryStruct[ local.ColumnName ] = arguments.q[ local.ColumnName ][1];
 				}
