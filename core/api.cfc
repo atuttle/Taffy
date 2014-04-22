@@ -30,7 +30,7 @@
 
 	<!--- Your Application.cfc should override this method AND call super.onRequestStart(targetpath) --->
 	<cffunction name="onRequestStart">
-		<cfargument name="targetPath" />
+		<cfargument name="targetPath" default="" />
 		<cfset var local = structNew() />
 		<cfset request.unhandled = false />
 		<cfset local.reloadedInThisRequest = false />
