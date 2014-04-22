@@ -50,11 +50,11 @@
 				local.numCols = ArrayLen( local.Columns );
 				for (local.ColumnIndex = 1; local.ColumnIndex <= local.numCols; local.ColumnIndex++){
 					local.ColumnName = local.Columns[ local.ColumnIndex ];
-					if ( isDefined( "cb" ) ) {
-			        	local.Row[ local.ColumnName ] = cb(arguments.q[ local.ColumnName ][ local.RowIndex ]);
-			    	} else {
-			    		local.Row[ local.ColumnName ] = arguments.q[ local.ColumnName ][ local.RowIndex ];
-					};        
+					if ( structKeyExists( arguments, "cb" ) ) {
+						local.Row[ local.ColumnName ] = cb( arguments.q[ local.ColumnName ][ local.RowIndex ] );
+					} else {
+						local.Row[ local.ColumnName ] = arguments.q[ local.ColumnName ][ local.RowIndex ];
+					}
 				}
 				ArrayAppend( local.QueryArray, local.Row );
 			}
@@ -84,11 +84,11 @@
 
 			for (local.ColumnIndex = 1; local.ColumnIndex <= local.numCols; local.ColumnIndex++){
 				local.ColumnName = local.Columns[ local.ColumnIndex ];
-				if ( isDefined( "cb" ) ) {
-					local.QueryStruct[ local.ColumnName ] = cb(arguments.q[ local.ColumnName ][1]);
-		    	} else {
+				if ( structKeyExists( arguments, "cb" ) ) {
+					local.QueryStruct[ local.ColumnName ] = cb( arguments.q[ local.ColumnName ][1] );
+				} else {
 					local.QueryStruct[ local.ColumnName ] = arguments.q[ local.ColumnName ][1];
-				};        
+				}
 			}
 
 			return( local.QueryStruct );
