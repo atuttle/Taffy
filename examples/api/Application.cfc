@@ -14,8 +14,8 @@
 			return super.onApplicationStart();
 		}
 
-		function onRequestStart(){
-			return super.onRequestStart();
+		function onRequestStart(TARGETPATH){
+			return super.onRequestStart(TARGETPATH);
 		}
 
 		// this function is called after the request has been parsed and all request details are known
