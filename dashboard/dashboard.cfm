@@ -207,7 +207,7 @@
 									<a href="###local.currentResource.beanName#" class="accordion-toggle" data-toggle="collapse" data-parent="##resourcesAccordion">
 										#local.currentResource.beanName#
 									</a>
-									<cfloop list="DELETE|warning,PUT|warning,POST|danger,GET|primary" index="local.verb">
+									<cfloop list="DELETE|warning,PATCH|warning,PUT|warning,POST|danger,GET|primary" index="local.verb">
 										<cfif structKeyExists(local.currentResource.methods, listFirst(local.verb,'|'))>
 											<span class="verb label label-success">#ucase(listFirst(local.verb,'|'))#</span>
 										<cfelse>
@@ -225,7 +225,7 @@
 											<button class="btn btn-success resetRequest">Reset</button>
 											<button class="btn btn-default showDocs">Show Docs</button>
 											<select class="form-control input-sm reqMethod">
-												<cfloop list="GET,POST,PUT,DELETE" index="local.verb">
+												<cfloop list="GET,POST,PUT,PATCH,DELETE" index="local.verb">
 													<cfif structKeyExists(local.currentResource.methods, local.verb)>
 														<option value="#local.verb#">#local.verb#</option>
 													</cfif>
@@ -288,7 +288,7 @@
 												</cfif>
 												<!--- only save body templates for POST & PUT --->
 												<cfloop from="1" to="#arrayLen(local.functions)#" index="local.f">
-													<cfif local.functions[local.f].name eq "POST" or local.functions[local.f].name eq "PUT">
+													<cfif local.functions[local.f].name eq "POST" or local.functions[local.f].name eq "PUT" or local.functions[local.f].name eq "PATCH">
 														<cfset local.args = {} />
 														<!--- get a list of all function arguments --->
 														<cfloop from="1" to="#arrayLen(local.functions[local.f].parameters)#" index="local.parm">
@@ -338,7 +338,7 @@
 										<cfset local.metadata = getMetaData(application._taffy.factory.getBean(local.currentResource.beanName)) />
 										<cfset local.docData = getHintsFromMetadata(local.metadata) />
 										<cfif structKeyExists(local.docData, 'hint')><div class="doc">#docData.hint#</div><hr/></cfif>
-										<cfset local.found = { get=false, post=false, put=false, delete=false } />
+										<cfset local.found = { get=false, post=false, put=false, patch=false, delete=false } />
 										<cfloop from="1" to="#arrayLen(local.docData.functions)#" index="local.f">
 											<cfset local.func = local.docData.functions[local.f] />
 											<cfset local.found[local.func.name] = true />

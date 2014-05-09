@@ -188,7 +188,7 @@
 		<!--- CORS headers (so that CORS can pass even if the resource throws an exception) --->
 		<cfset local.allowVerbs = uCase(structKeyList(_taffyRequest.matchDetails.methods)) />
 		<cfif application._taffy.settings.allowCrossDomain
-				AND listFindNoCase('PUT,DELETE,OPTIONS',_taffyRequest.verb)
+				AND listFindNoCase('PUT,PATCH,DELETE,OPTIONS',_taffyRequest.verb)
 				AND NOT listFind(local.allowVerbs,'OPTIONS')>
 		    <cfset local.allowVerbs = listAppend(local.allowVerbs,'OPTIONS') />
 		</cfif>
@@ -850,7 +850,7 @@
 				<cfset application._taffy.endpoints[local.metaInfo.uriRegex] = { beanName = local.cachedBeanName, tokens = local.metaInfo.tokens, methods = structNew(), srcURI = local.uri } />
 				<cfif structKeyExists(local.cfcMetadata, "functions")>
 					<cfloop array="#local.cfcMetadata.functions#" index="local.f">
-						<cfif local.f.name eq "get" or local.f.name eq "post" or local.f.name eq "put" or local.f.name eq "delete" or local.f.name eq "head" or local.f.name eq "options">
+						<cfif local.f.name eq "get" or local.f.name eq "post" or local.f.name eq "put" or local.f.name eq "patch" or local.f.name eq "delete" or local.f.name eq "head" or local.f.name eq "options">
 							<cfset application._taffy.endpoints[local.metaInfo.uriRegex].methods[local.f.name] = local.f.name />
 
 						<!--- also support future/misc verbs via metadata --->
