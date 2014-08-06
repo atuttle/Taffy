@@ -10,16 +10,10 @@ It's terse because it uses convention over configuration, and doesn't require wr
 
 It's easy to debug because error messages are returned as JSON by default and it optionally integrates with your favorite IoC libraries like **ColdSpring** and **DI/1**.
 
-## Build Status
-
-[![Taffy Build Status](http://fusiongrokker.com:8080/job/Taffy/badge/icon)](http://fusiongrokker.com:8080/job/Taffy/)
-
-Taffy has a comprehensive test suite and uses continuous integration to ensure that the code is always usable. If you'd like, you can [review the Jenkins build history for Taffy](http://fusiongrokker.com:8080/job/Taffy/).
-
 ## Currently Supported Versions
 
+* Taffy 2.2.x
 * Taffy 2.1.x
-* Taffy 2.0.x
 * Taffy 1.3.x
 
 If you file a bug or ask for support please indicate which version of Taffy you're using. If it's an older release, we usually ask you to upgrade. Officially, we promise to support the current and previous **minor** releases and the last **minor** release of the previous **major** release. Taffy follows versioning guidelines defined in [semver](http://semver.org/).
