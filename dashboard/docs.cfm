@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-	<title>Taffy Dashboard</title>
+	<title><cfoutput>#application._taffy.settings.docs.APIName# Documentation - #application._taffy.settings.docs.APIversion#</cfoutput></title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<style>
 		<cfinclude template="dash.css" />
