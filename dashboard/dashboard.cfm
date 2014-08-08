@@ -15,6 +15,7 @@
 	<div class="container">
 
 		<div class="masthead">
+			<button id="docs" class="btn btn-success" onclick="window.location.href = '<cfoutput>#CGI.SCRIPT_NAME#</cfoutput>?docs'">Documentation</button>
 			<button id="reload" class="btn btn-info">Reload API Cache</button>
 			<button data-toggle="modal" data-target="#config" class="btn btn-default">Config</button>
 			<h1>API Dashboard</h1>

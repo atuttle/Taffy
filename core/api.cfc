@@ -63,13 +63,17 @@
 				AND len(local.path) lte 1
 				AND listFindNoCase(cgi.script_name, "index.cfm", "/") EQ listLen(cgi.script_name, "/")>
 				<cfif NOT application._taffy.settings.disableDashboard>
-					<cfinclude template="../dashboard/dashboard.cfm" />
+					<cfif StructKeyExists( URL, "docs" )>
+						<cfinclude template="../dashboard/docs.cfm" />
+					<cfelse>
+						<cfinclude template="../dashboard/dashboard.cfm" />
+					</cfif>
 					<cfabort />
 				<cfelse>
 					<cfif len(application._taffy.settings.disabledDashboardRedirect)>
 						<cflocation url="#application._taffy.settings.disabledDashboardRedirect#" addtoken="false" />
 						<cfabort />
-					<cfelse>
+					<cfelseif application._taffy.settings.showDocsWhenDashboardDisabled IS False>
 						<cfset throwError(403, "Forbidden") />
 					</cfif>
 				</cfif>
@@ -166,11 +170,18 @@
 			AND len(cgi.path_info) lte 1
 			AND listFindNoCase(cgi.script_name, "index.cfm", "/") EQ listLen(cgi.script_name, "/")>
 			<cfif NOT application._taffy.settings.disableDashboard>
-				<cfinclude template="../dashboard/dashboard.cfm" />
+				<cfif StructKeyExists( URL, "docs" )>
+					<cfinclude template="../dashboard/docs.cfm" />
+				<cfelse>
+					<cfinclude template="../dashboard/dashboard.cfm" />
+				</cfif>
 				<cfabort />
 			<cfelse>
 				<cfif len(application._taffy.settings.disabledDashboardRedirect)>
 					<cflocation url="#application._taffy.settings.disabledDashboardRedirect#" addtoken="false" />
+					<cfabort />
+				<cfelseif application._taffy.settings.showDocsWhenDashboardDisabled>
+					<cfinclude template="../dashboard/docs.cfm" />
 					<cfabort />
 				<cfelse>
 					<cfset throwError(403, "Forbidden") />
@@ -201,7 +212,7 @@
 			<cfelse>
 				<!--- parrot back all of the request headers to allow the request to continue (can we improve on this?) --->
 				<cfset local.allowedHeaders = {} />
-				<cfloop list="Origin,Authorization, X-CSRF-Token,X-Requested-With,Content-Type,X-HTTP-Method-Override,Accept,Referrer,User-Agent" index="local.h">
+				<cfloop list="Origin,Authorization,X-CSRF-Token,X-Requested-With,Content-Type,X-HTTP-Method-Override,Accept,Referrer,User-Agent" index="local.h">
 					<cfset local.allowedHeaders[local.h] = 1 />
 				</cfloop>
 				<cfset local.requestedHeaders = _taffyRequest.headers['Access-Control-Request-Headers'] />
@@ -395,6 +406,9 @@
 		<cfset application._taffy.endpoints = structNew() />
 		<!--- default settings --->
 		<cfset local.defaultConfig = structNew() />
+		<cfset local.defaultConfig.docs = structNew() />
+		<cfset local.defaultConfig.docs.APIName = "Your API Name (variables.framework.docs.APIName)" />
+		<cfset local.defaultConfig.docs.APIVersion = "0.0.0 (variables.framework.docs.APIVersion)" />
 		<cfset local.defaultConfig.defaultMime = "" />
 		<cfset local.defaultConfig.debugKey = "debug" />
 		<cfset local.defaultConfig.reloadKey = "reload" />
@@ -405,6 +419,7 @@
 		<cfset local.defaultConfig.dashboardKey = "dashboard" />
 		<cfset local.defaultConfig.disableDashboard = false />
 		<cfset local.defaultConfig.disabledDashboardRedirect = "" />
+		<cfset local.defaultConfig.showDocsWhenDashboardDisabled = false />
 		<cfset local.defaultConfig.unhandledPaths = "/flex2gateway" />
 		<cfset local.defaultConfig.allowCrossDomain = false />
 		<cfset local.defaultConfig.useEtags = false />
