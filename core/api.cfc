@@ -418,7 +418,6 @@
 		<cfset local.defaultConfig.reloadOnEveryRequest = false />
 		<cfset local.defaultConfig.endpointURLParam = 'endpoint' />
 		<cfset local.defaultConfig.representationClass = "taffy.core.nativeJsonRepresentation" />
-		<cfset local.defaultConfig.dashboardKey = "dashboard" />
 		<cfset local.defaultConfig.disableDashboard = false />
 		<cfset local.defaultConfig.disabledDashboardRedirect = "" />
 		<cfset local.defaultConfig.showDocsWhenDashboardDisabled = false />
