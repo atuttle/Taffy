@@ -1098,13 +1098,22 @@
 		<cfset application._taffy.settings.mimeTypes[arguments.mimeType] = arguments.extension />
 	</cffunction>
 
-	<cffunction name="newRepresentation" access="public" output="false">
+	<cffunction name="newRepresentation" access="public" output="false" hint="deprecated-2.4">
 		<cfset var repClass = application._taffy.settings.representationClass />
 		<cfif application._taffy.factory.containsBean(repClass)>
 			<cfreturn application._taffy.factory.getBean(repClass) />
 		<cfelse>
 			<cfreturn createObject("component", repClass) />
 		</cfif>
+	</cffunction>
+
+	<cffunction name="noData" access="public" output="false">
+		<cfreturn newRepresentation().noData() />
+	</cffunction>
+
+	<cffunction name="representationOf" access="public" output="false">
+		<cfargument name="data" required="true" />
+		<cfreturn newRepresentation().representationOf( arguments.data ) />
 	</cffunction>
 
 	<cffunction name="getGlobalHeaders" access="private" output="false" returntype="Struct">
