@@ -1099,7 +1099,7 @@
 		<cfset application._taffy.settings.mimeTypes[arguments.mimeType] = arguments.extension />
 	</cffunction>
 
-	<cffunction name="newRepresentation" access="public" output="false" hint="deprecated-2.4">
+	<cffunction name="newRepresentation" access="private" output="false" hint="private as of 3.0">
 		<cfset var repClass = application._taffy.settings.serializer />
 		<cfif application._taffy.factory.containsBean(repClass)>
 			<cfreturn application._taffy.factory.getBean(repClass) />
