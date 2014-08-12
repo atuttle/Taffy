@@ -15,6 +15,7 @@
 		<cfargument name="mimeExt" />
 		<cfargument name="headers" />
 		<cfargument name="methodMetadata" />
+		<cfargument name="matchedURI" />
 		<cfreturn true />
 	</cffunction>
 
@@ -239,6 +240,7 @@
 			,_taffyRequest.returnMimeExt
 			,_taffyRequest.headers
 			,_taffyRequest.methodMetadata
+			,local.parsed.matchDetails.srcUri
 		) />
 		<cfset m.afterOnTaffyRequest = getTickCount() />
 		<cfset m.otrTime = m.afterOnTaffyRequest - m.beforeOnTaffyRequest />
