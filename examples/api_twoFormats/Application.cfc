@@ -4,7 +4,7 @@
 		this.name = hash(getCurrentTemplatePath());
 
 		variables.framework = {};
-		variables.framework.representationClass = "resources.CustomRepresentationClass";
+		variables.framework.serializer = "resources.CustomSerializer";
 
 		function onApplicationStart(){
 			application.JsonUtil = createObject("component", "resources.JSONUtil.JSONUtil");

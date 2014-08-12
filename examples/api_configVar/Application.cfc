@@ -8,7 +8,7 @@
 		variables.framework.debugKey = "debug";
 		variables.framework.reloadKey = "reload";
 		variables.framework.reloadPassword = "true";
-		variables.framework.representationClass = "taffy.core.nativeJsonRepresentation";
+		variables.framework.serializer = "taffy.core.nativeJsonSerializer";
 		variables.framework.dashboardKey = "dashboard";
 		variables.framework.disableDashboard = false;
 		variables.framework.unhandledPaths = "/flex2gateway";
@@ -24,7 +24,7 @@
 				debugKey = "debug",
 				reloadKey = "reload",
 				reloadPassword = "true",
-				representationClass = "taffy.core.nativeJsonRepresentation",
+				serializer = "taffy.core.nativeJsonSerializer",
 				dashboardKey = "dashboard",
 				disableDashboard = false,
 				unhandledPaths = "/flex2gateway",

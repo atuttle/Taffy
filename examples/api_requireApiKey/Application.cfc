@@ -8,7 +8,7 @@
 
 			if(not structKeyExists(arguments.requestArguments, "apiKey")){
 				//unauthorized because they haven't included their API key
-				return newRepresentation().noData().withStatus(401);
+				return noData().withStatus(401);
 			}
 
 			//api key found

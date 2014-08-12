@@ -16,7 +16,7 @@
 
 			//require some api key
 			if (!structKeyExists(requestArguments, "apiKey")){
-				return newRepresentation().noData().withStatus(401, "API Key Required");
+				return noData().withStatus(401, "API Key Required");
 			}
 
 			//check usage
@@ -25,7 +25,7 @@
 				logAccess(requestArguments.apiKey);
 				return true;
 			}else{
-				return newRepresentation().noData().withStatus(420, "Enhance your calm");
+				return noData().withStatus(420, "Enhance your calm");
 			}
 
 			return true;

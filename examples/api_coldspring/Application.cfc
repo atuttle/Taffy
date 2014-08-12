@@ -7,7 +7,7 @@
 		variables.framework.debugKey = "debug";
 		variables.framework.reloadKey = "reload";
 		variables.framework.reloadPassword = "true";
-		variables.framework.representationClass = "taffy.core.nativeJsonRepresentation";
+		variables.framework.serializer = "taffy.core.nativeJsonSerializer";
 
 		function onApplicationStart(){
 			application.beanFactory = createObject("component", "coldspring.beans.DefaultXMLBeanFactory");
