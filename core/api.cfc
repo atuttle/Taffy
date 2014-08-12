@@ -6,7 +6,7 @@
 	<!---
 		onTaffyRequest gives you the opportunity to inspect the request before it is sent to the service.
 		If you override this function, you MUST either return TRUE or a representation object
-		(eg either taffy.core.nativeJsonRepresentation or your default representation class)
+		(eg either taffy.core.nativeJsonSerializer or your default representation class)
 	--->
 	<cffunction name="onTaffyRequest" output="false">
 		<cfargument name="verb" />
@@ -417,7 +417,7 @@
 		<cfset local.defaultConfig.reloadPassword = "true" />
 		<cfset local.defaultConfig.reloadOnEveryRequest = false />
 		<cfset local.defaultConfig.endpointURLParam = 'endpoint' />
-		<cfset local.defaultConfig.representationClass = "taffy.core.nativeJsonRepresentation" />
+		<cfset local.defaultConfig.serializer = "taffy.core.nativeJsonSerializer" />
 		<cfset local.defaultConfig.disableDashboard = false />
 		<cfset local.defaultConfig.disabledDashboardRedirect = "" />
 		<cfset local.defaultConfig.showDocsWhenDashboardDisabled = false />
@@ -486,7 +486,7 @@
 			<!--- sort URIs --->
 			<cfset sortURIMatchOrder() />
 			<!--- automatically introspect mime types from cfc metadata of default representation class --->
-			<cfset inspectMimeTypes(application._taffy.settings.representationClass) />
+			<cfset inspectMimeTypes(application._taffy.settings.serializer) />
 			<!--- check to make sure a default mime type is set --->
 			<cfif application._taffy.settings.defaultMime eq "">
 				<cfset throwError(400, "You have not specified a default mime type!") />
@@ -1100,7 +1100,7 @@
 	</cffunction>
 
 	<cffunction name="newRepresentation" access="public" output="false" hint="deprecated-2.4">
-		<cfset var repClass = application._taffy.settings.representationClass />
+		<cfset var repClass = application._taffy.settings.serializer />
 		<cfif application._taffy.factory.containsBean(repClass)>
 			<cfreturn application._taffy.factory.getBean(repClass) />
 		<cfelse>

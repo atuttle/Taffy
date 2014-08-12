@@ -1,4 +1,4 @@
-<cfcomponent extends="taffy.core.baseRepresentation" output="false" hint="Representation class that uses CFML server's json serialization functionality to return json data">
+<cfcomponent extends="taffy.core.baseSerializer" output="false" hint="Serializer that uses CFML server's json serialization functionality to return json data">
 
 	<cffunction
 		name="getAsJson"
