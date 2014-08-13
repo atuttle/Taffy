@@ -7,12 +7,12 @@
 		}
 
 		function representationOf_returns_repClass(){
-			application._taffy.settings.representationClass = "taffy.core.nativeJsonRepresentation";
+			application._taffy.settings.serializer = "taffy.core.nativeJsonSerializer";
 			makePublic(variables.resource, "representationOf");
 			local.result = variables.resource.representationOf(10);
 			local.meta = getMetadata(local.result);
 			debug(local.meta);
-			assertEquals(true, eventuallyInherits(local.meta, 'taffy.core.baseRepresentation'));
+			assertEquals(true, eventuallyInherits(local.meta, 'taffy.core.baseSerializer'));
 		}
 
 		function queryToArray_respects_column_case(){

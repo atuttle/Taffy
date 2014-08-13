@@ -418,6 +418,7 @@
 		<cfset local.defaultConfig.reloadOnEveryRequest = false />
 		<cfset local.defaultConfig.endpointURLParam = 'endpoint' />
 		<cfset local.defaultConfig.serializer = "taffy.core.nativeJsonSerializer" />
+		<cfset local.defaultConfig.deserializer = "taffy.core.nativeJsonDeserializer" />
 		<cfset local.defaultConfig.disableDashboard = false />
 		<cfset local.defaultConfig.disabledDashboardRedirect = "" />
 		<cfset local.defaultConfig.showDocsWhenDashboardDisabled = false />
@@ -492,6 +493,8 @@
 				<cfset throwError(400, "You have not specified a default mime type!") />
 			</cfif>
 		</cfif>
+		<!--- inspect the deserializer to find out what contentTypes are supported --->
+		<cfset application._taffy.contentTypes = getSupportedContentTypes( application._taffy.settings.deserializer ) />
 	</cffunction>
 
 	<cffunction name="parseRequest" access="private" output="false" returnType="struct">
@@ -544,37 +547,19 @@
 		<cfset requestObj.body = getRequestBody() />
 		<cfset requestObj.contentType = cgi.content_type />
 		<cfif len(requestObj.body)>
-			<cfif findNoCase("application/x-www-form-urlencoded", requestObj.contentType)>
-				<cfif not find('=', requestObj.body)>
-					<cfset throwError(400, "You've indicated that you're sending form-encoded data but it doesn't appear to be valid. Aborting request.") />
-				</cfif>
-				<!--- url-encoded body --->
-				<cfset requestObj.queryString = requestObj.body />
-			<cfelseif findNoCase("application/json", requestObj.contentType) or findNoCase("text/json", requestObj.contentType)>
-				<!--- json-encoded body --->
-				<cfif not isJson(requestObj.body)>
-					<cfset throwError(msg="Input JSON is not well formed: #requestObj.body#") />
-				</cfif>
-				<cfset local.tmp = deserializeJSON(requestObj.body) />
-				<cfif not isStruct(local.tmp)>
-					<cfset requestObj.bodyArgs = {} />
-					<cfset requestObj.bodyArgs['_body'] = local.tmp />
-				<cfelse>
-					<cfif structKeyExists(local.tmp, "data")>
-						<cfset requestObj.bodyArgs = local.tmp.data />
-					<cfelse>
-						<cfset requestObj.bodyArgs = local.tmp />
-					</cfif>
-				</cfif>
-				<cfset requestObj.queryString = cgi.query_string />
-			<cfelseif findNoCase("multipart/form-data", requestObj.contentType)>
+			<cfif findNoCase("multipart/form-data", requestObj.contentType)>
 				<!--- do nothing, to support the way railo handles multipart requests (just avoids the error condition below) --->
 				<cfset requestObj.queryString = cgi.query_string />
 			<cfelse>
-				<cfif isJson(requestObj.body)>
-					<cfset throwError(400, "Looks like you're sending JSON data, but you haven't specified a content type. Aborting request.") />
+				<cfif contentTypeIsSupported(requestObj.contentType)>
+					<cfset requestObj.bodyArgs = getDeserialized(requestObj.body, requestObj.contentType) />
+					<cfset requestObj.queryString = cgi.query_string />
 				<cfelse>
-					<cfset throwError(400, "You must specify a content-type. Aborting request.") />
+					<cfif isJson(requestObj.body)>
+						<cfset throwError(400, "Looks like you're sending JSON data, but you haven't specified a content type. Aborting request.") />
+					<cfelse>
+						<cfset throwError(400, "You must specify a content-type. Aborting request.") />
+					</cfif>
 				</cfif>
 			</cfif>
 		<cfelse>
@@ -743,6 +728,63 @@
 			<cfset body = charsetEncode(body, "UTF-8") />
 		</cfif>
 		<cfreturn body />
+	</cffunction>
+
+	<cffunction name="contentTypeIsSupported" access="private" output="false">
+		<cfargument name="contentType" type="string" />
+		<cfset var ct = listFirst(arguments.contentType, ";") />
+		<cfreturn structKeyExists(application._taffy.contentTypes, ct) />
+	</cffunction>
+
+	<cffunction name="getDeserialized" access="private" output="false">
+		<cfargument name="body" required="true" />
+		<cfargument name="contentType" required="true" />
+		<cfset var ct = listFirst(arguments.contentType,';') />
+		<cfset var fn = application._taffy.contentTypes[ct] />
+		<cfset var args = {} />
+		<cfset args.body = arguments.body />
+		<cfset result = {} />
+		<cfinvoke
+			component="#application._taffy.settings.deserializer#"
+			method="#fn#"
+			argumentcollection="#args#"
+			returnvariable="result"
+		/>
+		<cfreturn result />
+	</cffunction>
+
+	<cffunction name="getSupportedContentTypes" access="private" output="false">
+		<cfargument name="deserializer" hint="must be the full dot-notation path to the component" />
+		<cfreturn _recurse_getSupportedContentTypes(getComponentMetadata(arguments.deserializer)) />
+	</cffunction>
+
+	<cffunction name="_recurse_getSupportedContentTypes" access="private" output="false">
+		<cfargument name="objMetaData" />
+		<cfset var local = StructNew() />
+		<cfset local.response = {} />
+		<!--- recurse into parents first so that children override parents --->
+		<cfif structKeyExists(arguments.objMetaData, "extends")>
+			<cfset local.response = _recurse_getSupportedContentTypes(arguments.objMetaData.extends) />
+		</cfif>
+		<!--- then handle child settings --->
+		<cfif structKeyExists(arguments.objMetaData, "functions") and isArray(arguments.objMetaData.functions)>
+			<cfset local.funcs = arguments.objMetaData.functions />
+			<cfloop from="1" to="#arrayLen(local.funcs)#" index="local.f">
+				<!--- for every function whose name starts with "getFrom" *and* has a taffy_mime metadata attribute, count it --->
+				<cfset local.mime = '' />
+				<cfif structKeyExists(local.funcs[local.f], "taffy_mime")>
+					<cfset local.mime = local.funcs[local.f].taffy_mime />
+				<cfelseif structKeyExists(local.funcs[local.f], "taffy:mime")>
+					<cfset local.mime = local.funcs[local.f]["taffy:mime"] />
+				</cfif>
+				<cfif ucase(left(local.funcs[local.f].name, 7)) eq "GETFROM" and len(local.mime)>
+					<cfloop list="#local.mime#" delimiters=",;" index="local.m">
+						<cfset response[local.m] = local.funcs[local.f].name />
+					</cfloop>
+				</cfif>
+			</cfloop>
+		</cfif>
+		<cfreturn local.response />
 	</cffunction>
 
 	<cffunction name="buildRequestArguments" access="private" output="false" returnType="struct">

@@ -25,8 +25,8 @@
 			variables.factory.loadBeansFromPath( expandPath('/taffy/tests/resources'), 'taffy.tests.resources', expandPath('/taffy/tests/resources'), true );
 			local.bean = variables.factory.getBean( 'EchoMember' );
 			debug(local.bean);
-			assertTrue( structKeyExists(local.bean, "customJsonRepresentation") );
-			assertFalse( isSimpleValue(local.bean.customJsonRepresentation) );
+			assertTrue( structKeyExists(local.bean, "customJsonSerializer") );
+			assertFalse( isSimpleValue(local.bean.customJsonSerializer) );
 		}
 
 		function autowires_setters(){

@@ -104,7 +104,7 @@
 		<cfargument name="repClass" type="string" default="" />
 		<cfif repClass eq "">
 			<!--- recursion not the most efficient path here, but it's damn readable --->
-			<cfreturn getRepInstance(application._taffy.settings.representationClass) />
+			<cfreturn getRepInstance(application._taffy.settings.serializer) />
 		<cfelseif application._taffy.factory.containsBean(arguments.repClass)>
 			<cfreturn application._taffy.factory.getBean(arguments.repClass) />
 		<cfelse>

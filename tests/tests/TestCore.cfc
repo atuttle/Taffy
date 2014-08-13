@@ -25,7 +25,7 @@
 			makePublic(variables.taffy, "mimeSupported");
 			makePublic(variables.taffy, "inspectMimeTypes");
 			debug(variables.taffy);
-			variables.taffy.inspectMimeTypes('taffy.core.nativeJsonRepresentation');
+			variables.taffy.inspectMimeTypes('taffy.core.nativeJsonSerializer');
 			assertTrue(taffy.mimeSupported("json"), "When given a mime type that should be supported, Taffy reported that it was not.");
 		}
 
@@ -67,6 +67,26 @@
 			local.result = apiCall("get", "/echo/1.json", "");
 			debug(local.result);
 			assertTrue(structKeyExists(local.result.responseHeader, "x-foo-globalheader"), "Expected response header `x-foo-globalheader` but it was not included.");
+		}
+
+		function deserializer_inspection_finds_all_content_types(){
+			makePublic(variables.taffy, "getSupportedContentTypes");
+			local.result = variables.taffy.getSupportedContentTypes("taffy.core.baseDeserializer");
+			debug(local.result);
+			assertTrue(structKeyExists(local.result, "application/x-www-form-urlencoded"));
+			local.result = variables.taffy.getSupportedContentTypes("taffy.core.nativeJsonDeserializer");
+			debug(local.result);
+			assertTrue(structKeyExists(local.result, "application/json"));
+			assertTrue(structKeyExists(local.result, "text/json"));
+			assertTrue(structKeyExists(local.result, "application/x-www-form-urlencoded"));
+		}
+
+		function deserializer_support_detection_works(){
+			makePublic(variables.taffy, "contentTypeIsSupported");
+			debug(application._taffy.contentTypes);
+			assertTrue(variables.taffy.contentTypeIsSupported("application/json"));
+			assertTrue(variables.taffy.contentTypeIsSupported("application/json;v=1"));
+			assertFalse(variables.taffy.contentTypeIsSupported("application/does-not-exist"));
 		}
 
 		function uri_regexes_are_correct(){
@@ -166,27 +186,27 @@
 		}
 
 		function properly_decodes_json_put_request_body(){
-			local.result = apiCall("put", "/echo/99.json", '{"data":{"foo":"bar"}}');
+			local.result = apiCall("put", "/echo/99.json", '{"foo":"bar"}');
 			debug(local.result);
 			if (!isJson(local.result.fileContent)){
 				fail("Result was not JSON");
 				return;
 			}
 			local.result = deserializeJSON(local.result.fileContent);
+			debug(local.result);
 			assertTrue(structKeyExists(local.result, "foo") && local.result.foo == "bar", "Missing or incorrect value for key `foo`.");
-			assertFalse(structKeyExists(local.result, "data"), "DATA element was not supposed to be included in arguments, but was included.");
 		}
 
 		function properly_decodes_json_post_request_body(){
-			local.result = apiCall("post", "/echo/99.json", '{"data":{"foo":"bar"}}');
+			local.result = apiCall("post", "/echo/99.json", '{"foo":"bar"}');
 			debug(local.result);
 			if (!isJson(local.result.fileContent)){
 				fail("Result was not JSON");
 				return;
 			}
 			local.result = deserializeJSON(local.result.fileContent);
+			debug(local.result);
 			assertTrue(structKeyExists(local.result, "foo") && local.result.foo == "bar", "Missing or incorrect value for key `foo`.");
-			assertFalse(structKeyExists(local.result, "data"), "DATA element was not supposed to be included in arguments, but was included.");
 		}
 
 		function returns_error_when_default_mime_not_implemented(){
