@@ -1137,8 +1137,12 @@
 	<cffunction name="registerMimeType" access="private" output="false" returntype="void" hint="deprecated-1.1">
 		<cfargument name="extension" type="string" required="true" hint="ex: json" />
 		<cfargument name="mimeType" type="string" required="true" hint="ex: text/json" />
-		<cfset application._taffy.settings.mimeExtensions[arguments.extension] = arguments.mimeType />
-		<cfset application._taffy.settings.mimeTypes[arguments.mimeType] = arguments.extension />
+		<cfset var mime = "" />
+		<cfparam name="application._taffy.settings.mimeExtensions" default="#{}#" />
+		<cfloop list="#arguments.mimeType#" delimiters=",;" index="mime">
+			<cfparam name="application._taffy.settings.mimeExtensions['#arguments.extension#']" default="#mime#" />
+			<cfset application._taffy.settings.mimeTypes[mime] = arguments.extension />
+		</cfloop>
 	</cffunction>
 
 	<cffunction name="newRepresentation" access="private" output="false" hint="private as of 3.0">

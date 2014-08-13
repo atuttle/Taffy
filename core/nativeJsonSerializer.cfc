@@ -3,7 +3,7 @@
 	<cffunction
 		name="getAsJson"
 		output="false"
-		taffy:mime="application/json"
+		taffy:mime="application/json;text/json"
 		taffy:default="true"
 		hint="serializes data as JSON">
 			<cfreturn serializeJSON(variables.data) />

@@ -24,9 +24,10 @@
 		function properly_notifies_implemented_mimes(){
 			makePublic(variables.taffy, "mimeSupported");
 			makePublic(variables.taffy, "inspectMimeTypes");
-			debug(variables.taffy);
 			variables.taffy.inspectMimeTypes('taffy.core.nativeJsonSerializer');
-			assertTrue(taffy.mimeSupported("json"), "When given a mime type that should be supported, Taffy reported that it was not.");
+			assertTrue(taffy.mimeSupported("json"));
+			assertTrue(taffy.mimeSupported("text/json"));
+			assertTrue(taffy.mimeSupported("application/json"));
 		}
 
 		function returns_etag_header(){
