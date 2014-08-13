@@ -19,6 +19,19 @@
 		<cfreturn true />
 	</cffunction>
 
+	<!--- override these functions to implement caching hooks --->
+	<cffunction name="validCacheExists" output="false">
+		<cfargument name="cacheKey" />
+		<cfreturn false />
+	</cffunction>
+	<cffunction name="setCachedResponse" output="false">
+		<cfargument name="cacheKey" />
+		<cfargument name="data" />
+	</cffunction>
+	<cffunction name="getCachedResponse" output="false">
+		<cfargument name="cacheKey" />
+	</cffunction>
+
 	<!--- Your Application.cfc should override this method AND call super.onApplicationStart() --->
 	<cffunction name="onApplicationStart">
 		<cfset var before = getTickCount() />
@@ -263,16 +276,30 @@
 			<!--- inspection complete and request allowed by developer; send request to service --->
 
 			<cfif structKeyExists(_taffyRequest.matchDetails.methods, _taffyRequest.verb)>
-				<!--- returns a representation-object --->
-				<cfset m.beforeResource = getTickCount() />
-				<cfinvoke
-					component="#application._taffy.factory.getBean(_taffyRequest.matchDetails.beanName)#"
-					method="#_taffyRequest.method#"
-					argumentcollection="#_taffyRequest.requestArguments#"
-					returnvariable="_taffyRequest.result"
-				/>
-				<cfset m.afterResource = getTickCount() />
-				<cfset m.resourceTime = m.afterResource - m.beforeResource />
+				<!--- check the cache before we call the resource --->
+				<cfset m.cacheCheckTime = getTickCount() />
+				<cfset local.cacheKey = local.parsed.uri & "_" & _taffyRequest.requestArguments.hashCode() />
+				<cfif validCacheExists(local.cacheKey)>
+					<cfset m.cacheCheckTime = getTickCount() - m.cacheCheckTime />
+					<cfset m.cacheGetTime = getTickCount() />
+					<cfset _taffyRequest.result = getCachedResponse(local.cacheKey) />
+					<cfset m.cacheGetTime = m.cacheGetTime - getTickCount() />
+				<cfelse>
+					<cfset m.cacheCheckTime = getTickCount() - m.cacheCheckTime />
+					<!--- returns a representation-object --->
+					<cfset m.beforeResource = getTickCount() />
+					<cfinvoke
+						component="#application._taffy.factory.getBean(_taffyRequest.matchDetails.beanName)#"
+						method="#_taffyRequest.method#"
+						argumentcollection="#_taffyRequest.requestArguments#"
+						returnvariable="_taffyRequest.result"
+					/>
+					<cfset m.afterResource = getTickCount() />
+					<cfset m.resourceTime = m.afterResource - m.beforeResource />
+					<cfset m.cacheSaveStart = getTickCount() />
+					<cfset setCachedResponse(local.cacheKey, _taffyRequest.result) />
+					<cfset m.cacheSaveTime = getTickCount() - m.cacheSaveStart />
+				</cfif>
 			<cfelseif NOT listFind(local.allowVerbs,_taffyRequest.verb)>
 				<!--- if the verb is not implemented, refuse the request --->
 				<cfheader name="ALLOW" value="#local.allowVerbs#" />
@@ -316,9 +343,16 @@
 
 		<!--- metrics headers that should always apply --->
 		<cfheader name="X-TIME-IN-PARSE" value="#m.parseTime#" />
+		<cfheader name="X-TIME-IN-CACHE-CHECK" value="#m.cacheCheckTime#" />
 		<cfheader name="X-TIME-IN-ONTAFFYREQUEST" value="#m.otrTime#" />
 		<cfif structKeyExists(m, "resourceTime")>
 			<cfheader name="X-TIME-IN-RESOURCE" value="#m.resourceTime#" />
+		</cfif>
+		<cfif structKeyExists(m, "cacheGetTime")>
+			<cfheader name="X-TIME-IN-CACHE-GET" value="#m.cacheSaveTime#" />
+		</cfif>
+		<cfif structKeyExists(m, "cacheSaveTime")>
+			<cfheader name="X-TIME-IN-CACHE-SAVE" value="#m.cacheSaveTime#" />
 		</cfif>
 
 		<!--- result data --->
