@@ -429,7 +429,7 @@
 		<cfset local.defaultConfig.globalHeaders = structNew() />
 		<cfset local.defaultConfig.mimeTypes = structNew() />
 		<cfset local.defaultConfig.returnExceptionsAsJson = true />
-		<cfset local.defaultConfig.exceptionLogAdapter = "taffy.bonus.LogToScreen" />
+		<cfset local.defaultConfig.exceptionLogAdapter = "taffy.bonus.LogToDevNull" />
 		<cfset local.defaultConfig.exceptionLogAdapterConfig = StructNew() />
 		<!--- status --->
 		<cfset application._taffy.status = structNew() />
