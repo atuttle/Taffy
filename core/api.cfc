@@ -297,7 +297,7 @@
 					<cfset m.afterResource = getTickCount() />
 					<cfset m.resourceTime = m.afterResource - m.beforeResource />
 					<cfset m.cacheSaveStart = getTickCount() />
-					<cfset setCachedResponse(local.cacheKey, _taffyRequest.result) />
+					<cfset setCachedResponse(local.cacheKey, _taffyRequest.result.getData()) />
 					<cfset m.cacheSaveTime = getTickCount() - m.cacheSaveStart />
 				</cfif>
 			<cfelseif NOT listFind(local.allowVerbs,_taffyRequest.verb)>
