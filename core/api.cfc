@@ -443,9 +443,9 @@
 		<cfset var local = structNew() />
 		<cfparam name="variables.framework" default="#structNew()#" />
 		<cfheader name="X-TAFFY-RELOADED" value="true" />
-		<cfset application._taffy = structNew() />
-		<cfset application._taffy.version = "3.0.0-alpha" />
-		<cfset application._taffy.endpoints = structNew() />
+		<cfset local._taffy = structNew() />
+		<cfset local._taffy.version = "3.0.0-alpha" />
+		<cfset local._taffy.endpoints = structNew() />
 		<!--- default settings --->
 		<cfset local.defaultConfig = structNew() />
 		<cfset local.defaultConfig.docs = structNew() />
@@ -472,69 +472,78 @@
 		<cfset local.defaultConfig.exceptionLogAdapter = "taffy.bonus.LogToDevNull" />
 		<cfset local.defaultConfig.exceptionLogAdapterConfig = StructNew() />
 		<!--- status --->
-		<cfset application._taffy.status = structNew() />
-		<cfset application._taffy.status.internalBeanFactoryUsed = false />
-		<cfset application._taffy.status.externalBeanFactoryUsed = false />
-		<cfset application._taffy.uriMatchOrder = [] />
+		<cfset local._taffy.status = structNew() />
+		<cfset local._taffy.status.internalBeanFactoryUsed = false />
+		<cfset local._taffy.status.externalBeanFactoryUsed = false />
+		<cfset local._taffy.uriMatchOrder = [] />
 		<!--- allow setting overrides --->
-		<cfset application._taffy.settings = structNew() />
-		<cfset structAppend(application._taffy.settings, local.defaultConfig, true) /><!--- initialize to default values --->
-		<cfset structAppend(application._taffy.settings, variables.framework, true) /><!--- update with user values --->
-		<cfif structKeyExists(variables.framework, "beanFactory")>
-			<cfset setBeanFactory(variables.framework.beanFactory) />
-		</cfif>
+		<cfset local._taffy.settings = structNew() />
+		<cfset structAppend(local._taffy.settings, local.defaultConfig, true) /><!--- initialize to default values --->
+		<cfset structAppend(local._taffy.settings, variables.framework, true) /><!--- update with user values --->
 		<!--- allow environment-specific config --->
 		<cfset local.env = getEnvironment() />
 		<cfif len(local.env) gt 0>
 			<cfparam name="variables.framework" default="#structNew()#" />
 			<cfparam name="variables.framework.environments" default="#structNew()#" />
 			<cfif structKeyExists(variables.framework.environments, local.env) and isStruct(variables.framework.environments[local.env])>
-				<cfset structAppend(application._taffy.settings, variables.framework.environments[local.env]) />
+				<cfset structAppend(local._taffy.settings, variables.framework.environments[local.env]) />
+			</cfif>
+		</cfif>
+		<!--- bean factory definition --->
+		<cfif structKeyExists(variables.framework, "beanFactory")>
+			<cfif isSimpleValue(variables.framework.beanFactory) and len(variables.framework.beanFactory) eq 0>
+				<!--- if the BF value is "" doing nothing with it --->
+			<cfelse>
+				<cfset local._taffy.externalBeanFactory = arguments.beanFactory />
+				<cfset local._taffy.status.externalBeanFactoryUsed = true />
 			</cfif>
 		</cfif>
 		<!--- translate unhandledPaths config to regex for easier matching (This is ripped off from FW/1. Thanks, Sean!) --->
-		<cfset application._taffy.settings.unhandledPathsRegex = replaceNoCase(
-			REReplace(application._taffy.settings.unhandledPaths, '(\+|\*|\?|\.|\[|\^|\$|\(|\)|\{|\||\\)', '\\\1', 'all' ),
+		<cfset local._taffy.settings.unhandledPathsRegex = replaceNoCase(
+			REReplace(local._taffy.settings.unhandledPaths, '(\+|\*|\?|\.|\[|\^|\$|\(|\)|\{|\||\\)', '\\\1', 'all' ),
 			',', '|', 'all' )
 		/>
 		<!--- if resources folder exists, use internal bean factory --->
-		<cfset _taffyRequest.resourcePath = guessResourcesFullPath() />
+		<cfset local.resourcePath = guessResourcesFullPath() />
 		<cfset local.noResources = false />
-		<cfif directoryExists(_taffyRequest.resourcePath)>
+		<cfif directoryExists(local.resourcePath)>
 			<!--- setup internal bean factory --->
-			<cfset application._taffy.factory = createObject("component", "taffy.core.factory").init() />
-			<cfset application._taffy.factory.loadBeansFromPath(_taffyRequest.resourcePath, guessResourcesCFCPath(), guessResourcesFullPath(), true) />
-			<cfset application._taffy.beanList = application._taffy.factory.getBeanList() />
-			<cfset cacheBeanMetaData(application._taffy.factory, application._taffy.beanList) />
-			<cfset application._taffy.status.internalBeanFactoryUsed = true />
+			<cfset local._taffy.factory = createObject("component", "taffy.core.factory").init() />
+			<cfset local._taffy.factory.loadBeansFromPath(local.resourcePath, guessResourcesCFCPath(), guessResourcesFullPath(), true) />
+			<cfset local._taffy.beanList = local._taffy.factory.getBeanList() />
+			<cfset local._taffy.endpoints = cacheBeanMetaData(local._taffy.factory, local._taffy.beanList) />
+			<cfset local._taffy.status.internalBeanFactoryUsed = true />
 			<!---
 				if both an external bean factory and the internal factory are in use (because of /resources folder),
 				resolve dependencies for each bean of internal factory with the external factory's resources
 			--->
-			<cfif application._taffy.status.externalBeanFactoryUsed>
-				<cfset resolveDependencies() />
+			<cfif local._taffy.status.externalBeanFactoryUsed>
+				<cfset resolveDependencies(local._taffy.endpoints, local._taffy.factory, local._taffy.externalBeanFactory) />
 			</cfif>
-		<cfelseif application._taffy.status.externalBeanFactoryUsed>
+		<cfelseif local._taffy.status.externalBeanFactoryUsed>
 			<!--- only using external factory, so create a pointer to it --->
-			<cfset application._taffy.factory = application._taffy.externalBeanFactory />
+			<cfset local._taffy.factory = local._taffy.externalBeanFactory />
 			<!--- since external factory is only factory, check it for taffy resources --->
 			<cfset local.beanList = getBeanListFromExternalFactory() />
-			<cfset cacheBeanMetaData(application._taffy.externalBeanFactory, local.beanList) />
+			<cfset local._taffy.endpoints = cacheBeanMetaData(local._taffy.externalBeanFactory, local.beanList) />
  		<cfelse>
  			<cfset local.noResources = true />
 		</cfif>
 		<cfif not local.noResources>
 			<!--- sort URIs --->
-			<cfset sortURIMatchOrder() />
+			<cfset local._taffy.URIMatchOrder = sortURIMatchOrder(local._taffy.endpoints) />
 			<!--- automatically introspect mime types from cfc metadata of default representation class --->
-			<cfset inspectMimeTypes(application._taffy.settings.serializer) />
+			<cfset local.mimetypes = inspectMimeTypes(local._taffy.settings.serializer, local._taffy.factory) />
+			<cfset structAppend(local._taffy.settings, local.mimeTypes) />
 			<!--- check to make sure a default mime type is set --->
-			<cfif application._taffy.settings.defaultMime eq "">
+			<cfif local._taffy.settings.defaultMime eq "">
 				<cfset throwError(400, "You have not specified a default mime type!") />
 			</cfif>
 		</cfif>
 		<!--- inspect the deserializer to find out what contentTypes are supported --->
-		<cfset application._taffy.contentTypes = getSupportedContentTypes( application._taffy.settings.deserializer ) />
+		<cfset local._taffy.contentTypes = getSupportedContentTypes(local._taffy.settings.deserializer) />
+		<!--- hot-swap! --->
+		<cfset application._taffy = local._taffy />
 	</cffunction>
 
 	<cffunction name="parseRequest" access="private" output="false" returnType="struct">
@@ -741,8 +750,10 @@
 	</cffunction>
 
 	<cffunction name="sortURIMatchOrder" access="private" output="false">
-		<cfset application._taffy.URIMatchOrder = listToArray( structKeyList(application._taffy.endpoints, chr(10)), chr(10) ) />
-		<cfset arraySort(application._taffy.URIMatchOrder, "text", "desc") />
+		<cfargument name="endpoints" />
+		<cfset var URIMatchOrder = listToArray( structKeyList(arguments.endpoints, chr(10)), chr(10) ) />
+		<cfset arraySort(URIMatchOrder, "text", "desc") />
+		<cfreturn URIMatchOrder />
 	</cffunction>
 
 	<cffunction name="matchURI" access="private" output="false" returnType="string">
@@ -913,10 +924,11 @@
 		<cfabort />
 	</cffunction>
 
-	<cffunction name="cacheBeanMetaData" access="private" output="false" returnType="void">
+	<cffunction name="cacheBeanMetaData" access="private" output="false">
 		<cfargument name="factory" required="true" />
 		<cfargument name="beanList" type="string" required="true" />
 		<cfset var local = StructNew() />
+		<cfset local.endpoints = StructNew() />
 		<cfloop list="#arguments.beanList#" index="local.beanName">
 			<!--- get the cfc metadata that defines the uri for that cfc --->
 			<cfset local.cfcMetadata = getMetaData(arguments.factory.getBean(local.beanName)) />
@@ -938,24 +950,24 @@
 			<!--- if it doesn't have a uri, then it's not a resource --->
 			<cfif len(local.uri)>
 				<cfset local.metaInfo = convertURItoRegex(local.uri) />
-				<cfif structKeyExists(application._taffy.endpoints, local.metaInfo.uriRegex)>
+				<cfif structKeyExists(local.endpoints, local.metaInfo.uriRegex)>
 					<cfthrow
 						message="Duplicate URI scheme detected. All URIs must be unique (excluding tokens)."
-						detail="The URI for `#local.beanName#` conflicts with the existing URI definition of `#application._taffy.endpoints[local.metaInfo.uriRegex].beanName#`"
+						detail="The URI for `#local.beanName#` conflicts with the existing URI definition of `#local.endpoints[local.metaInfo.uriRegex].beanName#`"
 						errorcode="taffy.resources.DuplicateUriPattern"
 					/>
 				</cfif>
-				<cfset application._taffy.endpoints[local.metaInfo.uriRegex] = { beanName = local.cachedBeanName, tokens = local.metaInfo.tokens, methods = structNew(), srcURI = local.uri } />
+				<cfset local.endpoints[local.metaInfo.uriRegex] = { beanName = local.cachedBeanName, tokens = local.metaInfo.tokens, methods = structNew(), srcURI = local.uri } />
 				<cfif structKeyExists(local.cfcMetadata, "functions")>
 					<cfloop array="#local.cfcMetadata.functions#" index="local.f">
 						<cfif local.f.name eq "get" or local.f.name eq "post" or local.f.name eq "put" or local.f.name eq "patch" or local.f.name eq "delete" or local.f.name eq "head" or local.f.name eq "options">
-							<cfset application._taffy.endpoints[local.metaInfo.uriRegex].methods[local.f.name] = local.f.name />
+							<cfset local.endpoints[local.metaInfo.uriRegex].methods[local.f.name] = local.f.name />
 
 						<!--- also support future/misc verbs via metadata --->
 						<cfelseif structKeyExists(local.f,"taffy:verb")>
-							<cfset  application._taffy.endpoints[local.metaInfo.uriRegex].methods[local.f["taffy:verb"]] = local.f.name />
+							<cfset  local.endpoints[local.metaInfo.uriRegex].methods[local.f["taffy:verb"]] = local.f.name />
 						<cfelseif structKeyExists(local.f,"taffy_verb")>
-							<cfset  application._taffy.endpoints[local.metaInfo.uriRegex].methods[local.f["taffy_verb"]] = local.f.name />
+							<cfset  local.endpoints[local.metaInfo.uriRegex].methods[local.f["taffy_verb"]] = local.f.name />
 						</cfif>
 
 						<!--- cache any extra function metadata for use in onTaffyRequest --->
@@ -963,22 +975,26 @@
 						<cfset structDelete(local.extraMetadata, "name") />
 						<cfset structDelete(local.extraMetadata, "parameters") />
 						<cfset structDelete(local.extraMetadata, "hint") />
-						<cfparam name="application._taffy.endpoints['#local.metaInfo.uriRegex#'].metadata" default="#structNew()#" />
+						<cfparam name="local.endpoints['#local.metaInfo.uriRegex#'].metadata" default="#structNew()#" />
 						<cfif not structIsEmpty(local.extraMetadata)>
-							<cfset application._taffy.endpoints[local.metaInfo.uriRegex].metadata[local.f.name] = local.extraMetadata />
+							<cfset local.endpoints[local.metaInfo.uriRegex].metadata[local.f.name] = local.extraMetadata />
 						<cfelse>
-							<cfset application._taffy.endpoints[local.metaInfo.uriRegex].metadata[local.f.name] = StructNew() />
+							<cfset local.endpoints[local.metaInfo.uriRegex].metadata[local.f.name] = StructNew() />
 						</cfif>
 					</cfloop>
 				</cfif>
 			</cfif>
 		</cfloop>
+		<cfreturn local.endpoints />
 	</cffunction>
 
 	<cffunction name="resolveDependencies" access="private" output="false" returnType="void" hint="used to resolve dependencies of internal beans using external bean factory">
+		<cfargument name="endpoints" />
+		<cfargument name="internalBeanFactory" />
+		<cfargument name="externalBeanFactory" />
 		<cfset var local = StructNew() />
-		<cfloop list="#structKeyList(application._taffy.endpoints)#" index="local.endpoint">
-			<cfset local.bean = application._taffy.factory.getBean(application._taffy.endpoints[local.endpoint].beanName) />
+		<cfloop list="#structKeyList(arguments.endpoints)#" index="local.endpoint">
+			<cfset local.bean = arguments.internalBeanFactory.getBean(arguments.endpoints[local.endpoint].beanName) />
 			<cfset local.md = getMetadata( local.bean ) />
 			<cfset local.methods = local.md.functions />
 			<!--- get list of method names --->
@@ -991,8 +1007,8 @@
 				<cfif left(local.method, 3) eq "set" and len(local.method) gt 3>
 					<!--- we've found a dependency, try to resolve it --->
 					<cfset local.beanName = right(local.method, len(local.method) - 3) />
-					<cfif application._taffy.externalBeanFactory.containsBean(local.beanName)>
-						<cfset local.dependency = application._taffy.externalBeanFactory.getBean(local.beanName) />
+					<cfif arguments.externalBeanFactory.containsBean(local.beanName)>
+						<cfset local.dependency = arguments.externalBeanFactory.getBean(local.beanName) />
 						<cfset evaluate("local.bean.#local.method#(local.dependency)") />
 					</cfif>
 				</cfif>
@@ -1001,8 +1017,8 @@
 			<cfif structKeyExists(local.md, "properties") and isArray(local.md.properties)>
 				<cfloop from="1" to="#arrayLen(local.md.properties)#" index="local.p">
 					<cfset local.propName = local.md.properties[local.p].name />
-					<cfif application._taffy.externalBeanFactory.containsBean(local.propName)>
-						<cfset local.bean[local.propName] = application._taffy.externalBeanFactory.getBean(local.propName) />
+					<cfif arguments.externalBeanFactory.containsBean(local.propName)>
+						<cfset local.bean[local.propName] = arguments.externalBeanFactory.getBean(local.propName) />
 					</cfif>
 				</cfloop>
 			</cfif>
@@ -1050,22 +1066,27 @@
 		<cfreturn local.beanList />
 	</cffunction>
 
-	<cffunction name="inspectMimeTypes" access="private" output="false" returntype="void">
+	<cffunction name="inspectMimeTypes" access="private" output="false">
 		<cfargument name="customClassDotPath" type="string" required="true" hint="dot-notation path of representation class" />
-		<cfif application._taffy.factory.containsBean(arguments.customClassDotPath)>
-			<cfset _recurse_inspectMimeTypes(getMetadata(application._taffy.factory.getBean(arguments.customClassDotPath))) />
+		<cfargument name="factory" required="true" />
+		<cfif arguments.factory.containsBean(arguments.customClassDotPath)>
+			<cfreturn _recurse_inspectMimeTypes(getMetadata(arguments.factory.getBean(arguments.customClassDotPath))) />
 		<cfelse>
-			<cfset _recurse_inspectMimeTypes(getComponentMetadata(arguments.customClassDotPath)) />
+			<cfreturn _recurse_inspectMimeTypes(getComponentMetadata(arguments.customClassDotPath)) />
 		</cfif>
 	</cffunction>
 
-	<cffunction name="_recurse_inspectMimeTypes" output="false" access="private" returntype="void">
+	<cffunction name="_recurse_inspectMimeTypes" output="false" access="private">
 		<cfargument name="objMetaData" type="struct" required="true" />
+		<cfargument name="data" type="struct" default="#StructNew()#" />
 		<cfset var local = StructNew() />
 		<cfset local.ext = '' />
+		<cfparam name="arguments.data.mimeTypes" default="#StructNew()#" />
+		<cfparam name="arguments.data.mimeExtensions" default="#StructNew()#" />
+		<cfparam name="arguments.data.defaultMime" default="" />
 		<!--- recurse into parents first so that child defaults override parent defaults --->
 		<cfif structKeyExists(arguments.objMetaData, "extends")>
-			<cfset _recurse_inspectMimeTypes(arguments.objMetaData.extends) />
+			<cfset arguments.data = _recurse_inspectMimeTypes(arguments.objMetaData.extends, arguments.data) />
 		</cfif>
 		<!--- then handle child settings --->
 		<cfif structKeyExists(arguments.objMetaData, "functions") and isArray(arguments.objMetaData.functions)>
@@ -1080,16 +1101,21 @@
 				</cfif>
 				<cfif ucase(left(local.funcs[local.f].name, 5)) eq "GETAS" and len(local.mime)>
 					<cfset local.ext = lcase(right(local.funcs[local.f].name, len(local.funcs[local.f].name)-5)) />
-					<cfset registerMimeType(local.ext, lcase(local.mime)) />
+					<cfset local.mime = lcase(local.mime) />
+					<cfloop list="#local.mime#" delimiters=",;" index="local.thisMime">
+						<cfparam name="arguments.data.mimeExtensions['#local.ext#']" default="#local.thisMime#" />
+						<cfset arguments.data.mimeTypes[local.thisMime] = local.ext />
+					</cfloop>
 					<!--- check for taffy_default metadata to set the current mime as the default --->
 					<cfif structKeyExists(local.funcs[local.f], "taffy_default") and local.funcs[local.f].taffy_default>
-						<cfset setDefaultMime(local.ext) />
+						<cfset arguments.data.defaultMime = local.ext />
 					<cfelseif structKeyExists(local.funcs[local.f], "taffy:default") and local.funcs[local.f]["taffy:default"] eq true>
-						<cfset setDefaultMime(local.ext) />
+						<cfset arguments.data.defaultMime = local.ext />
 					</cfif>
 				</cfif>
 			</cfloop>
 		</cfif>
+		<cfreturn arguments.data />
 	</cffunction>
 
 	<cffunction name="mimeSupported" output="false" access="private" returntype="boolean">
@@ -1154,35 +1180,8 @@
 	<!---
 		helper methods: stuff used in Application.cfc
 	--->
-	<cffunction name="setBeanFactory" access="private" output="false" returntype="void">
-		<cfargument name="beanFactory" required="true" hint="Instance of bean factory object" />
-		<cfargument name="beanList" required="false" default="" />
-		<cfif isSimpleValue(arguments.beanFactory) and len(arguments.beanFactory) eq 0>
-			<!--- allow simply passing "" to this function and doing nothing with it --->
-			<cfreturn />
-		</cfif>
-		<cfset application._taffy.externalBeanFactory = arguments.beanFactory />
-		<cfset application._taffy.status.externalBeanFactoryUsed = true />
-	</cffunction>
-
 	<cffunction name="getBeanFactory" access="private" output="false">
 		<cfreturn application._taffy.factory />
-	</cffunction>
-
-	<cffunction name="setDefaultMime" access="private" output="false" returntype="void" hint="deprecated-1.1">
-		<cfargument name="DefaultMimeType" type="string" required="true" hint="mime time to set as default for this api" />
-		<cfset application._taffy.settings.defaultMime = arguments.DefaultMimeType />
-	</cffunction>
-
-	<cffunction name="registerMimeType" access="private" output="false" returntype="void" hint="deprecated-1.1">
-		<cfargument name="extension" type="string" required="true" hint="ex: json" />
-		<cfargument name="mimeType" type="string" required="true" hint="ex: text/json" />
-		<cfset var mime = "" />
-		<cfparam name="application._taffy.settings.mimeExtensions" default="#{}#" />
-		<cfloop list="#arguments.mimeType#" delimiters=",;" index="mime">
-			<cfparam name="application._taffy.settings.mimeExtensions['#arguments.extension#']" default="#mime#" />
-			<cfset application._taffy.settings.mimeTypes[mime] = arguments.extension />
-		</cfloop>
 	</cffunction>
 
 	<cffunction name="newRepresentation" access="private" output="false" hint="private as of 3.0">
