@@ -22,6 +22,16 @@ Supported versions get priority for bug fixes. No promises are made to fix bugs 
 
 If you're on an unsupported version, upgrade is not an option in your case, and you still have an isolatable and reproducable bug, [contact me](http://fusiongrokker.com/page/contact-me) to discuss further options.
 
+## Running the Tests
+
+To run the tests, you must have [MxUnit](http://mxunit.org/) installed at `/mxunit` (not just a global mapping, put the folder in your web-root, as there are CSS/JS/etc assets that will be needed).
+
+1. Clone the Taffy repo to `/taffy` in your web root.
+1. Point your browser at `http://localhost/taffy/tests/` to initialize the test-harness API that the tests will use
+1. Point your browser at `http://localhost/taffy/tests/tests/` to run the test suite.
+
+Please [report any errors or failures as bugs](https://github.com/atuttle/Taffy/issues), and be sure to include relevant platform information.
+
 ## Documentation
 
 Primary documentation is available at [docs.taffy.io](http://docs.taffy.io), with a few of the more detailed guides remaining [in the wiki][3] for now.
