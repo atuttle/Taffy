@@ -30,6 +30,8 @@ To run the tests, you must have [MxUnit](http://mxunit.org/) installed at `/mxun
 1. Point your browser at `http://localhost/taffy/tests/` to initialize the test-harness API that the tests will use
 1. Point your browser at `http://localhost/taffy/tests/tests/` to run the test suite.
 
+If you are on vanilla Tomcat or another app server (most Railo users are), you may find that you need to [add an additional servlet mapping](http://docs.taffy.io/3.0.0/#Tomcat-JBoss--and-other-app-server--Idiosyncrasies) to get the tests to run.
+
 Please [report any errors or failures as bugs](https://github.com/atuttle/Taffy/issues), and be sure to include relevant platform information.
 
 ## Documentation
