@@ -24,7 +24,7 @@
 		function properly_notifies_implemented_mimes(){
 			makePublic(variables.taffy, "mimeSupported");
 			makePublic(variables.taffy, "inspectMimeTypes");
-			variables.taffy.inspectMimeTypes('taffy.core.nativeJsonSerializer');
+			variables.taffy.inspectMimeTypes('taffy.core.nativeJsonSerializer', variables.taffy.getBeanFactory());
 			assertTrue(taffy.mimeSupported("json"));
 			assertTrue(taffy.mimeSupported("text/json"));
 			assertTrue(taffy.mimeSupported("application/json"));
@@ -210,18 +210,7 @@
 			assertTrue(structKeyExists(local.result, "foo") && local.result.foo == "bar", "Missing or incorrect value for key `foo`.");
 		}
 
-		function returns_error_when_default_mime_not_implemented(){
-			makePublic(variables.taffy, "setDefaultMime");
-			variables.taffy.setDefaultMime("DoesNotExist");
-			local.result = apiCall("get", "/echo/2", "foo=bar");
-			debug(local.result);
-			assertEquals(400, local.result.responseHeader.status_code);
-			assertEquals("Your default mime type (DoesNotExist) is not implemented", local.result.responseHeader.explanation);
-		}
-
 		function returns_error_when_requested_mime_not_supported(){
-			makePublic(variables.taffy, "setDefaultMime");
-			variables.taffy.setDefaultMime("application/json");
 			local.h = structNew();
 			local.h['Accept'] = "application/NOPE";
 			local.result = apiCall ("get","/echo/2","foo=bar", local.h);
@@ -231,8 +220,6 @@
 		}
 
 		function extension_takes_precedence_over_accept_header(){
-			makePublic(variables.taffy, "setDefaultMime");
-			variables.taffy.setDefaultMime("text/json");
 			local.headers = structNew();
 			local.headers["Accept"] = "text/xml";
 			local.result = apiCall("get","/echo/2.json","foo=bar",local.headers);
@@ -342,9 +329,6 @@
 
 		function put_body_is_url_encoded_params(){
 			var local = {};
-
-			makePublic(variables.taffy, "setDefaultMime");
-			variables.taffy.setDefaultMime("application/json");
 			local.result = apiCall(
 				"put",
 				"/echo/12.json",
