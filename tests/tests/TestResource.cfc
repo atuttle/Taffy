@@ -28,8 +28,8 @@
 			local.serialized = serializeJSON(local.after);
 			debug(local.serialized);
 
-			assertTrue( (local.keyList == "Foo,Bar" or local.keyList == "Bar,Foo"), 'column name case is not as expected');
-			assertTrue( (local.serialized == '[{"Foo":42,"Bar":"fubar"}]') or (local.serialized == '[{"Bar":"fubar","Foo":42}]') );
+			assertTrue( (local.keyList eq "Foo,Bar" or local.keyList eq "Bar,Foo"), 'column name case is not as expected');
+			assertTrue( (local.serialized eq '[{"Foo":42,"Bar":"fubar"}]') or (local.serialized eq '[{"Bar":"fubar","Foo":42}]') );
 		}
 
 	</cfscript>

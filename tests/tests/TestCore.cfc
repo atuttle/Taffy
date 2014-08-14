@@ -232,9 +232,11 @@
 			makePublic(variables.taffy, "buildRequestArguments");
 			local.headers = structNew();
 			local.headers.Accept = "application/json";
+			local.tokenArray = arrayNew(1);
+			arrayAppend(local.tokenArray, "id");
 			local.result = variables.taffy.buildRequestArguments(
 				"^/echo/([a-zA-Z0-9_\-\.\+]+@[a-zA-Z0-9_\-\.]+\.?[a-zA-Z]+)((?:\.)[^\.\?]+)?$",
-				["id"],
+				local.tokenArray,
 				"/echo/foo@bar.com",
 				"",
 				local.headers
