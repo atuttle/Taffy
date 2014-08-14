@@ -152,7 +152,7 @@
 				<cfheader statuscode="500" statustext="Error" />
 				<cfoutput>An unhandled exception occurred: <cfif isStruct(root) and structKeyExists(root,"message")>#root.message#<cfelse>#root#</cfif> <cfif isStruct(root) and structKeyExists(root,"detail")>-- #root.detail#</cfif></cfoutput>
 				<cfdump var="#cfcatch#" format="text" label="ERROR WHEN LOGGING EXCEPTION" />
-				<cfdump var="#cfcatch#" format="text" label="ORIGINAL EXCEPTION" />
+				<cfdump var="#exception#" format="text" label="ORIGINAL EXCEPTION" />
 			</cfcatch>
 		</cftry>
 	</cffunction>
