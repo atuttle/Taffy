@@ -279,13 +279,17 @@
 				<!--- check the cache before we call the resource --->
 				<cfset m.cacheCheckTime = getTickCount() />
 				<cfset local.cacheKey = local.parsed.uri & "_" & _taffyRequest.requestArguments.hashCode() />
-				<cfif validCacheExists(local.cacheKey)>
+				<cfif ucase(_taffyRequest.verb) eq "GET" and validCacheExists(local.cacheKey)>
 					<cfset m.cacheCheckTime = getTickCount() - m.cacheCheckTime />
 					<cfset m.cacheGetTime = getTickCount() />
 					<cfset _taffyRequest.result = getCachedResponse(local.cacheKey) />
 					<cfset m.cacheGetTime = m.cacheGetTime - getTickCount() />
 				<cfelse>
-					<cfset m.cacheCheckTime = getTickCount() - m.cacheCheckTime />
+					<cfif ucase(_taffyRequest.verb) eq "GET">
+						<cfset m.cacheCheckTime = getTickCount() - m.cacheCheckTime />
+					<cfelse>
+						<cfset structDelete(m, "cacheCheckTime") />
+					</cfif>
 					<!--- returns a representation-object --->
 					<cfset m.beforeResource = getTickCount() />
 					<cfinvoke
@@ -296,9 +300,11 @@
 					/>
 					<cfset m.afterResource = getTickCount() />
 					<cfset m.resourceTime = m.afterResource - m.beforeResource />
-					<cfset m.cacheSaveStart = getTickCount() />
-					<cfset setCachedResponse(local.cacheKey, _taffyRequest.result.getData()) />
-					<cfset m.cacheSaveTime = getTickCount() - m.cacheSaveStart />
+					<cfif ucase(_taffyRequest.verb) eq "GET">
+						<cfset m.cacheSaveStart = getTickCount() />
+						<cfset setCachedResponse(local.cacheKey, _taffyRequest.result.getData()) />
+						<cfset m.cacheSaveTime = getTickCount() - m.cacheSaveStart />
+					</cfif>
 				</cfif>
 			<cfelseif NOT listFind(local.allowVerbs,_taffyRequest.verb)>
 				<!--- if the verb is not implemented, refuse the request --->
