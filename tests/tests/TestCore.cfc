@@ -33,13 +33,18 @@
 		function returns_etag_header(){
 			local.result = apiCall("get", "/echo/foo.json", "");
 			debug(local.result);
+			local.testStruct = StructNew();
+			local.testStruct.ID = "foo";
+			local.expectedValue = local.testStruct.hashCode();
 			assertTrue(structKeyExists(local.result.responseHeader, "Etag"));
-			assertEquals("99805", local.result.responseHeader.etag);
+			assertEquals(local.expectedValue, local.result.responseHeader.etag);
 		}
 
 		function returns_304_when_not_modified(){
+			local.testStruct = StructNew();
+			local.testStruct.ID = "foo";
 			local.h = {};
-			local.h['if-none-match'] = "99805";
+			local.h['if-none-match'] = local.testStruct.hashCode();
 			local.result = apiCall("get", "/echo/foo.json", "", local.h);
 			debug(local.result);
 			assertEquals(304, val(local.result.responseHeader.status_code));
@@ -343,7 +348,9 @@
 			debug( local.deserializedContent );
 
 			// The service response should contain the ID parameter and all parsed form fields from the body
-			assertEquals("bar,baz,foo,id,password,username", listSort(structKeylist(local.deserializedContent), "textnocase"));
+			local.sortedKeys = listSort(structKeylist(local.deserializedContent), "textnocase");
+			//because apparently railo includes fieldnames when ACF doesn't...
+			assertTrue("bar,baz,foo,id,password,username" eq local.sortedKeys or "bar,baz,fieldnames,foo,id,password,username" eq local.sortedKeys);
 			assertEquals(12, local.deserializedContent["id"]);
 			assertEquals("yankee", local.deserializedContent["foo"]);
 			assertEquals("hotel", local.deserializedContent["bar"]);
