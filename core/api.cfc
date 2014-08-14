@@ -349,10 +349,12 @@
 
 		<!--- metrics headers that should always apply --->
 		<cfheader name="X-TIME-IN-PARSE" value="#m.parseTime#" />
-		<cfheader name="X-TIME-IN-CACHE-CHECK" value="#m.cacheCheckTime#" />
 		<cfheader name="X-TIME-IN-ONTAFFYREQUEST" value="#m.otrTime#" />
 		<cfif structKeyExists(m, "resourceTime")>
 			<cfheader name="X-TIME-IN-RESOURCE" value="#m.resourceTime#" />
+		</cfif>
+		<cfif structKeyExists(m, "cacheCheckTime")>
+			<cfheader name="X-TIME-IN-CACHE-CHECK" value="#m.cacheCheckTime#" />
 		</cfif>
 		<cfif structKeyExists(m, "cacheGetTime")>
 			<cfheader name="X-TIME-IN-CACHE-GET" value="#m.cacheSaveTime#" />
