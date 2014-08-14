@@ -1202,6 +1202,11 @@
 		<cfreturn newRepresentation().representationOf( arguments.data ) />
 	</cffunction>
 
+	<cffunction name="rep" access="public" output="false" hint="alias for representationOf">
+		<cfargument name="data" required="true" />
+		<cfreturn representationOf(arguments.data) />
+	</cffunction>
+
 	<cffunction name="getGlobalHeaders" access="private" output="false" returntype="Struct">
 		<cfreturn application._taffy.settings.globalHeaders />
 	</cffunction>

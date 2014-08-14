@@ -6,6 +6,11 @@
 		<cfreturn getRepInstance().setData(arguments.data) />
 	</cffunction>
 
+	<cffunction name="rep" access="public" output="false" hint="alias for representationOf">
+		<cfargument name="data" required="true" />
+		<cfreturn representationOf(arguments.data) />
+	</cffunction>
+
 	<cffunction name="noData" access="private" output="false" hint="use this function to return only headers to the consumer, no data">
 		<cfreturn getRepInstance().noData() />
 	</cffunction>
