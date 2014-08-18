@@ -22,7 +22,7 @@
 			application.coldspring = createObject("component", "coldspring.beans.DefaultXMLBeanFactory");
 			application.coldspring.loadBeans('config/coldspring.xml');
 
-			variables.framework.beanFactory = application.beanFactory;
+			variables.framework.beanFactory = application.coldspring;
 
 			return super.onApplicationStart();
 		}
