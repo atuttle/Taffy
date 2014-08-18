@@ -1186,6 +1186,10 @@
 		<cfreturn application._taffy.factory />
 	</cffunction>
 
+	<cffunction name="getExternalBeanFactory" access="private" output="false">
+		<cfreturn application._taffy.externalBeanFactory />
+	</cffunction>
+
 	<cffunction name="newRepresentation" access="private" output="false" hint="private as of 3.0">
 		<cfset var repClass = application._taffy.settings.serializer />
 		<cfif application._taffy.factory.containsBean(repClass)>
