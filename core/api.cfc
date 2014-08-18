@@ -1071,6 +1071,10 @@
 		<cfreturn application._taffy.factory />
 	</cffunction>
 
+	<cffunction name="getExternalBeanFactory" access="private" output="false">
+		<cfreturn application._taffy.externalBeanFactory />
+	</cffunction>
+
 	<cffunction name="setDefaultMime" access="private" output="false" returntype="void" hint="deprecated-1.1">
 		<cfargument name="DefaultMimeType" type="string" required="true" hint="mime time to set as default for this api" />
 		<cfset application._taffy.settings.defaultMime = arguments.DefaultMimeType />
