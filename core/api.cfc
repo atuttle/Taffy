@@ -496,7 +496,7 @@
 			<cfif isSimpleValue(variables.framework.beanFactory) and len(variables.framework.beanFactory) eq 0>
 				<!--- if the BF value is "" doing nothing with it --->
 			<cfelse>
-				<cfset local._taffy.externalBeanFactory = arguments.beanFactory />
+				<cfset local._taffy.externalBeanFactory = variables.framework.beanFactory />
 				<cfset local._taffy.status.externalBeanFactoryUsed = true />
 			</cfif>
 		</cfif>
