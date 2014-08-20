@@ -55,7 +55,7 @@ $(function(){
 		}
 		var result = uri.supplant(tokens);
 		result += (q.length) ? '?' + q : '';
-		resource.find('.resourceUri').html(result);
+		resource.find('.resourceUri').val(result);
 	});
 
 	$(".submitRequest").click(function(){
@@ -142,7 +142,7 @@ $(function(){
 
 		response.hide();
 		reset.hide();
-		resource.find('.resourceUri').html(uri);
+		resource.find('.resourceUri').val(uri);
 
 		tokens.each(function(){
 			$(this).val('');
