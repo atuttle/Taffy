@@ -4,7 +4,7 @@
 		this.name = hash(getCurrentTemplatePath());
 
 		variables.framework = {};
-		variables.framework.representationClass = "JsonUtilRepresentation";
+		variables.framework.serializer = "JsonUtilSerializer";
 
 	</cfscript>
 </cfcomponent>

@@ -63,7 +63,7 @@
 			<cfset local.beanPath = filePathToBeanPath(local.beanQuery.directory, local.beanquery.name, arguments.resourcesPath, arguments.resourcesBasePath) />
 			<cftry>
 				<cfset local.objBean = createObject("component", local.beanPath) />
-				<cfif isInstanceOf(local.objBean, "taffy.core.baseRepresentation")>
+				<cfif isInstanceOf(local.objBean, "taffy.core.baseSerializer")>
 					<cfset this.transients[local.beanName] = local.beanPath />
 				<cfelse>
 					<cfset this.beans[local.beanName] = local.objBean />

@@ -6,7 +6,7 @@
 		variables.framework.disableDashboard = false;
 		variables.framework.reloadKey = "reload";
 		variables.framework.unhandledPaths = "/Taffy/tests/someFolder,/Taffy/tests/tests,/tests/someFolder,/tests/tests";
-		variables.framework.representationClass = "customJsonRepresentation";
+		variables.framework.serializer = "customJsonSerializer";
 		variables.framework.useEtags = true;
 		variables.framework.globalHeaders = {};
 		variables.framework.globalHeaders["x-foo-globalheader"] = "snafu";
@@ -19,7 +19,7 @@
 			return "test";
 		}
 
-		function onTaffyRequest(verb, cfc, requestArguments, mimeExt, headers) {
+		function onTaffyRequest(verb, cfc, requestArguments, mimeExt, headers, methodMetadata, matchedURI) {
 			var local = {};
 
 			//pass data into a resource by modifying requestArguments
@@ -34,7 +34,7 @@
 
 			if (structKeyExists(arguments.requestArguments, "refuse") and arguments.requestArguments.refuse)
 			{
-				return newRepresentation().withStatus(405);
+				return noData().withStatus(405);
 			}
 			else
 			{

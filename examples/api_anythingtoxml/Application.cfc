@@ -4,7 +4,7 @@
 		this.name = hash(getCurrentTemplatePath());
 
 		variables.framework = {};
-		variables.framework.representationClass = "taffy.bonus.AnythingToXmlRepresentation";
+		variables.framework.serializer = "taffy.bonus.AnythingToXmlRepresentation";
 
 		function onApplicationStart(){
 			application.anythingToXml = createObject("component", "anythingtoxml.AnythingToXML").init();

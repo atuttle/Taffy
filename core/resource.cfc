@@ -6,6 +6,11 @@
 		<cfreturn getRepInstance().setData(arguments.data) />
 	</cffunction>
 
+	<cffunction name="rep" access="public" output="false" hint="alias for representationOf">
+		<cfargument name="data" required="true" />
+		<cfreturn representationOf(arguments.data) />
+	</cffunction>
+
 	<cffunction name="noData" access="private" output="false" hint="use this function to return only headers to the consumer, no data">
 		<cfreturn getRepInstance().noData() />
 	</cffunction>
@@ -104,7 +109,7 @@
 		<cfargument name="repClass" type="string" default="" />
 		<cfif repClass eq "">
 			<!--- recursion not the most efficient path here, but it's damn readable --->
-			<cfreturn getRepInstance(application._taffy.settings.representationClass) />
+			<cfreturn getRepInstance(application._taffy.settings.serializer) />
 		<cfelseif application._taffy.factory.containsBean(arguments.repClass)>
 			<cfreturn application._taffy.factory.getBean(arguments.repClass) />
 		<cfelse>

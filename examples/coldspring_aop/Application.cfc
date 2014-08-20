@@ -10,7 +10,7 @@
 		variables.framework.debugKey = "debug";
 		variables.framework.reloadKey = "reload";
 		variables.framework.reloadPassword = "true";
-		variables.framework.representationClass = "taffy.core.genericRepresentation";
+		variables.framework.serializer = "taffy.core.nativeJsonSerializer";
 
 		function onApplicationStart(){
 			initColdSpring();

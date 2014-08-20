@@ -24,21 +24,27 @@
 		function properly_notifies_implemented_mimes(){
 			makePublic(variables.taffy, "mimeSupported");
 			makePublic(variables.taffy, "inspectMimeTypes");
-			debug(variables.taffy);
-			variables.taffy.inspectMimeTypes('taffy.core.nativeJsonRepresentation');
-			assertTrue(taffy.mimeSupported("json"), "When given a mime type that should be supported, Taffy reported that it was not.");
+			variables.taffy.inspectMimeTypes('taffy.core.nativeJsonSerializer', variables.taffy.getBeanFactory());
+			assertTrue(taffy.mimeSupported("json"));
+			assertTrue(taffy.mimeSupported("text/json"));
+			assertTrue(taffy.mimeSupported("application/json"));
 		}
 
 		function returns_etag_header(){
 			local.result = apiCall("get", "/echo/foo.json", "");
 			debug(local.result);
+			local.testStruct = StructNew();
+			local.testStruct.ID = "foo";
+			local.expectedValue = local.testStruct.hashCode();
 			assertTrue(structKeyExists(local.result.responseHeader, "Etag"));
-			assertEquals("99805", local.result.responseHeader.etag);
+			assertEquals(local.expectedValue, local.result.responseHeader.etag);
 		}
 
 		function returns_304_when_not_modified(){
+			local.testStruct = StructNew();
+			local.testStruct.ID = "foo";
 			local.h = {};
-			local.h['if-none-match'] = "99805";
+			local.h['if-none-match'] = local.testStruct.hashCode();
 			local.result = apiCall("get", "/echo/foo.json", "", local.h);
 			debug(local.result);
 			assertEquals(304, val(local.result.responseHeader.status_code));
@@ -67,6 +73,26 @@
 			local.result = apiCall("get", "/echo/1.json", "");
 			debug(local.result);
 			assertTrue(structKeyExists(local.result.responseHeader, "x-foo-globalheader"), "Expected response header `x-foo-globalheader` but it was not included.");
+		}
+
+		function deserializer_inspection_finds_all_content_types(){
+			makePublic(variables.taffy, "getSupportedContentTypes");
+			local.result = variables.taffy.getSupportedContentTypes("taffy.core.baseDeserializer");
+			debug(local.result);
+			assertTrue(structKeyExists(local.result, "application/x-www-form-urlencoded"));
+			local.result = variables.taffy.getSupportedContentTypes("taffy.core.nativeJsonDeserializer");
+			debug(local.result);
+			assertTrue(structKeyExists(local.result, "application/json"));
+			assertTrue(structKeyExists(local.result, "text/json"));
+			assertTrue(structKeyExists(local.result, "application/x-www-form-urlencoded"));
+		}
+
+		function deserializer_support_detection_works(){
+			makePublic(variables.taffy, "contentTypeIsSupported");
+			debug(application._taffy.contentTypes);
+			assertTrue(variables.taffy.contentTypeIsSupported("application/json"));
+			assertTrue(variables.taffy.contentTypeIsSupported("application/json;v=1"));
+			assertFalse(variables.taffy.contentTypeIsSupported("application/does-not-exist"));
 		}
 
 		function uri_regexes_are_correct(){
@@ -166,41 +192,30 @@
 		}
 
 		function properly_decodes_json_put_request_body(){
-			local.result = apiCall("put", "/echo/99.json", '{"data":{"foo":"bar"}}');
+			local.result = apiCall("put", "/echo/99.json", '{"foo":"bar"}');
 			debug(local.result);
 			if (!isJson(local.result.fileContent)){
 				fail("Result was not JSON");
 				return;
 			}
 			local.result = deserializeJSON(local.result.fileContent);
+			debug(local.result);
 			assertTrue(structKeyExists(local.result, "foo") && local.result.foo == "bar", "Missing or incorrect value for key `foo`.");
-			assertFalse(structKeyExists(local.result, "data"), "DATA element was not supposed to be included in arguments, but was included.");
 		}
 
 		function properly_decodes_json_post_request_body(){
-			local.result = apiCall("post", "/echo/99.json", '{"data":{"foo":"bar"}}');
+			local.result = apiCall("post", "/echo/99.json", '{"foo":"bar"}');
 			debug(local.result);
 			if (!isJson(local.result.fileContent)){
 				fail("Result was not JSON");
 				return;
 			}
 			local.result = deserializeJSON(local.result.fileContent);
-			assertTrue(structKeyExists(local.result, "foo") && local.result.foo == "bar", "Missing or incorrect value for key `foo`.");
-			assertFalse(structKeyExists(local.result, "data"), "DATA element was not supposed to be included in arguments, but was included.");
-		}
-
-		function returns_error_when_default_mime_not_implemented(){
-			makePublic(variables.taffy, "setDefaultMime");
-			variables.taffy.setDefaultMime("DoesNotExist");
-			local.result = apiCall("get", "/echo/2", "foo=bar");
 			debug(local.result);
-			assertEquals(400, local.result.responseHeader.status_code);
-			assertEquals("Your default mime type (DoesNotExist) is not implemented", local.result.responseHeader.explanation);
+			assertTrue(structKeyExists(local.result, "foo") && local.result.foo == "bar", "Missing or incorrect value for key `foo`.");
 		}
 
 		function returns_error_when_requested_mime_not_supported(){
-			makePublic(variables.taffy, "setDefaultMime");
-			variables.taffy.setDefaultMime("application/json");
 			local.h = structNew();
 			local.h['Accept'] = "application/NOPE";
 			local.result = apiCall ("get","/echo/2","foo=bar", local.h);
@@ -210,8 +225,6 @@
 		}
 
 		function extension_takes_precedence_over_accept_header(){
-			makePublic(variables.taffy, "setDefaultMime");
-			variables.taffy.setDefaultMime("text/json");
 			local.headers = structNew();
 			local.headers["Accept"] = "text/xml";
 			local.result = apiCall("get","/echo/2.json","foo=bar",local.headers);
@@ -224,9 +237,11 @@
 			makePublic(variables.taffy, "buildRequestArguments");
 			local.headers = structNew();
 			local.headers.Accept = "application/json";
+			local.tokenArray = arrayNew(1);
+			arrayAppend(local.tokenArray, "id");
 			local.result = variables.taffy.buildRequestArguments(
 				"^/echo/([a-zA-Z0-9_\-\.\+]+@[a-zA-Z0-9_\-\.]+\.?[a-zA-Z]+)((?:\.)[^\.\?]+)?$",
-				["id"],
+				local.tokenArray,
 				"/echo/foo@bar.com",
 				"",
 				local.headers
@@ -321,9 +336,6 @@
 
 		function put_body_is_url_encoded_params(){
 			var local = {};
-
-			makePublic(variables.taffy, "setDefaultMime");
-			variables.taffy.setDefaultMime("application/json");
 			local.result = apiCall(
 				"put",
 				"/echo/12.json",
@@ -336,7 +348,9 @@
 			debug( local.deserializedContent );
 
 			// The service response should contain the ID parameter and all parsed form fields from the body
-			assertEquals("bar,baz,foo,id,password,username", listSort(structKeylist(local.deserializedContent), "textnocase"));
+			local.sortedKeys = listSort(structKeylist(local.deserializedContent), "textnocase");
+			//because apparently railo includes fieldnames when ACF doesn't...
+			assertTrue("bar,baz,foo,id,password,username" eq local.sortedKeys or "bar,baz,fieldnames,foo,id,password,username" eq local.sortedKeys);
 			assertEquals(12, local.deserializedContent["id"]);
 			assertEquals("yankee", local.deserializedContent["foo"]);
 			assertEquals("hotel", local.deserializedContent["bar"]);

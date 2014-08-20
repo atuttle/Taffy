@@ -1,4 +1,4 @@
-<cfcomponent extends="taffy.core.baseRepresentation">
+<cfcomponent extends="taffy.core.baseSerializer">
 
 	<cfset variables.anythingToXml = application.anythingToXml />
 

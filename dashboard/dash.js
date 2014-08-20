@@ -95,6 +95,7 @@ $(function(){
 		var body = (verb === 'GET' || verb === 'DELETE') ? params(qParams(resource)) : resource.find('.reqBody textarea').val();
 		var headers = {
 			Accept: resource.find('.reqFormat option:checked').val()
+			,"Content-Type": "application/json"
 		};
 
 		submitRequest(verb, path, headers, body, function(timeSpent, status, headers, body){
