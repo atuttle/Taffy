@@ -466,7 +466,7 @@
 			});
 		});
 		function submitRequest( verb, resource, headers, body, callback ){
-			var url = window.location.protocol + '//<cfoutput>#cgi.server_name#</cfoutput>';
+			var url = window.location.protocol + '//' +  window.location.host + ((window.location.port) ? ':' + window.location.port : '');
 			var endpointURLParam = '<cfoutput>#jsStringFormat(application._taffy.settings.endpointURLParam)#</cfoutput>';
 			var endpoint = resource.split('?')[0];
 			var args = '';
