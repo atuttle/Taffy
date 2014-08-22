@@ -55,7 +55,9 @@
 				local.numCols = ArrayLen( local.Columns );
 				for (local.ColumnIndex = 1; local.ColumnIndex <= local.numCols; local.ColumnIndex++){
 					local.ColumnName = local.Columns[ local.ColumnIndex ];
-					local.Row[ local.ColumnName ] = arguments.q[ local.ColumnName ][ local.RowIndex ];
+					if( local.ColumnName NEQ "" ) {
+						local.Row[ local.ColumnName ] = arguments.q[ local.ColumnName ][ local.RowIndex ];
+					}
 				}
 				if ( structKeyExists( arguments, "cb" ) ) {
 					local.Row = cb( local.Row );
@@ -88,10 +90,12 @@
 
 			for (local.ColumnIndex = 1; local.ColumnIndex <= local.numCols; local.ColumnIndex++){
 				local.ColumnName = local.Columns[ local.ColumnIndex ];
-				if ( structKeyExists( arguments, "cb" ) ) {
-					local.QueryStruct[ local.ColumnName ] = cb( local.ColumnName, arguments.q[ local.ColumnName ][1] );
-				} else {
-					local.QueryStruct[ local.ColumnName ] = arguments.q[ local.ColumnName ][1];
+				if( local.ColumnName NEQ "" ) {
+					if ( structKeyExists( arguments, "cb" ) ) {
+						local.QueryStruct[ local.ColumnName ] = cb( local.ColumnName, arguments.q[ local.ColumnName ][1] );
+					} else {
+						local.QueryStruct[ local.ColumnName ] = arguments.q[ local.ColumnName ][1];
+					}
 				}
 			}
 
