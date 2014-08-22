@@ -55,9 +55,7 @@
 				local.numCols = ArrayLen( local.Columns );
 				for (local.ColumnIndex = 1; local.ColumnIndex <= local.numCols; local.ColumnIndex++){
 					local.ColumnName = local.Columns[ local.ColumnIndex ];
-					if( local.ColumnName NEQ "" ) {
-						local.Row[ local.ColumnName ] = arguments.q[ local.ColumnName ][ local.RowIndex ];
-					}
+					local.Row[ local.ColumnName ] = arguments.q[ local.ColumnName ][ local.RowIndex ];
 				}
 				if ( structKeyExists( arguments, "cb" ) ) {
 					local.Row = cb( local.Row );
