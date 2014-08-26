@@ -263,7 +263,7 @@
 												<div class="reqTokens">
 													<h4>URI Tokens: <span class="text-muted">(required)</span></h4>
 													<div class='tokenErrors'></div>
-													<form class="form-horizontal">
+													<form class="form-horizontal" onsubmit="return false;">
 														<cfloop from="1" to="#arrayLen(local.currentResource.tokens)#" index="local.token">
 															<div class="form-group row">
 																<div class="col-md-3">
