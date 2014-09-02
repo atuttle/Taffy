@@ -1205,7 +1205,7 @@
 
 	<cffunction name="representationOf" access="public" output="false">
 		<cfargument name="data" required="true" />
-		<cfreturn newRepresentation().representationOf( arguments.data ) />
+		<cfreturn newRepresentation().setData( arguments.data ) />
 	</cffunction>
 
 	<cffunction name="rep" access="public" output="false" hint="alias for representationOf">
