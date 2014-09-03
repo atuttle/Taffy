@@ -199,12 +199,13 @@ function parseHeaders(h){
 	return out;
 }
 
-// http://javascript.crockford.com/remedial.html
 String.prototype.supplant = function (o) {
-    return this.replace(/{([^{}]*)}/g,
+    return this.replace(/{(.*?)(}(?=\/)|}$)/g,
         function (a, b) {
-            var r = o[b];
+        	// We need to split on the : if we're using custom token regular expressions.
+            var r = o[ b.split(':')[ 0 ] ];
             return typeof r === 'string' || typeof r === 'number' ? r : a;
         }
     );
 };
+
