@@ -15,7 +15,7 @@
 
 		<cfloop from="1" to="#arrayLen(pairs)#" index="ix">
 			<cfset pair = pairs[ix] />
-			<cfset kv = listToArray(pair, "=") />
+			<cfset kv = listToArray(pair, "=", true) />
 			<cfset response[kv[1]] = kv[2] />
 		</cfloop>
 
