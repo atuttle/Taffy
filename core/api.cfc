@@ -526,7 +526,7 @@
 			<!--- only using external factory, so create a pointer to it --->
 			<cfset local._taffy.factory = local._taffy.externalBeanFactory />
 			<!--- since external factory is only factory, check it for taffy resources --->
-			<cfset local.beanList = getBeanListFromExternalFactory() />
+			<cfset local.beanList = getBeanListFromExternalFactory( local._taffy.externalBeanFactory ) />
 			<cfset local._taffy.endpoints = cacheBeanMetaData(local._taffy.externalBeanFactory, local.beanList) />
  		<cfelse>
  			<cfset local.noResources = true />
@@ -1028,17 +1028,18 @@
 	</cffunction>
 
 	<cffunction name="getBeanListFromExternalFactory" output="false" access="private" returntype="String">
-		<cfset var beanFactoryMeta = getMetadata(application._taffy.externalBeanFactory) />
+		<cfargument name="bf" required="true" />
+		<cfset var beanFactoryMeta = getMetadata(arguments.bf) />
 		<cfif lcase(left(beanFactoryMeta.name, 10)) eq "coldspring">
-			<cfreturn getBeanListFromColdSpring() />
+			<cfreturn getBeanListFromColdSpring( arguments.bf ) />
 		<cfelseif beanFactoryMeta.name contains "ioc">
 			<!--- this isn't a perfect test (contains "ioc") but it's all we can do for now... --->
-			<cfset local.beanInfo = application._taffy.externalBeanFactory.getBeanInfo().beanInfo />
+			<cfset local.beanInfo = arguments.bf.getBeanInfo().beanInfo />
 			<cfset local.beanList = "" />
 			<cfloop collection="#local.beanInfo#" item="local.beanName">
 				<cfif structKeyExists(local.beanInfo[local.beanName],'name')
 					  AND local.beanName NEQ local.beanInfo[local.beanName].name
-					  AND isInstanceOf(application._taffy.externalBeanFactory.getBean(local.beanName),'taffy.core.resource')>
+					  AND isInstanceOf(arguments.bf.getBean(local.beanName),'taffy.core.resource')>
 					<cfset local.beanList = listAppend(local.beanList,local.beanName) />
 				</cfif>
 			</cfloop>
@@ -1048,8 +1049,9 @@
 	</cffunction>
 
 	<cffunction name="getBeanListFromColdSpring" access="private" output="false" returntype="string">
+		<cfargument name="bf" required="true" />
 		<cfset var local = StructNew() />
-		<cfset local.beans = application._taffy.externalBeanFactory.getBeanDefinitionList() />
+		<cfset local.beans = arguments.bf.getBeanDefinitionList() />
 		<cfset local.beanList = "" />
 		<cfloop collection="#local.beans#" item="local.beanName">
 			<!---
