@@ -5,6 +5,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<style>
 		<cfinclude template="dash.css" />
+		<cfinclude template="highlight-github.min.css" />
 	</style>
 </head>
 <body>
@@ -419,9 +420,12 @@
 	<script type="text/javascript">
 		<cfinclude template="jquery.min.js" />
 		<cfinclude template="bootstrap.min.js" />
+		<cfinclude template="highlight.min.js" />
 		<cfinclude template="dash.js" />
 
 		$(function(){
+			hljs.initHighlighting();
+
 			var baseurl = '<cfoutput>#cgi.script_name#?dashboard</cfoutput>';
 			$("#reload").click(function(){
 				var reloadUrl = baseurl + '<cfoutput>&#application._taffy.settings.reloadKey#=#application._taffy.settings.reloadPassword#</cfoutput>';
@@ -466,15 +470,12 @@
 			});
 		});
 		function submitRequest( verb, resource, headers, body, callback ){
-			var url = window.location.protocol + '//' +  window.location.host + ((window.location.port) ? ':' + window.location.port : '');
+			var url = window.location.protocol + '//' +  window.location.host;
 			var endpointURLParam = '<cfoutput>#jsStringFormat(application._taffy.settings.endpointURLParam)#</cfoutput>';
 			var endpoint = resource.split('?')[0];
 			var args = '';
 			var dType = null;
 
-			if (window.location.port != 80){
-				url += ':' + window.location.port;
-			}
 			url += '<cfoutput>#cgi.SCRIPT_NAME#</cfoutput>' + '?' + endpointURLParam + '=' + encodeURIComponent(endpoint);
 			if( resource.indexOf('?') && resource.split('?')[1] ){
 				url += '&' + resource.split('?')[1];
