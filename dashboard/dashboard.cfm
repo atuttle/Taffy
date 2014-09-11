@@ -233,7 +233,7 @@
 													</cfif>
 												</cfloop>
 											</select>
-											<input type="text" class="resourceUri" value="#local.currentResource.srcUri#" onclick="this.select()" />
+											<input type="text" class="resourceUri form-control" value="#local.currentResource.srcUri#" onclick="this.select()" />
 
 											<div class="queryParams">
 												<h4>Query String Parameters: <span class="text-muted">(optional)</span></h4>
