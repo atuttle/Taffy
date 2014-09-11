@@ -107,10 +107,21 @@ $(function(){
 			if (headers['Content-Type'].indexOf('application/json') > -1 || headers['Content-Type'].indexOf('text/json') > -1){
 				//indentation!
 				if (body.length){
-					body = JSON.stringify( JSON.parse(body), null, 3 )
-							 .split('\n')
-							 .join('<br/>')
-							 .replace(/\s/g,'&nbsp;');
+					body = JSON.stringify(JSON.parse(body), null, 3);
+					// only do syntax highlighting if hljs is defined
+					if (typeof hljs === 'undefined') {
+						body = body.split('\n')
+								   .join('<br/>')
+								   .replace(/\s/g,'&nbsp;');
+					} else {
+						// syntax highlight json and then replace spaces at the start of each line (or after <br/>) with &nbsp;
+						body = hljs.highlight("json", body).value;
+						body = body.split('\n')
+								   .join('<br/>')
+								   .replace(/(\<br\/\>)(\s+)/g, function(match, p1, p2, offset, string){
+										return [p1, p2.replace(/\s/g,'&nbsp;')].join('');
+									});
+					}
 				}
 			}
 
