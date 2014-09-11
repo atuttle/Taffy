@@ -470,15 +470,12 @@
 			});
 		});
 		function submitRequest( verb, resource, headers, body, callback ){
-			var url = window.location.protocol + '//' +  window.location.host + ((window.location.port) ? ':' + window.location.port : '');
+			var url = window.location.protocol + '//' +  window.location.host;
 			var endpointURLParam = '<cfoutput>#jsStringFormat(application._taffy.settings.endpointURLParam)#</cfoutput>';
 			var endpoint = resource.split('?')[0];
 			var args = '';
 			var dType = null;
 
-			if (window.location.port != 80){
-				url += ':' + window.location.port;
-			}
 			url += '<cfoutput>#cgi.SCRIPT_NAME#</cfoutput>' + '?' + endpointURLParam + '=' + encodeURIComponent(endpoint);
 			if( resource.indexOf('?') && resource.split('?')[1] ){
 				url += '&' + resource.split('?')[1];
