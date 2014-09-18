@@ -516,5 +516,5 @@
 
 <cffunction name="getDocUrl">
 	<cfargument name="item" />
-	<cfreturn "http://docs.taffy.io/#application._taffy.version#/##" & item />
+	<cfreturn "http://docs.taffy.io/#listFirst(application._taffy.version,'-')#/##" & item />
 </cffunction>
