@@ -463,6 +463,7 @@
 		<cfset local.defaultConfig.deserializer = "taffy.core.nativeJsonDeserializer" />
 		<cfset local.defaultConfig.disableDashboard = false />
 		<cfset local.defaultConfig.disabledDashboardRedirect = "" />
+		<cfset local.defaultConfig.dashboardHeaders = {} />
 		<cfset local.defaultConfig.showDocsWhenDashboardDisabled = false />
 		<cfset local.defaultConfig.unhandledPaths = "/flex2gateway" />
 		<cfset local.defaultConfig.allowCrossDomain = false />

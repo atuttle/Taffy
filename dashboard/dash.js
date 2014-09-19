@@ -1,3 +1,9 @@
+if (!String.prototype.trim) {
+  String.prototype.trim = function () {
+    return this.replace(/^[\s\xA0]+|[\s\xA0]+$/g, '');
+  };
+}
+
 $(function(){
 
 	//hide request body form field for GET/DELETE on accordion open
@@ -84,19 +90,35 @@ $(function(){
 		loading.show();
 		submit.attr('disabled','disabled');
 
+		response.hide();
+
 		//interpolate the full request path
 		var uri = resource.data('uri')
 			,form = params( resource.find('.reqTokens form').serialize() )
 			,path = uri.supplant(form);
 
-		response.hide();
-
 		var verb = resource.find('.reqMethod option:checked').val();
 		var body = (verb === 'GET' || verb === 'DELETE') ? params(qParams(resource)) : resource.find('.reqBody textarea').val();
+		var reqHeaders = resource.find('.requestHeaders').val().replace(/\r/g, '').split('\n');
 		var headers = {
 			Accept: resource.find('.reqFormat option:checked').val()
-			,"Content-Type": "application/json"
+			,"Content-Type": (verb === 'GET' || verb === 'DELETE') ? "application/x-www-form-urlencoded" : "application/json"
 		};
+		for (var h in reqHeaders){
+			var kv = reqHeaders[h].trim().split(':');
+			if (kv[0].trim().length == 0){
+				continue;
+			}
+			if (kv.length == 2){
+				headers[ kv[0].trim() ] = kv[1].trim();
+			}else if (kv.length == 1){
+				headers [kv[0].trim() ] = "";
+			}else{
+				var k = kv.shift().trim();
+				var v = kv.join(':').trim();
+				headers[ k ] = v;
+			}
+		}
 
 		submitRequest(verb, path, headers, body, function(timeSpent, status, headers, body){
 			loading.hide();

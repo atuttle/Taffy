@@ -279,6 +279,14 @@
 												</div>
 											</cfif>
 
+											<div class="reqHeaders">
+												<h4>Request Headers:</h4>
+												<textarea
+													rows="#listLen(structKeyList(application._taffy.settings.dashboardHeaders, '|'), '|')+1#"
+													class="form-control input-sm requestHeaders"
+													><cfloop list="#structKeyList(application._taffy.settings.dashboardHeaders, '|')#" delimiters="|" index="k">#k#: #application._taffy.settings.dashboardHeaders[k]##chr(13)##chr(10)#</cfloop></textarea>
+											</div>
+
 											<div class="reqBody">
 												<h4>Request Body:</h4>
 												<textarea id="#local.currentResource.beanName#_RequestBody" class="form-control input-sm" rows="5"></textarea>
