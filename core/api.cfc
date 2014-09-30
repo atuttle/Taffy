@@ -833,7 +833,7 @@
 				</cfif>
 				<cfif ucase(left(local.funcs[local.f].name, 7)) eq "GETFROM" and len(local.mime)>
 					<cfloop list="#local.mime#" delimiters=",;" index="local.m">
-						<cfset response[local.m] = local.funcs[local.f].name />
+						<cfset local.response[local.m] = local.funcs[local.f].name />
 					</cfloop>
 				</cfif>
 			</cfloop>
