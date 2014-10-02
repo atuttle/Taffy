@@ -233,7 +233,7 @@
 													</cfif>
 												</cfloop>
 											</select>
-											<input type="text" class="resourceUri" value="#local.currentResource.srcUri#" onclick="this.select()" />
+											<input type="text" class="resourceUri form-control" value="#local.currentResource.srcUri#" onclick="this.select()" />
 
 											<div class="queryParams">
 												<h4>Query String Parameters: <span class="text-muted">(optional)</span></h4>
@@ -278,6 +278,14 @@
 													</form>
 												</div>
 											</cfif>
+
+											<div class="reqHeaders">
+												<h4>Request Headers:</h4>
+												<textarea
+													rows="#listLen(structKeyList(application._taffy.settings.dashboardHeaders, '|'), '|')+1#"
+													class="form-control input-sm requestHeaders"
+													><cfloop list="#structKeyList(application._taffy.settings.dashboardHeaders, '|')#" delimiters="|" index="k">#k#: #application._taffy.settings.dashboardHeaders[k]##chr(13)##chr(10)#</cfloop></textarea>
+											</div>
 
 											<div class="reqBody">
 												<h4>Request Body:</h4>
@@ -516,5 +524,5 @@
 
 <cffunction name="getDocUrl">
 	<cfargument name="item" />
-	<cfreturn "http://docs.taffy.io/#application._taffy.version#/##" & item />
+	<cfreturn "http://docs.taffy.io/#listFirst(application._taffy.version,'-')#/##" & item />
 </cffunction>

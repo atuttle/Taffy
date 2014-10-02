@@ -446,7 +446,7 @@
 		<cfparam name="variables.framework" default="#structNew()#" />
 		<cfheader name="X-TAFFY-RELOADED" value="true" />
 		<cfset local._taffy = structNew() />
-		<cfset local._taffy.version = "3.0.0-alpha" />
+		<cfset local._taffy.version = "3.0.0-RC2" />
 		<cfset local._taffy.endpoints = structNew() />
 		<!--- default settings --->
 		<cfset local.defaultConfig = structNew() />
@@ -463,6 +463,7 @@
 		<cfset local.defaultConfig.deserializer = "taffy.core.nativeJsonDeserializer" />
 		<cfset local.defaultConfig.disableDashboard = false />
 		<cfset local.defaultConfig.disabledDashboardRedirect = "" />
+		<cfset local.defaultConfig.dashboardHeaders = {} />
 		<cfset local.defaultConfig.showDocsWhenDashboardDisabled = false />
 		<cfset local.defaultConfig.unhandledPaths = "/flex2gateway" />
 		<cfset local.defaultConfig.allowCrossDomain = false />
@@ -832,7 +833,7 @@
 				</cfif>
 				<cfif ucase(left(local.funcs[local.f].name, 7)) eq "GETFROM" and len(local.mime)>
 					<cfloop list="#local.mime#" delimiters=",;" index="local.m">
-						<cfset response[local.m] = local.funcs[local.f].name />
+						<cfset local.response[local.m] = local.funcs[local.f].name />
 					</cfloop>
 				</cfif>
 			</cfloop>
