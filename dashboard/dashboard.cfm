@@ -207,7 +207,7 @@
 							<div class="panel-heading">
 								<h4 class="panel-title">
 									<a href="###local.currentResource.beanName#" class="accordion-toggle" data-toggle="collapse" data-parent="##resourcesAccordion">
-										#replaceNoCase(local.currentResource.beanName,'resource','','ALL')#
+										#local.currentResource.beanName#
 									</a>
 									<cfloop list="DELETE|warning,PATCH|warning,PUT|warning,POST|danger,GET|primary" index="local.verb">
 										<cfif structKeyExists(local.currentResource.methods, listFirst(local.verb,'|'))>
