@@ -351,6 +351,9 @@
 										<cfset local.found = { get=false, post=false, put=false, patch=false, delete=false } />
 										<cfloop from="1" to="#arrayLen(local.docData.functions)#" index="local.f">
 											<cfset local.func = local.docData.functions[local.f] />
+											<cfif !listFindNoCase('get,post,put,patch,delete',local.func.name)>
+												<cfcontinue />
+											</cfif>
 											<cfset local.found[local.func.name] = true />
 											<div class="col-md-12"><strong>#local.func.name#</strong></div>
 											<cfif structKeyExists(local.func, "hint")>
