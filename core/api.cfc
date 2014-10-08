@@ -1039,8 +1039,12 @@
 			<cfset local.beanList = "" />
 			<cfloop collection="#local.beanInfo#" item="local.beanName">
 				<cfif structKeyExists(local.beanInfo[local.beanName],'name')
-					  AND local.beanName NEQ local.beanInfo[local.beanName].name
-					  AND isInstanceOf(arguments.bf.getBean(local.beanName),'taffy.core.resource')>
+						AND structKeyExists(local.beanInfo[local.beanName],'qualifier')
+						AND (
+							!structKeyExists(local.beanInfo, local.beanInfo[local.beanName].name & local.beanInfo[local.beanName].qualifier)
+							OR local.beanName EQ local.beanInfo[local.beanName].name & local.beanInfo[local.beanName].qualifier
+						)
+						AND isInstanceOf(arguments.bf.getBean(local.beanName),'taffy.core.resource')>
 					<cfset local.beanList = listAppend(local.beanList,local.beanName) />
 				</cfif>
 			</cfloop>
