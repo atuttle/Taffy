@@ -11,6 +11,7 @@ It's terse because it uses convention over configuration, and doesn't require wr
 It's easy to debug because error messages are returned as JSON by default and it optionally integrates with your favorite IoC libraries like **ColdSpring** and **DI/1**.
 
 ## Currently Supported Versions
+[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/atuttle/Taffy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 * Taffy 2.2.x
 * Taffy 2.1.x
