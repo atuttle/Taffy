@@ -48,6 +48,7 @@
 		<cfset var local = structNew() />
 		<cfset request.unhandled = false />
 		<cfset local.reloadedInThisRequest = false />
+		<cfset request.taffyReloaded = false />
 		<!--- this will probably happen if taffy is sharing an app name with an existing application so that you can use its application context --->
 		<cfif not structKeyExists(application, "_taffy")>
 			<cfset onApplicationStart() />
@@ -445,6 +446,7 @@
 		<cfset var local = structNew() />
 		<cfparam name="variables.framework" default="#structNew()#" />
 		<cfheader name="X-TAFFY-RELOADED" value="true" />
+		<cfset request.taffyReloaded = true />
 		<cfset local._taffy = structNew() />
 		<cfset local._taffy.version = "3.0.0-RC2" />
 		<cfset local._taffy.endpoints = structNew() />
