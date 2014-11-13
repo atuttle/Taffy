@@ -78,4 +78,7 @@
 		<cfreturn noData().withStatus(200) />
 	</cffunction>
 
+	<cffunction name="someInternalMethod" hint="you should not see this documentation...">
+	</cffunction>
+
 </cfcomponent>

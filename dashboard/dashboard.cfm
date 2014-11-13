@@ -352,7 +352,11 @@
 										<cfloop from="1" to="#arrayLen(local.docData.functions)#" index="local.f">
 											<cfset local.func = local.docData.functions[local.f] />
 											<cfset local.found[local.func.name] = true />
-											<div class="col-md-12"><strong>#local.func.name#</strong></div>
+											<!--- exclude methods that are not exposed as REST verbs --->
+											<cfif !listFindNoCase('get,post,put,delete',local.func.name) AND !structKeyExists(local.func,'taffy_verb') AND !structKeyExists(local.func,'taffy:verb')>
+												<cfscript>continue;</cfscript><!--- stupid CF8 --->
+											</cfif>
+ 											<div class="col-md-12"><strong>#local.func.name#</strong></div>
 											<cfif structKeyExists(local.func, "hint")>
 												<div class="col-md-12 doc">#local.func.hint#</div>
 											</cfif>
