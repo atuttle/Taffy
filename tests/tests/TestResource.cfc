@@ -11,7 +11,7 @@
 			makePublic(variables.resource, "representationOf");
 			local.result = variables.resource.representationOf(10);
 			local.meta = getMetadata(local.result);
-			debug(local.meta);
+			// debug(local.meta);
 			assertEquals(true, eventuallyInherits(local.meta, 'taffy.core.baseSerializer'));
 		}
 
@@ -21,12 +21,12 @@
 			queryAddRow(local.before);
 			querySetCell(local.before, "Foo", 42, 1);
 			querySetCell(local.before, "Bar", "fubar", 1);
-			debug(local.before);
+			// debug(local.before);
 			local.after = variables.resource.queryToArray(local.before);
-			debug(local.after);
+			// debug(local.after);
 			local.keyList = structKeyList(local.after[1]);
 			local.serialized = serializeJSON(local.after);
-			debug(local.serialized);
+			// debug(local.serialized);
 
 			assertTrue( (local.keyList eq "Foo,Bar" or local.keyList eq "Bar,Foo"), 'column name case is not as expected');
 			assertTrue( (local.serialized eq '[{"Foo":42,"Bar":"fubar"}]') or (local.serialized eq '[{"Bar":"fubar","Foo":42}]') );

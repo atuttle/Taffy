@@ -1,3 +1,5 @@
+<cfsetting requesttimeout="600" />
+
 <cfinvoke component="mxunit.runner.DirectoryTestSuite"
           method="run"
           directory="#expandPath('/Taffy/tests/tests')#"

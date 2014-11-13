@@ -12,8 +12,8 @@
 	function noData_returns_empty_rep_obj(){
 		local.result = variables.serializer.noData();
 		local.meta = getMetaData(local.result);
-		debug(local.meta);
-		debug(local.result.getData());
+		// debug(local.meta);
+		// debug(local.result.getData());
 		assertEquals('taffy.core.baseSerializer', local.meta.fullname);
 		assertEquals("", local.result.getData());
 	}
