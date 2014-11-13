@@ -15,10 +15,15 @@
 			return structKeyExists(this.transients, arguments.beanName);
 		}
 		function getBean(beanName){
+			var b = 0;
+			var meta = 0;
 			if (beanExists(arguments.beanName, false)){
 				return this.beans[arguments.beanName];
 			}else if (transientExists(arguments.beanName)){
-				return createObject('component', this.transients[arguments.beanName]);
+				b = createObject('component', this.transients[arguments.beanName]);
+				meta = getMetadata(b);
+				_recurse_ResolveDependencies(b, meta);
+				return b;
 			}else{
 				throwError(message="Bean name '#arguments.beanName#' not found.", type="Taffy.Factory.BeanNotFound");
 			}
@@ -79,8 +84,9 @@
 		</cfloop>
 		<!--- resolve dependencies --->
 		<cfloop list="#structKeyList(this.beans)#" index="local.b">
-			<cfset local.beanMeta = getMetadata(this.beans[local.b]) />
-			<cfset _recurse_ResolveDependencies(local.b, local.beanMeta) />
+			<cfset local.bean = this.beans[local.b] />
+			<cfset local.beanMeta = getMetadata(local.bean) />
+			<cfset _recurse_ResolveDependencies(local.bean, local.beanMeta) />
 		</cfloop>
 	</cffunction>
 
@@ -141,7 +147,7 @@
 	</cffunction>
 
 	<cffunction name="_recurse_ResolveDependencies" access="private">
-		<cfargument name="beanName" type="string" required="true" />
+		<cfargument name="bean" required="true" />
 		<cfargument name="metaData" type="struct" required="true" />
 		<cfset var local = structNew() />
 		<cfif structKeyExists(arguments.metaData, "functions") and isArray(arguments.metaData.functions)>
@@ -150,7 +156,7 @@
 				<cfif len(local.fname) gt 3>
 					<cfset local.propName = right(local.fname, len(local.fname)-3) />
 					<cfif left(local.fname, 3) eq "set" and beanExists(local.propName)>
-						<cfset evaluate("this.beans['#arguments.beanName#'].#local.fname#(getBean('#local.propName#'))") />
+						<cfset evaluate("arguments.bean.#local.fname#(getBean('#local.propName#'))") />
 					</cfif>
 				</cfif>
 			</cfloop>
@@ -158,14 +164,13 @@
 		<cfif structKeyExists(arguments.metaData, "properties") and isArray(arguments.metaData.properties)>
 			<cfloop from="1" to="#arrayLen(arguments.metaData.properties)#" index="local.p">
 				<cfset local.propName = arguments.metaData.properties[local.p].name />
-				<cfif beanExists(local.propName)>
-					<cfset local.bean = getBean(arguments.beanName) />
-					<cfset local.bean[local.propName] = getBean(local.propName) />
+				<cfif beanExists(local.propName) or transientExists(local.propName)>
+					<cfset arguments.bean[local.propName] = getBean(local.propName) />
 				</cfif>
 			</cfloop>
 		</cfif>
 		<cfif structKeyExists(arguments.metaData, "extends") and isStruct(arguments.metaData.extends)>
-			<cfset _recurse_ResolveDependencies(arguments.beanName, arguments.metaData.extends) />
+			<cfset _recurse_ResolveDependencies(arguments.bean, arguments.metaData.extends) />
 		</cfif>
 	</cffunction>
 	<!--- proxy function for CF8 compatibility --->

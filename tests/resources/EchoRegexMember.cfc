@@ -18,9 +18,9 @@
 	</cffunction>
 
 
-	<cffunction name="setEchoMember">
-		<cfargument name="echoMember" />
-		<cfset this.echoMember = arguments.echoMember />
+	<cffunction name="setDependency2">
+		<cfargument name="dependency2" />
+		<cfset this.dependency2 = arguments.dependency2 />
 	</cffunction>
 
 </cfcomponent>

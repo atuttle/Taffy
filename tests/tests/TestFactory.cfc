@@ -21,20 +21,36 @@
 			}
 		}
 
-		function autowires_properties(){
+		function autowires_properties_in_beans(){
 			variables.factory.loadBeansFromPath( expandPath('/taffy/tests/resources'), 'taffy.tests.resources', expandPath('/taffy/tests/resources'), true );
 			local.bean = variables.factory.getBean( 'EchoMember' );
-			debug(local.bean);
-			assertTrue( structKeyExists(local.bean, "customJsonSerializer") );
-			assertFalse( isSimpleValue(local.bean.customJsonSerializer) );
+			// debug(local.bean);
+			assertTrue( structKeyExists(local.bean, "dependency1") );
+			assertFalse( isSimpleValue(local.bean.dependency1) );
 		}
 
-		function autowires_setters(){
+		function autowires_setters_in_beans(){
 			variables.factory.loadBeansFromPath( expandPath('/taffy/tests/resources'), 'taffy.tests.resources', expandPath('/taffy/tests/resources'), true );
 			local.bean = variables.factory.getBean( 'EchoRegexMember' );
+			// debug(local.bean);
+			assertTrue( structKeyExists(local.bean, "dependency2") );
+			assertFalse( isSimpleValue(local.bean.dependency2) );
+		}
+
+		function autowires_properties_in_transients(){
+			variables.factory.loadBeansFromPath( expandPath('/taffy/tests/resources'), 'taffy.tests.resources', expandPath('/taffy/tests/resources'), true );
+			local.bean = variables.factory.getBean( 'CustomJsonSerializer' );
+			// debug(local.bean);
+			assertTrue( structKeyExists(local.bean, "dependency1") );
+			assertFalse( isSimpleValue(local.bean.dependency1) );
+		}
+
+		function autowires_setters_in_transients(){
+			variables.factory.loadBeansFromPath( expandPath('/taffy/tests/resources'), 'taffy.tests.resources', expandPath('/taffy/tests/resources'), true );
+			local.bean = variables.factory.getBean( 'CustomJsonSerializer' );
 			debug(local.bean);
-			assertTrue( structKeyExists(local.bean, "echoMember") );
-			assertFalse( isSimpleValue(local.bean.echoMember) );
+			assertTrue( structKeyExists(local.bean, "dependency2") );
+			assertFalse( isSimpleValue(local.bean.dependency2) );
 		}
 
 		function skips_resources_with_errors(){
