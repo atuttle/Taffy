@@ -54,8 +54,6 @@ We have [a mailing list for Taffy Users][1]. Feel free to ask for help, discuss 
 
 I also frequent/idle in the **#ColdFusion** channel [on Freenode](https://kiwiirc.com/client/irc.freenode.net/) (IRC).
 
-And just for fun, I'm giving Gitter a shot for project-specific chat: [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/atuttle/Taffy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
 ## Open Source!
 
 Part of the beauty of open source is that _you can affect change_. You can help improve the documentation, fix a bug, add tests, or even propose new features. Nothing is off limits, and I try to be very responsive to pull requests and on the mailing list.
