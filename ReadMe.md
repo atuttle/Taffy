@@ -12,9 +12,8 @@ It's easy to debug because error messages are returned as JSON by default and it
 
 ## Currently Supported Versions
 
+* Taffy 3.0.x
 * Taffy 2.2.x
-* Taffy 2.1.x
-* Taffy 1.3.x
 
 If you file a bug or ask for support please indicate which version of Taffy you're using. If it's an older release, we usually ask you to upgrade. Officially, we promise to support the current and previous **minor** releases and the last **minor** release of the previous **major** release. Taffy follows versioning guidelines defined in [semver](http://semver.org/).
 

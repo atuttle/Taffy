@@ -48,6 +48,7 @@
 		<cfset var local = structNew() />
 		<cfset request.unhandled = false />
 		<cfset local.reloadedInThisRequest = false />
+		<cfset request.taffyReloaded = false />
 		<!--- this will probably happen if taffy is sharing an app name with an existing application so that you can use its application context --->
 		<cfif not structKeyExists(application, "_taffy")>
 			<cfset onApplicationStart() />
@@ -445,8 +446,9 @@
 		<cfset var local = structNew() />
 		<cfparam name="variables.framework" default="#structNew()#" />
 		<cfheader name="X-TAFFY-RELOADED" value="true" />
+		<cfset request.taffyReloaded = true />
 		<cfset local._taffy = structNew() />
-		<cfset local._taffy.version = "3.0.0-alpha" />
+		<cfset local._taffy.version = "3.0.0" />
 		<cfset local._taffy.endpoints = structNew() />
 		<!--- default settings --->
 		<cfset local.defaultConfig = structNew() />
@@ -463,6 +465,7 @@
 		<cfset local.defaultConfig.deserializer = "taffy.core.nativeJsonDeserializer" />
 		<cfset local.defaultConfig.disableDashboard = false />
 		<cfset local.defaultConfig.disabledDashboardRedirect = "" />
+		<cfset local.defaultConfig.dashboardHeaders = {} />
 		<cfset local.defaultConfig.showDocsWhenDashboardDisabled = false />
 		<cfset local.defaultConfig.unhandledPaths = "/flex2gateway" />
 		<cfset local.defaultConfig.allowCrossDomain = false />
@@ -526,7 +529,7 @@
 			<!--- only using external factory, so create a pointer to it --->
 			<cfset local._taffy.factory = local._taffy.externalBeanFactory />
 			<!--- since external factory is only factory, check it for taffy resources --->
-			<cfset local.beanList = getBeanListFromExternalFactory() />
+			<cfset local.beanList = getBeanListFromExternalFactory( local._taffy.externalBeanFactory ) />
 			<cfset local._taffy.endpoints = cacheBeanMetaData(local._taffy.externalBeanFactory, local.beanList) />
  		<cfelse>
  			<cfset local.noResources = true />
@@ -832,7 +835,7 @@
 				</cfif>
 				<cfif ucase(left(local.funcs[local.f].name, 7)) eq "GETFROM" and len(local.mime)>
 					<cfloop list="#local.mime#" delimiters=",;" index="local.m">
-						<cfset response[local.m] = local.funcs[local.f].name />
+						<cfset local.response[local.m] = local.funcs[local.f].name />
 					</cfloop>
 				</cfif>
 			</cfloop>
@@ -1028,17 +1031,18 @@
 	</cffunction>
 
 	<cffunction name="getBeanListFromExternalFactory" output="false" access="private" returntype="String">
-		<cfset var beanFactoryMeta = getMetadata(application._taffy.externalBeanFactory) />
+		<cfargument name="bf" required="true" />
+		<cfset var beanFactoryMeta = getMetadata(arguments.bf) />
 		<cfif lcase(left(beanFactoryMeta.name, 10)) eq "coldspring">
-			<cfreturn getBeanListFromColdSpring() />
+			<cfreturn getBeanListFromColdSpring( arguments.bf ) />
 		<cfelseif beanFactoryMeta.name contains "ioc">
 			<!--- this isn't a perfect test (contains "ioc") but it's all we can do for now... --->
-			<cfset local.beanInfo = application._taffy.externalBeanFactory.getBeanInfo().beanInfo />
+			<cfset local.beanInfo = arguments.bf.getBeanInfo().beanInfo />
 			<cfset local.beanList = "" />
 			<cfloop collection="#local.beanInfo#" item="local.beanName">
 				<cfif structKeyExists(local.beanInfo[local.beanName],'name')
 					  AND local.beanName NEQ local.beanInfo[local.beanName].name
-					  AND isInstanceOf(application._taffy.externalBeanFactory.getBean(local.beanName),'taffy.core.resource')>
+					  AND isInstanceOf(arguments.bf.getBean(local.beanName),'taffy.core.resource')>
 					<cfset local.beanList = listAppend(local.beanList,local.beanName) />
 				</cfif>
 			</cfloop>
@@ -1048,8 +1052,9 @@
 	</cffunction>
 
 	<cffunction name="getBeanListFromColdSpring" access="private" output="false" returntype="string">
+		<cfargument name="bf" required="true" />
 		<cfset var local = StructNew() />
-		<cfset local.beans = application._taffy.externalBeanFactory.getBeanDefinitionList() />
+		<cfset local.beans = arguments.bf.getBeanDefinitionList() />
 		<cfset local.beanList = "" />
 		<cfloop collection="#local.beans#" item="local.beanName">
 			<!---

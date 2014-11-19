@@ -1,6 +1,6 @@
 <cfcomponent extends="taffy.core.resource" taffy:uri="/echo/{id}" hint="I am the component hint.">
 
-	<cfproperty name="customJsonSerializer" default="initial" />
+	<cfproperty name="dependency1" />
 
 	<cffunction name="get" hint="I am the function hint.">
 		<cfargument name="id" hint="I am the argument hint." />

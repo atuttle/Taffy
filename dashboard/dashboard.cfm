@@ -5,6 +5,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<style>
 		<cfinclude template="dash.css" />
+		<cfinclude template="highlight-github.min.css" />
 	</style>
 </head>
 <body>
@@ -232,7 +233,7 @@
 													</cfif>
 												</cfloop>
 											</select>
-											<input type="text" class="resourceUri" value="#local.currentResource.srcUri#" onclick="this.select()" />
+											<input type="text" class="resourceUri form-control" value="#local.currentResource.srcUri#" onclick="this.select()" />
 
 											<div class="queryParams">
 												<h4>Query String Parameters: <span class="text-muted">(optional)</span></h4>
@@ -277,6 +278,14 @@
 													</form>
 												</div>
 											</cfif>
+
+											<div class="reqHeaders">
+												<h4>Request Headers:</h4>
+												<textarea
+													rows="#listLen(structKeyList(application._taffy.settings.dashboardHeaders, '|'), '|')+1#"
+													class="form-control input-sm requestHeaders"
+													><cfloop list="#structKeyList(application._taffy.settings.dashboardHeaders, '|')#" delimiters="|" index="k">#k#: #application._taffy.settings.dashboardHeaders[k]##chr(13)##chr(10)#</cfloop></textarea>
+											</div>
 
 											<div class="reqBody">
 												<h4>Request Body:</h4>
@@ -343,7 +352,11 @@
 										<cfloop from="1" to="#arrayLen(local.docData.functions)#" index="local.f">
 											<cfset local.func = local.docData.functions[local.f] />
 											<cfset local.found[local.func.name] = true />
-											<div class="col-md-12"><strong>#local.func.name#</strong></div>
+											<!--- exclude methods that are not exposed as REST verbs --->
+											<cfif !listFindNoCase('get,post,put,delete,patch',local.func.name) AND !structKeyExists(local.func,'taffy_verb') AND !structKeyExists(local.func,'taffy:verb')>
+												<cfscript>continue;</cfscript><!--- stupid CF8 --->
+											</cfif>
+ 											<div class="col-md-12"><strong>#local.func.name#</strong></div>
 											<cfif structKeyExists(local.func, "hint")>
 												<div class="col-md-12 doc">#local.func.hint#</div>
 											</cfif>
@@ -419,9 +432,12 @@
 	<script type="text/javascript">
 		<cfinclude template="jquery.min.js" />
 		<cfinclude template="bootstrap.min.js" />
+		<cfinclude template="highlight.min.js" />
 		<cfinclude template="dash.js" />
 
 		$(function(){
+			hljs.initHighlighting();
+
 			var baseurl = '<cfoutput>#cgi.script_name#?dashboard</cfoutput>';
 			$("#reload").click(function(){
 				var reloadUrl = baseurl + '<cfoutput>&#application._taffy.settings.reloadKey#=#application._taffy.settings.reloadPassword#</cfoutput>';
@@ -466,15 +482,12 @@
 			});
 		});
 		function submitRequest( verb, resource, headers, body, callback ){
-			var url = window.location.protocol + '//' +  window.location.host + ((window.location.port) ? ':' + window.location.port : '');
+			var url = window.location.protocol + '//' +  window.location.host;
 			var endpointURLParam = '<cfoutput>#jsStringFormat(application._taffy.settings.endpointURLParam)#</cfoutput>';
 			var endpoint = resource.split('?')[0];
 			var args = '';
 			var dType = null;
 
-			if (window.location.port != 80){
-				url += ':' + window.location.port;
-			}
 			url += '<cfoutput>#cgi.SCRIPT_NAME#</cfoutput>' + '?' + endpointURLParam + '=' + encodeURIComponent(endpoint);
 			if( resource.indexOf('?') && resource.split('?')[1] ){
 				url += '&' + resource.split('?')[1];
@@ -515,5 +528,5 @@
 
 <cffunction name="getDocUrl">
 	<cfargument name="item" />
-	<cfreturn "http://docs.taffy.io/#application._taffy.version#/##" & item />
+	<cfreturn "http://docs.taffy.io/#listFirst(application._taffy.version,'-')#/##" & item />
 </cffunction>

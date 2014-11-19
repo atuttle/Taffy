@@ -21,43 +21,59 @@
 			}
 		}
 
-		function autowires_properties(){
+		function autowires_properties_in_beans(){
 			variables.factory.loadBeansFromPath( expandPath('/taffy/tests/resources'), 'taffy.tests.resources', expandPath('/taffy/tests/resources'), true );
 			local.bean = variables.factory.getBean( 'EchoMember' );
-			debug(local.bean);
-			assertTrue( structKeyExists(local.bean, "customJsonSerializer") );
-			assertFalse( isSimpleValue(local.bean.customJsonSerializer) );
+			// debug(local.bean);
+			assertTrue( structKeyExists(local.bean, "dependency1") );
+			assertFalse( isSimpleValue(local.bean.dependency1) );
 		}
 
-		function autowires_setters(){
+		function autowires_setters_in_beans(){
 			variables.factory.loadBeansFromPath( expandPath('/taffy/tests/resources'), 'taffy.tests.resources', expandPath('/taffy/tests/resources'), true );
 			local.bean = variables.factory.getBean( 'EchoRegexMember' );
-			debug(local.bean);
-			assertTrue( structKeyExists(local.bean, "echoMember") );
-			assertFalse( isSimpleValue(local.bean.echoMember) );
+			// debug(local.bean);
+			assertTrue( structKeyExists(local.bean, "dependency2") );
+			assertFalse( isSimpleValue(local.bean.dependency2) );
+		}
+
+		function autowires_properties_in_transients(){
+			variables.factory.loadBeansFromPath( expandPath('/taffy/tests/resources'), 'taffy.tests.resources', expandPath('/taffy/tests/resources'), true );
+			local.bean = variables.factory.getBean( 'CustomJsonSerializer' );
+			// debug(local.bean);
+			assertTrue( structKeyExists(local.bean, "dependency1") );
+			assertFalse( isSimpleValue(local.bean.dependency1) );
+		}
+
+		function autowires_setters_in_transients(){
+			variables.factory.loadBeansFromPath( expandPath('/taffy/tests/resources'), 'taffy.tests.resources', expandPath('/taffy/tests/resources'), true );
+			local.bean = variables.factory.getBean( 'CustomJsonSerializer' );
+			// debug(local.bean);
+			assertTrue( structKeyExists(local.bean, "dependency2") );
+			assertFalse( isSimpleValue(local.bean.dependency2) );
 		}
 
 		function skips_resources_with_errors(){
 			variables.factory.loadBeansFromPath( expandPath('/taffy/tests/resourcesError'), 'taffy.tests.resourcesError', expandPath('/taffy/tests/resourcesError'), true );
-			debug(application._taffy.status);
+			// debug(application._taffy.status);
 			assertTrue(structKeyExists(application._taffy.status, "skippedResources"));
 		}
 
 		function lists_skipped_resources(){
 			variables.factory.loadBeansFromPath( expandPath('/taffy/tests/resourcesError'), 'taffy.tests.resourcesError', expandPath('/taffy/tests/resourcesError'), true );
-			debug(application._taffy.status);
+			// debug(application._taffy.status);
 			assertTrue(structKeyExists(application._taffy.status, "skippedResources"));
 			assertTrue( arrayLen(application._taffy.status.skippedResources) gt 0 );
 		}
 
 		function clears_skipped_resources_on_reload(){
 			variables.factory.loadBeansFromPath( expandPath('/taffy/tests/resourcesError'), 'taffy.tests.resourcesError', expandPath('/taffy/tests/resourcesError'), true );
-			debug(application._taffy.status);
+			// debug(application._taffy.status);
 			assertTrue(structKeyExists(application._taffy.status, "skippedResources"));
 			assertTrue( arrayLen(application._taffy.status.skippedResources) gt 0 );
 
 			variables.factory.loadBeansFromPath( expandPath('/taffy/tests/resources'), 'taffy.tests.resources', expandPath('/taffy/tests/resources'), true );
-			debug(application._taffy.status);
+			// debug(application._taffy.status);
 			assertTrue(structKeyExists(application._taffy.status, "skippedResources"));
 			assertTrue( ArrayLen(application._taffy.status.skippedResources) eq 0, "Expected skipped resources array to be empty but it wasn't" );
 		}
@@ -66,11 +82,11 @@
 			var local = {};
 			//this resource+method explicitly sets response status of 999
 			local.result = apiCall("get", "/echo/2.json", "foo=bar");
-			debug(local.result);
+			// debug(local.result);
 			assertEquals(999, local.result.responseHeader.status_code);
 			//this resource+method usees the default response status => 200=passing test, 999=failing test
 			local.result = apiCall("get", "/echo/tunnel/2.json", "foo=bar");
-			debug(local.result);
+			// debug(local.result);
 			assertEquals(200, local.result.responseHeader.status_code);
 		}
 
