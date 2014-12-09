@@ -530,7 +530,7 @@
 			<cfset local._taffy.factory = local._taffy.externalBeanFactory />
 			<!--- since external factory is only factory, check it for taffy resources --->
 			<cfset local.beanList = getBeanListFromExternalFactory( local._taffy.externalBeanFactory ) />
-			<cfset local._taffy.endpoints = cacheBeanMetaData(local._taffy.externalBeanFactory, local.beanList) />
+			<cfset local._taffy.endpoints = cacheBeanMetaData(local._taffy.externalBeanFactory, local.beanList, local._taffy) />
  		<cfelse>
  			<cfset local.noResources = true />
 		</cfif>
