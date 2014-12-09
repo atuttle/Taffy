@@ -174,9 +174,13 @@
 					<cfloop from="1" to="#arrayLen(application._taffy.status.skippedResources)#" index="local.i">
 						<cfset local.err = application._taffy.status.skippedResources[local.i] />
 						<div class="alert alert-warning">
-							<strong class="label label-warning"><cfoutput>#local.err.resource#</cfoutput></strong> contains a syntax error.
-							<cfif structKeyExists(local.err.exception, 'tagContext')>
-								<strong>Error on line #local.err.exception.tagcontext[1].line#:</strong>
+							<cfif structKeyExists(local.err, "Exception") AND structKeyExists(local.err.Exception, "ErrorCode") AND local.err.Exception.ErrorCode EQ "taffy.resources.DuplicateUriPattern">
+								<strong class="label label-warning"><cfoutput>#local.err.resource#</cfoutput></strong> contains a conflicting URI.
+							<cfelse>
+								<strong class="label label-warning"><cfoutput>#local.err.resource#</cfoutput></strong> contains a syntax error.
+								<cfif structKeyExists(local.err.exception, 'tagContext')>
+									<strong>Error on line #local.err.exception.tagcontext[1].line#:</strong>
+								</cfif>
 							</cfif>
 							<hr/>
 							<code>
@@ -203,10 +207,11 @@
 				<cfoutput>
 					<cfloop from="1" to="#arrayLen(application._taffy.uriMatchOrder)#" index="local.resource">
 						<cfset local.currentResource = application._taffy.endpoints[application._taffy.uriMatchOrder[local.resource]] />
+						<cfset local.resourceHTTPID = local.currentResource.beanName & "_" & hash(local.currentResource.srcURI) />
 						<div class="panel panel-default">
 							<div class="panel-heading">
 								<h4 class="panel-title">
-									<a href="###local.currentResource.beanName#" class="accordion-toggle" data-toggle="collapse" data-parent="##resourcesAccordion">
+									<a href="###local.resourceHTTPID#" class="accordion-toggle" data-toggle="collapse" data-parent="##resourcesAccordion">
 										#local.currentResource.beanName#
 									</a>
 									<cfloop list="DELETE|warning,PATCH|warning,PUT|warning,POST|danger,GET|primary" index="local.verb">
@@ -219,7 +224,7 @@
 									<code style="float:right; margin-top: -15px; display: inline-block;">#local.currentResource.srcUri#</code>
 								</h4>
 							</div>
-							<div class="panel-collapse collapse" id="#local.currentResource.beanName#">
+							<div class="panel-collapse collapse" id="#local.resourceHTTPID#">
 								<div class="panel-body resourceWrapper">
 									<div class="col-md-6 runner">
 										<div class="well resource" data-uri="#local.currentResource.srcUri#" data-bean-name="#local.currentResource.beanName#">
@@ -268,10 +273,10 @@
 														<cfloop from="1" to="#arrayLen(local.currentResource.tokens)#" index="local.token">
 															<div class="form-group row">
 																<div class="col-md-3">
-																	<label class="control-label" for="token_#local.currentResource.beanName#_#local.currentResource.tokens[local.token]#">#local.currentResource.tokens[local.token]#:</label>
+																	<label class="control-label" for="token_#local.resourceHTTPID#_#local.currentResource.tokens[local.token]#">#local.currentResource.tokens[local.token]#:</label>
 																</div>
 																<div class="col-md-6">
-																	<input id="token_#local.currentResource.beanName#_#local.currentResource.tokens[local.token]#" name="#local.currentResource.tokens[local.token]#" type="text" class="form-control input-sm" />
+																	<input id="token_#local.resourceHTTPID#_#local.currentResource.tokens[local.token]#" name="#local.currentResource.tokens[local.token]#" type="text" class="form-control input-sm" />
 																</div>
 															</div>
 														</cfloop>
@@ -289,7 +294,7 @@
 
 											<div class="reqBody">
 												<h4>Request Body:</h4>
-												<textarea id="#local.currentResource.beanName#_RequestBody" class="form-control input-sm" rows="5"></textarea>
+												<textarea id="#local.resourceHTTPID#_RequestBody" class="form-control input-sm" rows="5"></textarea>
 												<cfset local.md = getMetaData(application._taffy.factory.getBean(local.currentResource.beanName)) />
 												<cfif structKeyExists(local.md,"functions")>
 													<cfset local.functions = local.md.functions />
@@ -322,8 +327,8 @@
 														</cfloop>
 														<!--- save to page JS for runtime reference --->
 														<script>
-															taffy.resources['#local.currentResource.beanName#'] = taffy.resources['#local.currentResource.beanName#'] || {};
-															taffy.resources['#local.currentResource.beanName#']['#lcase(local.functions[local.f].name)#'] = #serializeJson(local.args)#;
+															taffy.resources['#local.resourceHTTPID#'] = taffy.resources['#local.currentResource.beanName#'] || {};
+															taffy.resources['#local.resourceHTTPID#']['#lcase(local.functions[local.f].name)#'] = #serializeJson(local.args)#;
 														</script>
 													</cfif>
 												</cfloop>

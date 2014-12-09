@@ -514,9 +514,9 @@
 		<cfif directoryExists(local.resourcePath)>
 			<!--- setup internal bean factory --->
 			<cfset local._taffy.factory = createObject("component", "taffy.core.factory").init() />
-			<cfset local._taffy.factory.loadBeansFromPath(local.resourcePath, guessResourcesCFCPath(), guessResourcesFullPath(), true) />
+			<cfset local._taffy.factory.loadBeansFromPath(local.resourcePath, guessResourcesCFCPath(), guessResourcesFullPath(), true, local._taffy) />
 			<cfset local._taffy.beanList = local._taffy.factory.getBeanList() />
-			<cfset local._taffy.endpoints = cacheBeanMetaData(local._taffy.factory, local._taffy.beanList) />
+			<cfset local._taffy.endpoints = cacheBeanMetaData(local._taffy.factory, local._taffy.beanList, local._taffy) />
 			<cfset local._taffy.status.internalBeanFactoryUsed = true />
 			<!---
 				if both an external bean factory and the internal factory are in use (because of /resources folder),
@@ -929,20 +929,49 @@
 		<cfabort />
 	</cffunction>
 
+	<cffunction name="splitURIs" access="private" returntype="array" output="false">
+		<cfargument name="input" type="string" required="true" />
+
+		<cfset var inBracketCount = 0 />
+		<cfset var output = [] />
+		<cfset var s = createObject("java", "java.lang.StringBuffer").init("") />
+		<cfset var c = "" />
+		<cfloop array="#trim(input).toCharArray()#" index="c">
+			<cfif c EQ "{">
+				<cfset inBracketCount += 1 />
+			<cfelseif c EQ "}" AND inBracketCount GT 0>
+				<cfset inBracketCount -= 1 />
+			</cfif>
+			<cfif c EQ "," AND inBracketCount EQ 0>
+				<cfset arrayAppend(output, s.toString()) />
+				<cfset s.setLength(0) />
+			<cfelse>
+				<cfset s.append(c) />
+			</cfif>
+		</cfloop>
+		<cfif s.length() GT 0>
+			<cfset arrayAppend(output, s.toString()) />
+		</cfif>
+	<cfreturn output />
+	</cffunction>
+
 	<cffunction name="cacheBeanMetaData" access="private" output="false">
 		<cfargument name="factory" required="true" />
 		<cfargument name="beanList" type="string" required="true" />
+		<cfargument name="taffyRef" type="any" required="True" />
 		<cfset var local = StructNew() />
 		<cfset local.endpoints = StructNew() />
 		<cfloop list="#arguments.beanList#" index="local.beanName">
 			<!--- get the cfc metadata that defines the uri for that cfc --->
 			<cfset local.cfcMetadata = getMetaData(arguments.factory.getBean(local.beanName)) />
-			<cfset local.uri = '' />
+			<cfset local.uriAttr = '' />
 			<cfif structKeyExists(local.cfcMetadata, "taffy_uri")>
-				<cfset local.uri = local.cfcMetadata["taffy_uri"] />
+				<cfset local.uriAttr = local.cfcMetadata["taffy_uri"] />
 			<cfelseif structKeyExists(local.cfcMetadata, "taffy:uri")>
-				<cfset local.uri = local.cfcMetadata["taffy:uri"] />
+				<cfset local.uriAttr = local.cfcMetadata["taffy:uri"] />
 			</cfif>
+
+			<cfset local.uris = splitURIs(local.uriAttr) />
 
 			<cfif structKeyExists(local.cfcMetaData, "taffy:aopbean")>
 				<cfset local.cachedBeanName = local.cfcMetaData["taffy:aopbean"] />
@@ -952,42 +981,54 @@
 				<cfset local.cachedBeanName = local.beanName />
 			</cfif>
 
-			<!--- if it doesn't have a uri, then it's not a resource --->
-			<cfif len(local.uri)>
-				<cfset local.metaInfo = convertURItoRegex(local.uri) />
-				<cfif structKeyExists(local.endpoints, local.metaInfo.uriRegex)>
-					<cfthrow
-						message="Duplicate URI scheme detected. All URIs must be unique (excluding tokens)."
-						detail="The URI for `#local.beanName#` conflicts with the existing URI definition of `#local.endpoints[local.metaInfo.uriRegex].beanName#`"
-						errorcode="taffy.resources.DuplicateUriPattern"
-					/>
-				</cfif>
-				<cfset local.endpoints[local.metaInfo.uriRegex] = { beanName = local.cachedBeanName, tokens = local.metaInfo.tokens, methods = structNew(), srcURI = local.uri } />
-				<cfif structKeyExists(local.cfcMetadata, "functions")>
-					<cfloop array="#local.cfcMetadata.functions#" index="local.f">
-						<cfif local.f.name eq "get" or local.f.name eq "post" or local.f.name eq "put" or local.f.name eq "patch" or local.f.name eq "delete" or local.f.name eq "head" or local.f.name eq "options">
-							<cfset local.endpoints[local.metaInfo.uriRegex].methods[local.f.name] = local.f.name />
-
-						<!--- also support future/misc verbs via metadata --->
-						<cfelseif structKeyExists(local.f,"taffy:verb")>
-							<cfset  local.endpoints[local.metaInfo.uriRegex].methods[local.f["taffy:verb"]] = local.f.name />
-						<cfelseif structKeyExists(local.f,"taffy_verb")>
-							<cfset  local.endpoints[local.metaInfo.uriRegex].methods[local.f["taffy_verb"]] = local.f.name />
+			<!--- if it doesn't have any uris, then it's not a resource --->
+			<cfif arrayLen(local.uris)>
+				<cfloop array="#local.uris#" index="local.uri">
+					<cftry>
+						<cfset local.uri = trim(local.uri) />
+						<cfset local.metaInfo = convertURItoRegex(local.uri) />
+						<cfif structKeyExists(local.endpoints, local.metaInfo.uriRegex)>
+							<cfthrow
+								message="Duplicate URI scheme detected. All URIs must be unique (excluding tokens)."
+								detail="The URI (#local.uri#) for `#local.beanName#`  conflicts with the existing URI definition of `#local.endpoints[local.metaInfo.uriRegex].beanName#`"
+								errorcode="taffy.resources.DuplicateUriPattern"
+							/>
 						</cfif>
+						<cfset local.endpoints[local.metaInfo.uriRegex] = { beanName = local.cachedBeanName, tokens = local.metaInfo.tokens, methods = structNew(), srcURI = local.uri } />
+						<cfif structKeyExists(local.cfcMetadata, "functions")>
+							<cfloop array="#local.cfcMetadata.functions#" index="local.f">
+								<cfif local.f.name eq "get" or local.f.name eq "post" or local.f.name eq "put" or local.f.name eq "patch" or local.f.name eq "delete" or local.f.name eq "head" or local.f.name eq "options">
+									<cfset local.endpoints[local.metaInfo.uriRegex].methods[local.f.name] = local.f.name />
 
-						<!--- cache any extra function metadata for use in onTaffyRequest --->
-						<cfset local.extraMetadata = duplicate(local.f) />
-						<cfset structDelete(local.extraMetadata, "name") />
-						<cfset structDelete(local.extraMetadata, "parameters") />
-						<cfset structDelete(local.extraMetadata, "hint") />
-						<cfparam name="local.endpoints['#local.metaInfo.uriRegex#'].metadata" default="#structNew()#" />
-						<cfif not structIsEmpty(local.extraMetadata)>
-							<cfset local.endpoints[local.metaInfo.uriRegex].metadata[local.f.name] = local.extraMetadata />
-						<cfelse>
-							<cfset local.endpoints[local.metaInfo.uriRegex].metadata[local.f.name] = StructNew() />
+								<!--- also support future/misc verbs via metadata --->
+								<cfelseif structKeyExists(local.f,"taffy:verb")>
+									<cfset  local.endpoints[local.metaInfo.uriRegex].methods[local.f["taffy:verb"]] = local.f.name />
+								<cfelseif structKeyExists(local.f,"taffy_verb")>
+									<cfset  local.endpoints[local.metaInfo.uriRegex].methods[local.f["taffy_verb"]] = local.f.name />
+								</cfif>
+
+								<!--- cache any extra function metadata for use in onTaffyRequest --->
+								<cfset local.extraMetadata = duplicate(local.f) />
+								<cfset structDelete(local.extraMetadata, "name") />
+								<cfset structDelete(local.extraMetadata, "parameters") />
+								<cfset structDelete(local.extraMetadata, "hint") />
+								<cfparam name="local.endpoints['#local.metaInfo.uriRegex#'].metadata" default="#structNew()#" />
+								<cfif not structIsEmpty(local.extraMetadata)>
+									<cfset local.endpoints[local.metaInfo.uriRegex].metadata[local.f.name] = local.extraMetadata />
+								<cfelse>
+									<cfset local.endpoints[local.metaInfo.uriRegex].metadata[local.f.name] = StructNew() />
+								</cfif>
+							</cfloop>
 						</cfif>
-					</cfloop>
-				</cfif>
+					<cfcatch>
+						<!--- skip cfc's with errors, but save info about them for display in the dashboard --->
+						<cfset local.err = structNew() />
+						<cfset local.err.resource = local.beanName />
+						<cfset local.err.exception = cfcatch />
+						<cfset arrayAppend(arguments.taffyRef.status.skippedResources, local.err) />
+					</cfcatch>
+					</cftry>
+				</cfloop>
 			</cfif>
 		</cfloop>
 		<cfreturn local.endpoints />

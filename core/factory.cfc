@@ -50,12 +50,13 @@
 		<cfargument name="resourcesPath" type="string" default="resources" />
 		<cfargument name="resourcesBasePath" type="string" default="" />
 		<cfargument name="isFullReload" type="boolean" default="false" />
+		<cfargument name="taffyRef" type="any" required="false" default="#structNew()#" />
 		<cfset var local = StructNew() />
 		<!--- cache all of the beans --->
 		<cfif isFullReload>
 			<cfset this.beans = structNew() />
-			<cfset application._taffy.status.skippedResources = arrayNew(1) /> <!--- empty out the array on factory reloads --->
-			<cfset application._taffy.beanList = "" />
+			<cfset arguments.taffyRef.status.skippedResources = arrayNew(1) /> <!--- empty out the array on factory reloads --->
+			<cfset arguments.taffyRef.beanList = "" />
 		</cfif>
 		<!--- if the folder doesn't exist, do nothing --->
 		<cfif not directoryExists(arguments.beanPath)>
@@ -78,7 +79,7 @@
 					<cfset local.err = structNew() />
 					<cfset local.err.resource = local.beanName />
 					<cfset local.err.exception = cfcatch />
-					<cfset arrayAppend(application._taffy.status.skippedResources, local.err) />
+					<cfset arrayAppend(arguments.taffyRef.status.skippedResources, local.err) />
 				</cfcatch>
 			</cftry>
 		</cfloop>

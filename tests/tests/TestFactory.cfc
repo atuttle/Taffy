@@ -5,7 +5,7 @@
 			variables.taffy = createObject("component","taffy.tests.Application");
 			makePublic(variables.taffy, "getBeanFactory");
 			variables.factory = variables.taffy.getBeanFactory();
-			variables.factory.loadBeansFromPath( expandPath('/taffy/tests/resources'), 'taffy.tests.resources', expandPath('/taffy/tests/resources'), true );
+			variables.factory.loadBeansFromPath( expandPath('/taffy/tests/resources'), 'taffy.tests.resources', expandPath('/taffy/tests/resources'), true, variables.taffy);
 		}
 
 		function throws_on_getBean_not_exists(){
@@ -55,27 +55,27 @@
 
 		function skips_resources_with_errors(){
 			variables.factory.loadBeansFromPath( expandPath('/taffy/tests/resourcesError'), 'taffy.tests.resourcesError', expandPath('/taffy/tests/resourcesError'), true );
-			// debug(application._taffy.status);
-			assertTrue(structKeyExists(application._taffy.status, "skippedResources"));
+			// debug(variables.taffy.status);
+			assertTrue(structKeyExists(variables.taffy.status, "skippedResources"));
 		}
 
 		function lists_skipped_resources(){
-			variables.factory.loadBeansFromPath( expandPath('/taffy/tests/resourcesError'), 'taffy.tests.resourcesError', expandPath('/taffy/tests/resourcesError'), true );
-			// debug(application._taffy.status);
-			assertTrue(structKeyExists(application._taffy.status, "skippedResources"));
-			assertTrue( arrayLen(application._taffy.status.skippedResources) gt 0 );
+			variables.factory.loadBeansFromPath( expandPath('/taffy/tests/resourcesError'), 'taffy.tests.resourcesError', expandPath('/taffy/tests/resourcesError'), true, variables.taffy);
+			// debug(variables.taffy.status);
+			assertTrue(structKeyExists(variables.taffy.status, "skippedResources"));
+			assertTrue( arrayLen(variables.taffy.status.skippedResources) gt 0 );
 		}
 
 		function clears_skipped_resources_on_reload(){
-			variables.factory.loadBeansFromPath( expandPath('/taffy/tests/resourcesError'), 'taffy.tests.resourcesError', expandPath('/taffy/tests/resourcesError'), true );
-			// debug(application._taffy.status);
-			assertTrue(structKeyExists(application._taffy.status, "skippedResources"));
-			assertTrue( arrayLen(application._taffy.status.skippedResources) gt 0 );
+			variables.factory.loadBeansFromPath( expandPath('/taffy/tests/resourcesError'), 'taffy.tests.resourcesError', expandPath('/taffy/tests/resourcesError'), true, variables.taffy );
+			// debug(variables.taffy.status);
+			assertTrue(structKeyExists(variables.taffy.status, "skippedResources"));
+			assertTrue( arrayLen(variables.taffy.status.skippedResources) gt 0 );
 
-			variables.factory.loadBeansFromPath( expandPath('/taffy/tests/resources'), 'taffy.tests.resources', expandPath('/taffy/tests/resources'), true );
-			// debug(application._taffy.status);
-			assertTrue(structKeyExists(application._taffy.status, "skippedResources"));
-			assertTrue( ArrayLen(application._taffy.status.skippedResources) eq 0, "Expected skipped resources array to be empty but it wasn't" );
+			variables.factory.loadBeansFromPath( expandPath('/taffy/tests/resources'), 'taffy.tests.resources', expandPath('/taffy/tests/resources'), true, variables.taffy );
+			// debug(variables.taffy.status);
+			assertTrue(structKeyExists(variables.taffy.status, "skippedResources"));
+			assertTrue( ArrayLen(variables.taffy.status.skippedResources) eq 0, "Expected skipped resources array to be empty but it wasn't" );
 		}
 
 		function treats_CRCs_as_transients(){
