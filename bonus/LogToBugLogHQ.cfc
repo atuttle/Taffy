@@ -2,6 +2,7 @@
 
 	<cffunction name="init">
 		<cfargument name="config" />
+		<cfargument name="tracker" />
 
 		<cfset var svc = "bugLog.client.bugLogService" />
 		<cfif structKeyExists( arguments.config, "service" )>
