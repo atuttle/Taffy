@@ -19,7 +19,7 @@ If you file a bug or ask for support please indicate which version of Taffy you'
 
 Supported versions get priority for bug fixes. No promises are made to fix bugs filed against **unsupported** versions. If your version is supported and your bug is reproducible and isolatable, we'll do everything within our power to address it.
 
-If you're on an unsupported version, upgrade is not an option in your case, and you still have an isolatable and reproducable bug, [contact me](http://fusiongrokker.com/page/contact-me) to discuss further options.
+If you're on an unsupported version, upgrade is not an option in your case, and you still have an isolatable and reproducible bug, [contact me](http://fusiongrokker.com/page/contact-me) to discuss further options.
 
 ## Running the Tests
 
