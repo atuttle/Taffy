@@ -350,44 +350,48 @@
 										<cfif structKeyExists(local.docData, 'hint')><div class="doc">#local.docData.hint#</div><hr/></cfif>
 										<cfset local.found = { get=false, post=false, put=false, patch=false, delete=false } />
 										<cfloop from="1" to="#arrayLen(local.docData.functions)#" index="local.f">
+											<cfset skipThisFunction = 0>
 											<cfset local.func = local.docData.functions[local.f] />
 											<cfset local.found[local.func.name] = true />
 											<!--- exclude methods that are not exposed as REST verbs --->
 											<cfif !listFindNoCase('get,post,put,delete,patch',local.func.name) AND !structKeyExists(local.func,'taffy_verb') AND !structKeyExists(local.func,'taffy:verb')>
-												<cfscript>continue;</cfscript><!--- stupid CF8 --->
+												<cfset skipThisFunction = 1>
 											</cfif>
- 											<div class="col-md-12"><strong>#local.func.name#</strong></div>
-											<cfif structKeyExists(local.func, "hint")>
-												<div class="col-md-12 doc">#local.func.hint#</div>
-											</cfif>
-											<cfloop from="1" to="#arrayLen(local.func.parameters)#" index="local.p">
-												<cfset local.param = local.func.parameters[local.p] />
-												<div class="row">
-													<div class="col-md-11 col-md-offset-1">
-															<cfif not structKeyExists(local.param, 'required') or not local.param.required>
-																optional
-															<cfelse>
-																required
-															</cfif>
-															<cfif structKeyExists(local.param, "type")>
-																#local.param.type#
-															</cfif>
-															<strong>#local.param.name#</strong>
-															<cfif structKeyExists(local.param, "default")>
-																<cfif local.param.default eq "">
-																	(default: "")
+											
+											<cfif !skipThisFunction>
+	 											<div class="col-md-12"><strong>#local.func.name#</strong></div>
+												<cfif structKeyExists(local.func, "hint")>
+													<div class="col-md-12 doc">#local.func.hint#</div>
+												</cfif>
+												<cfloop from="1" to="#arrayLen(local.func.parameters)#" index="local.p">
+													<cfset local.param = local.func.parameters[local.p] />
+													<div class="row">
+														<div class="col-md-11 col-md-offset-1">
+																<cfif not structKeyExists(local.param, 'required') or not local.param.required>
+																	optional
 																<cfelse>
-																	(default: #local.param.default#)
+																	required
 																</cfif>
-															<cfelse>
-																<!--- no default value --->
+																<cfif structKeyExists(local.param, "type")>
+																	#local.param.type#
+																</cfif>
+																<strong>#local.param.name#</strong>
+																<cfif structKeyExists(local.param, "default")>
+																	<cfif local.param.default eq "">
+																		(default: "")
+																	<cfelse>
+																		(default: #local.param.default#)
+																	</cfif>
+																<cfelse>
+																	<!--- no default value --->
+																</cfif>
+															<cfif structKeyExists(local.param, "hint")>
+																<br/><span class="doc">#local.param.hint#</span>
 															</cfif>
-														<cfif structKeyExists(local.param, "hint")>
-															<br/><span class="doc">#local.param.hint#</span>
-														</cfif>
+														</div>
 													</div>
-												</div>
-											</cfloop>
+												</cfloop>
+											</cfif>
 										</cfloop>
 									</div><!-- /col-md-6 (docs) -->
 								</div>
