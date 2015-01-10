@@ -563,10 +563,10 @@
 		<cfset requestObj.uri = getPath() />
 		<cfif NOT len(requestObj.uri)>
 			<cfif structKeyExists(url,application._taffy.settings.endpointURLParam)>
-				<cfset requestObj.uri = url[application._taffy.settings.endpointURLParam] />
+				<cfset requestObj.uri = urlDecode( url[application._taffy.settings.endpointURLParam] ) />
 
 			<cfelseif structKeyExists(form,application._taffy.settings.endpointURLParam)>
-				<cfset requestObj.uri = form[application._taffy.settings.endpointURLParam] />
+				<cfset requestObj.uri = urlDecode( form[application._taffy.settings.endpointURLParam] ) />
 			</cfif>
 		</cfif>
 
