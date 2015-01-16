@@ -26,7 +26,7 @@
 		function test_BugLogHQ(){
 			var mockBLHQ = mock();
 			var blhqAdapter = '';
-			var blhqSettings = {};
+			var blhqSettings = { bugLogListener = "http://localhost/bugLog/listeners/bugLogListenerREST.cfm" };
 			var fakeError = {};
 
 			mockBLHQ.notifyService('{string}', '{struct}');
