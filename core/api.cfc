@@ -213,13 +213,17 @@
 
 		<!--- CORS headers (so that CORS can pass even if the resource throws an exception) --->
 		<cfset local.allowVerbs = uCase(structKeyList(_taffyRequest.matchDetails.methods)) />
-		<cfif application._taffy.settings.allowCrossDomain
+		<cfif (application._taffy.settings.allowCrossDomain eq true or len(application._taffy.settings.allowCrossDomain) gt 0)
 				AND listFindNoCase('PUT,PATCH,DELETE,OPTIONS',_taffyRequest.verb)
 				AND NOT listFind(local.allowVerbs,'OPTIONS')>
 		    <cfset local.allowVerbs = listAppend(local.allowVerbs,'OPTIONS') />
 		</cfif>
-		<cfif application._taffy.settings.allowCrossDomain>
-			<cfheader name="Access-Control-Allow-Origin" value="*" />
+		<cfif (application._taffy.settings.allowCrossDomain eq true or len(application._taffy.settings.allowCrossDomain) gt 0)>
+			<cfif application._taffy.settings.allowCrossDomain eq true>
+				<cfheader name="Access-Control-Allow-Origin" value="*" />
+			<cfelse>
+				<cfheader name="Access-Control-Allow-Origin" value="#application._taffy.settings.allowCrossDomain#" />
+			</cfif>
 			<cfheader name="Access-Control-Allow-Methods" value="#local.allowVerbs#" />
 			<!--- Why do we parrot back these headers? See: https://github.com/atuttle/Taffy/issues/144 --->
 			<cfif not structKeyExists(_taffyRequest.headers, "Access-Control-Request-Headers")>
