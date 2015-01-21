@@ -227,7 +227,7 @@
 							<div class="panel-collapse collapse" id="#local.resourceHTTPID#">
 								<div class="panel-body resourceWrapper">
 									<div class="col-md-6 runner">
-										<div class="well resource" data-uri="#local.currentResource.srcUri#" data-bean-name="#local.currentResource.beanName#">
+										<div class="well resource" data-uri="#local.currentResource.srcUri#" data-bean-name="#local.resourceHTTPID#">
 											<button class="btn btn-primary submitRequest">Send</button>
 											<button class="btn btn-success resetRequest">Reset</button>
 											<button class="btn btn-default showDocs">Show Docs</button>
