@@ -55,7 +55,7 @@
 							</div>
 							<div class="col-sm-6">
 								<a class="label label-default" href="<cfoutput>#getDocUrl('allowCrossDomain')#</cfoutput>">?</a>
-								#yesNoFormat(application._taffy.settings.allowCrossDomain)#
+								<cfif application._taffy.settings.allowCrossDomain EQ 'false'>No<cfelse>Yes</cfif>
 							</div>
 
 							<div class="col-sm-6">
