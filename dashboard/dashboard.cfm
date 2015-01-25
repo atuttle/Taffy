@@ -172,10 +172,16 @@
 					and arrayLen(application._taffy.status.skippedResources) gt 0>
 				<cfoutput>
 					<cfloop from="1" to="#arrayLen(application._taffy.status.skippedResources)#" index="local.i">
+
 						<cfset local.err = application._taffy.status.skippedResources[local.i] />
+						<cfset local.exceptionHasErrorCode = structKeyExists(local.err, "Exception") AND structKeyExists(local.err.Exception, "ErrorCode")>
+						<cfset local.errorCode = local.exceptionHasErrorCode and local.err.Exception.ErrorCode>
+
 						<div class="alert alert-warning">
-							<cfif structKeyExists(local.err, "Exception") AND structKeyExists(local.err.Exception, "ErrorCode") AND local.err.Exception.ErrorCode EQ "taffy.resources.DuplicateUriPattern">
+							<cfif local.errorCode EQ "taffy.resources.DuplicateUriPattern">
 								<strong class="label label-warning"><cfoutput>#local.err.resource#</cfoutput></strong> contains a conflicting URI.
+							<cfelseif local.errorcode EQ "taffy.resources.URIDoesntBeginWithForwardSlash">
+								<strong class="label label-warning"><cfoutput>#local.err.resource#</cfoutput></strong> should have a URI that begins with a forward slash.
 							<cfelse>
 								<strong class="label label-warning"><cfoutput>#local.err.resource#</cfoutput></strong> contains a syntax error.
 								<cfif structKeyExists(local.err.exception, 'tagContext')>

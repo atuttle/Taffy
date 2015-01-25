@@ -959,6 +959,21 @@
 	<cfreturn output />
 	</cffunction>
 
+	<cffunction name="throwExceptionIfURIDoesntBeginWithForwardSlash" output="false" access="private" returntype="void">
+		<cfargument name="uri" type="string" required="true">
+		<cfargument name="beanName" type="string" required="true">
+
+		<cfset var uriDoesntBeginWithForwardSlash = left(arguments.uri,1) neq "/">
+
+		<cfif uriDoesntBeginWithForwardSlash>
+			<cfthrow
+				message="URI doesn't begin with a forward slash."
+				detail="The URI (#arguments.uri#) for `#arguments.beanName#` should begin with a forward slash."
+				errorcode="taffy.resources.URIDoesntBeginWithForwardSlash"
+			/>
+		</cfif>
+	</cffunction>
+
 	<cffunction name="cacheBeanMetaData" access="private" output="false">
 		<cfargument name="factory" required="true" />
 		<cfargument name="beanList" type="string" required="true" />
@@ -998,6 +1013,9 @@
 								errorcode="taffy.resources.DuplicateUriPattern"
 							/>
 						</cfif>
+
+						<cfset throwExceptionIfURIDoesntBeginWithForwardSlash(local.uri, local.beanName)>
+
 						<cfset local.endpoints[local.metaInfo.uriRegex] = { beanName = local.cachedBeanName, tokens = local.metaInfo.tokens, methods = structNew(), srcURI = local.uri } />
 						<cfif structKeyExists(local.cfcMetadata, "functions")>
 							<cfloop array="#local.cfcMetadata.functions#" index="local.f">
