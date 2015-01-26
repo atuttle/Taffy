@@ -58,4 +58,20 @@
 		<cfreturn local.result />
 	</cffunction>
 
+	<cffunction name="checkIfOneSkippedRessourceContainsExpectedException" access="private" output="false" returntype="boolean">
+		<cfargument name="exceptionAttributeName" type="string" required="true" />
+		<cfargument name="expectedValue" type="string" required="true" />
+		<cfset var skippedRessource = "">
+		<cfset var expectedExceptionAttributeValueFound = 0>
+
+		<cfloop array="#application._taffy.status.skippedResources#" index="skippedRessource">
+			<cfset expectedExceptionAttributeValueFound = structKeyExists(skippedRessource.exception, arguments.exceptionAttributeName) and skippedRessource.exception[arguments.exceptionAttributeName] is arguments.expectedValue>
+			<cfif expectedExceptionAttributeValueFound>
+				<cfbreak>
+			</cfif>
+		</cfloop>
+
+		<cfreturn expectedExceptionAttributeValueFound>
+	</cffunction>
+
 </cfcomponent>

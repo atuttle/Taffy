@@ -603,4 +603,12 @@
 		<cfset assertTrue(local.uploadResult.statusCode eq "200 OK", "Did not return status 200") />
 	</cffunction>
 
+	<cffunction name="throws_exception_when_ressource_uri_doesnt_begin_with_forward_slash">
+		<cfset assertTrue(checkIfOneSkippedRessourceContainsExpectedException("detail", "The URI (uriWithoutForwardSlash) for `uriDoesntBeginWithForwardSlash` should begin with a forward slash."), "Uri without forward slash not showing in errors")>
+	</cffunction>
+
+	<cffunction name="throws_exception_when_alias_ressource_uri_doesnt_begin_with_forward_slash">
+		<cfset assertTrue(checkIfOneSkippedRessourceContainsExpectedException("detail", "The URI (uriAliasWithoutFowardSlash) for `uriAliasDoesntBeginWithForwardSlash` should begin with a forward slash."), "Uri alias without forward slash not showing in errors")>
+	</cffunction>
+
 </cfcomponent>
