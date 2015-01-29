@@ -43,9 +43,7 @@ If you would like to contribute to documentation, [please read this blog post][2
 
 ## Roadmap
 
-In addition to the [GitHub issues list](https://github.com/atuttle/Taffy/issues), we use a [public trello board](https://trello.com/b/Nz5nyqZg/) to track and plan the framework roadmap.
-
-[![Taffy Roadmap](https://trello.com/b/Nz5nyqZg.png)](https://trello.com/b/Nz5nyqZg/)
+Features and bug fixes are coordinated via the [GitHub issues list](https://github.com/atuttle/Taffy/issues).
 
 ## Community
 
