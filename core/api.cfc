@@ -222,7 +222,17 @@
 			<cfif application._taffy.settings.allowCrossDomain eq true>
 				<cfheader name="Access-Control-Allow-Origin" value="*" />
 			<cfelse>
-				<cfheader name="Access-Control-Allow-Origin" value="#application._taffy.settings.allowCrossDomain#" />
+				<!---
+					The Access-Control-Allow-Origin header can only have 1 value so we check to see if the Origin header is
+					in the list of origins specified in the config setting and parrot back the Origin header if so.
+				--->
+				<cfset local.domains = listToArray( application._taffy.settings.allowCrossDomain )>
+				<cfloop from="1" to="#arrayLen( local.domains )#" index="local.i">
+					<cfif lCase( rereplace( _taffyRequest.headers.origin, "(http|https):\/\/", "", "all" ) ) EQ lCase( rereplace( local.domains[ local.i ], "(http|https):\/\/", "", "all" ) ) >
+						<cfheader name="Access-Control-Allow-Origin" value="#_taffyRequest.headers.origin#" />
+						<cfbreak>
+					</cfif>
+				</cfloop>
 			</cfif>
 			<cfheader name="Access-Control-Allow-Methods" value="#local.allowVerbs#" />
 			<!--- Why do we parrot back these headers? See: https://github.com/atuttle/Taffy/issues/144 --->
