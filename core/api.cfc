@@ -226,7 +226,7 @@
 					The Access-Control-Allow-Origin header can only have 1 value so we check to see if the Origin header is
 					in the list of origins specified in the config setting and parrot back the Origin header if so.
 				--->
-				<cfset local.domains = listToArray( application._taffy.settings.allowCrossDomain )>
+				<cfset local.domains = listToArray( application._taffy.settings.allowCrossDomain, ', ;' )>
 				<cfloop from="1" to="#arrayLen( local.domains )#" index="local.i">
 					<cfif lCase( rereplace( _taffyRequest.headers.origin, "(http|https):\/\/", "", "all" ) ) EQ lCase( rereplace( local.domains[ local.i ], "(http|https):\/\/", "", "all" ) ) >
 						<cfheader name="Access-Control-Allow-Origin" value="#_taffyRequest.headers.origin#" />
