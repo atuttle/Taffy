@@ -290,12 +290,19 @@
 												</div>
 											</cfif>
 
+											<h4>Request Headers:</h4>
 											<div class="reqHeaders">
-												<h4>Request Headers:</h4>
+
 												<textarea
 													rows="#listLen(structKeyList(application._taffy.settings.dashboardHeaders, '|'), '|')+1#"
 													class="form-control input-sm requestHeaders"
 													><cfloop list="#structKeyList(application._taffy.settings.dashboardHeaders, '|')#" delimiters="|" index="k">#k#: #application._taffy.settings.dashboardHeaders[k]##chr(13)##chr(10)#</cfloop></textarea>
+											</div>
+
+											<h4>Basic Auth:</h4>
+											<div class="basicAuth row">
+											  	<div class="col-md-6"><input type="text" name="username" class="form-control" placeholder="Username" value="" /></div>
+											  	<div class="col-md-6"><input type="text" name="password" class="form-control" placeholder="Password" value="" /></div>
 											</div>
 
 											<div class="reqBody">
@@ -365,7 +372,7 @@
 											<cfset local.found[local.func.name] = true />
 											<!--- exclude methods that are not exposed as REST verbs --->
 											<cfif !listFindNoCase('get,post,put,delete,patch',local.func.name) AND !structKeyExists(local.func,'taffy_verb') AND !structKeyExists(local.func,'taffy:verb')>
-												<cfscript>continue;</cfscript><!--- stupid CF8 --->
+												<!--- <cfscript>continue;</cfscript> ---><!--- stupid CF8 --->
 											</cfif>
  											<div class="col-md-12"><strong>#local.func.name#</strong></div>
 											<cfif structKeyExists(local.func, "hint")>
