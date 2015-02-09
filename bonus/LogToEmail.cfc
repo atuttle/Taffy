@@ -22,8 +22,8 @@
 		<cfset var attributeCollection = variables.config>
 
 		<cfmail attributeCollection="#attributeCollection#">
-				<cfif variables.emailType eq "text">
 					Exception Report
+			<cfif variables.config.type eq "text">
 
 					Exception Timestamp: <cfoutput>#dateformat(now(), 'yyyy-mm-dd')# #timeformat(now(), 'HH:MM:SS tt')#</cfoutput>
 
