@@ -290,9 +290,8 @@
 												</div>
 											</cfif>
 
-											<h4>Request Headers:</h4>
 											<div class="reqHeaders">
-
+												<h4>Request Headers:</h4>
 												<textarea
 													rows="#listLen(structKeyList(application._taffy.settings.dashboardHeaders, '|'), '|')+1#"
 													class="form-control input-sm requestHeaders"
