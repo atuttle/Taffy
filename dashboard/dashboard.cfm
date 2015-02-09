@@ -372,7 +372,7 @@
 											<cfset local.found[local.func.name] = true />
 											<!--- exclude methods that are not exposed as REST verbs --->
 											<cfif !listFindNoCase('get,post,put,delete,patch',local.func.name) AND !structKeyExists(local.func,'taffy_verb') AND !structKeyExists(local.func,'taffy:verb')>
-												<!--- <cfscript>continue;</cfscript> ---><!--- stupid CF8 --->
+												<cfscript>continue;</cfscript><!--- stupid CF8 --->
 											</cfif>
  											<div class="col-md-12"><strong>#local.func.name#</strong></div>
 											<cfif structKeyExists(local.func, "hint")>
