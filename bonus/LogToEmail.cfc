@@ -22,32 +22,32 @@
 		<cfset var attributeCollection = variables.config>
 
 		<cfmail attributeCollection="#attributeCollection#">
-					Exception Report
 			<cfif variables.config.type eq "text">
+				Exception Report
 
-					Exception Timestamp: <cfoutput>#dateformat(now(), 'yyyy-mm-dd')# #timeformat(now(), 'HH:MM:SS tt')#</cfoutput>
+				Exception Timestamp: <cfoutput>#dateformat(now(), 'yyyy-mm-dd')# #timeformat(now(), 'HH:MM:SS tt')#</cfoutput>
 
-					<cfdump var="#arguments.exception#" format="text" />
-				<cfelse>
-					<h2>Exception Report</h2>
-					<p><strong>Exception Timestamp:</strong> <cfoutput>#dateformat(now(), 'yyyy-mm-dd')# #timeformat(now(), 'HH:MM:SS tt')#</cfoutput></p>
-					<cfdump var="#arguments.exception#" />
-				</cfif>
+				<cfdump var="#arguments.exception#" format="text" />
+			<cfelse>
+				<h2>Exception Report</h2>
+				<p><strong>Exception Timestamp:</strong> <cfoutput>#dateformat(now(), 'yyyy-mm-dd')# #timeformat(now(), 'HH:MM:SS tt')#</cfoutput></p>
+				<cfdump var="#arguments.exception#" />
+			</cfif>
 		</cfmail>
 	</cffunction>
 
 	<cffunction name="removeEmailPrefix" output="false" access="private" returntype="struct" hint="removes all email prefix from the config attributes">
-		<cfargument name="configAttributes" required="true" type="struct">
+		<cfargument name="configAttributes" required="true" type="struct" />
 
-		<cfset var configAttributeName="">
-		<cfset var configAttributeValue = "">
-		<cfset var newConfig = {}>
+		<cfset var configAttributeName="" />
+		<cfset var configAttributeValue = "" />
+		<cfset var newConfig = {} />
 		<cfloop collection="#arguments.configAttributes#" item="configAttributeName">
-			<cfset configAttributeNameWithoutEmailPrefix = replaceNoCase(configAttributeName, "email", "", "one")>
-			<cfset newConfig[configAttributeNameWithoutEmailPrefix] = arguments.configAttributes[configAttributeName]>
+			<cfset configAttributeNameWithoutEmailPrefix = replaceNoCase(configAttributeName, "email", "", "one") />
+			<cfset newConfig[configAttributeNameWithoutEmailPrefix] = arguments.configAttributes[configAttributeName] />
 		</cfloop>
 
-		<cfreturn newConfig>
+		<cfreturn newConfig />
 	</cffunction>
 
 </cfcomponent>
