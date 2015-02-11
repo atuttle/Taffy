@@ -298,6 +298,12 @@
 													><cfloop list="#structKeyList(application._taffy.settings.dashboardHeaders, '|')#" delimiters="|" index="k">#k#: #application._taffy.settings.dashboardHeaders[k]##chr(13)##chr(10)#</cfloop></textarea>
 											</div>
 
+											<h4>Basic Auth:</h4>
+											<div class="basicAuth row">
+											  	<div class="col-md-6"><input type="text" name="username" class="form-control" placeholder="Username" value="" /></div>
+											  	<div class="col-md-6"><input type="text" name="password" class="form-control" placeholder="Password" value="" /></div>
+											</div>
+
 											<div class="reqBody">
 												<h4>Request Body:</h4>
 												<textarea id="#local.resourceHTTPID#_RequestBody" class="form-control input-sm" rows="5"></textarea>

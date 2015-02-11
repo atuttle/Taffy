@@ -5,34 +5,49 @@
 		<cfargument name="tracker" hint="unused" default="" />
 
 		<!--- copy settings into adapter instance data --->
-		<cfset structAppend( variables, arguments.config, true ) />
-		
+		<cfset variables.config = {}>
+		<cfset structAppend( variables.config, arguments.config, true ) />
+
 		<cfreturn this />
 	</cffunction>
 
 	<cffunction name="saveLog">
 		<cfargument name="exception" />
-		<!---
-			TODO: This adapter does not currently support authentication-required email, supplying a specific server, etc.
-			That would be a great and relatively easy thing for you to contribute back! :)
-		--->
-		<cfmail
-			from="#variables.emailFrom#"
-			to="#variables.emailTo#"
-			subject="#variables.emailSubj#"
-			type="#variables.emailType#">
-				<cfif variables.emailType eq "text">
-Exception Report
 
-Exception Timestamp: <cfoutput>#dateformat(now(), 'yyyy-mm-dd')# #timeformat(now(), 'HH:MM:SS tt')#</cfoutput>
+		<cfset variables.config = removeEmailPrefix(variables.config)>
 
-<cfdump var="#arguments.exception#" format="text" />
-				<cfelse>
-					<h2>Exception Report</h2>
-					<p><strong>Exception Timestamp:</strong> <cfoutput>#dateformat(now(), 'yyyy-mm-dd')# #timeformat(now(), 'HH:MM:SS tt')#</cfoutput></p>
-					<cfdump var="#arguments.exception#" />
-				</cfif>
+		<!--- to conform to the cfmail attribute name and be backward compatible with emailSubj --->
+		<cfset variables.config.subject = variables.config.subj>
+
+		<cfset var attributeCollection = variables.config>
+
+		<cfmail attributeCollection="#attributeCollection#">
+			<cfif variables.config.type eq "text">
+				Exception Report
+
+				Exception Timestamp: <cfoutput>#dateformat(now(), 'yyyy-mm-dd')# #timeformat(now(), 'HH:MM:SS tt')#</cfoutput>
+
+				<cfdump var="#arguments.exception#" format="text" />
+			<cfelse>
+				<h2>Exception Report</h2>
+				<p><strong>Exception Timestamp:</strong> <cfoutput>#dateformat(now(), 'yyyy-mm-dd')# #timeformat(now(), 'HH:MM:SS tt')#</cfoutput></p>
+				<cfdump var="#arguments.exception#" />
+			</cfif>
 		</cfmail>
+	</cffunction>
+
+	<cffunction name="removeEmailPrefix" output="false" access="private" returntype="struct" hint="removes all email prefix from the config attributes">
+		<cfargument name="configAttributes" required="true" type="struct" />
+
+		<cfset var configAttributeName="" />
+		<cfset var configAttributeValue = "" />
+		<cfset var newConfig = {} />
+		<cfloop collection="#arguments.configAttributes#" item="configAttributeName">
+			<cfset configAttributeNameWithoutEmailPrefix = replaceNoCase(configAttributeName, "email", "", "one") />
+			<cfset newConfig[configAttributeNameWithoutEmailPrefix] = arguments.configAttributes[configAttributeName] />
+		</cfloop>
+
+		<cfreturn newConfig />
 	</cffunction>
 
 </cfcomponent>

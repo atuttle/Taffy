@@ -228,13 +228,15 @@
 					We also need to add the Access-Control-Allow-Credentials header and set it to true for those type requests
 				--->
 				<cfset local.domains = listToArray( application._taffy.settings.allowCrossDomain, ', ;' )>
-				<cfloop from="1" to="#arrayLen( local.domains )#" index="local.i">
-					<cfif lCase( rereplace( _taffyRequest.headers.origin, "(http|https):\/\/", "", "all" ) ) EQ lCase( rereplace( local.domains[ local.i ], "(http|https):\/\/", "", "all" ) ) >
-						<cfheader name="Access-Control-Allow-Origin" value="#_taffyRequest.headers.origin#" />
-						<cfheader name="Access-Control-Allow-Credentials" value="true" />
-						<cfbreak>
-					</cfif>
-				</cfloop>
+				<cfif structKeyExists(_taffyRequest.headers, "origin")>
+					<cfloop from="1" to="#arrayLen( local.domains )#" index="local.i">
+						<cfif lcase( rereplace( _taffyRequest.headers.origin, "(http|https):\/\/", "", "all" ) ) EQ lcase( rereplace( local.domains[ local.i ], "(http|https):\/\/", "", "all" ) ) >
+							<cfheader name="Access-Control-Allow-Origin" value="#_taffyRequest.headers.origin#" />
+							<cfheader name="Access-Control-Allow-Credentials" value="true" />
+							<cfbreak>
+						</cfif>
+					</cfloop>
+				</cfif>
 			</cfif>
 			<cfheader name="Access-Control-Allow-Methods" value="#local.allowVerbs#" />
 			<!--- Why do we parrot back these headers? See: https://github.com/atuttle/Taffy/issues/144 --->
