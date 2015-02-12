@@ -218,7 +218,7 @@
 				AND NOT listFind(local.allowVerbs,'OPTIONS')>
 		    <cfset local.allowVerbs = listAppend(local.allowVerbs,'OPTIONS') />
 		</cfif>
-		<cfif (application._taffy.settings.allowCrossDomain eq true or len(application._taffy.settings.allowCrossDomain) gt 0)>
+		<cfif _taffyRequest.headers.host NEQ cgi.http_host AND (application._taffy.settings.allowCrossDomain eq true or len(application._taffy.settings.allowCrossDomain) gt 0)>
 			<cfif application._taffy.settings.allowCrossDomain eq true>
 				<cfheader name="Access-Control-Allow-Origin" value="*" />
 			<cfelse>
