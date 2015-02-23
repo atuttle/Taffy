@@ -301,7 +301,7 @@
 											<h4>Basic Auth:</h4>
 											<div class="basicAuth row">
 											  	<div class="col-md-6"><input type="text" name="username" class="form-control" placeholder="Username" value="" /></div>
-											  	<div class="col-md-6"><input type="text" name="password" class="form-control" placeholder="Password" value="" /></div>
+											  	<div class="col-md-6"><input type="password" name="password" class="form-control" placeholder="Password" value="" /></div>
 											</div>
 
 											<div class="reqBody">
