@@ -339,7 +339,7 @@
 														</cfloop>
 														<!--- save to page JS for runtime reference --->
 														<script>
-															taffy.resources['#local.resourceHTTPID#'] = taffy.resources['#local.currentResource.beanName#'] || {};
+															taffy.resources['#local.resourceHTTPID#'] = taffy.resources['#local.resourceHTTPID#'] || {};
 															taffy.resources['#local.resourceHTTPID#']['#lcase(local.functions[local.f].name)#'] = #serializeJson(local.args)#;
 														</script>
 													</cfif>
