@@ -232,7 +232,7 @@
 							</div>
 							<div class="panel-collapse collapse" id="#local.resourceHTTPID#">
 								<div class="panel-body resourceWrapper">
-									<div class="col-md-6 runner">
+									<div class="col-md-8 runner">
 										<div class="well resource" data-uri="#local.currentResource.srcUri#" data-bean-name="#local.resourceHTTPID#">
 											<button class="btn btn-primary submitRequest">Send</button>
 											<button class="btn btn-success resetRequest">Reset</button>
@@ -359,8 +359,8 @@
 												<pre><code class="responseBody"></code></pre>
 											</div>
 										</div><!-- /well (resource) -->
-									</div><!-- /col-md-6 -->
-									<div class="col-md-6 docs">
+									</div><!-- /col-md-8 -->
+									<div class="col-md-4 docs">
 										<div class="row"><div class="col-md-12"><button class="btn btn-default hideDocs">Hide Docs</button></div></div>
 										<cfset local.metadata = getMetaData(application._taffy.factory.getBean(local.currentResource.beanName)) />
 										<cfset local.docData = getHintsFromMetadata(local.metadata) />
@@ -406,7 +406,7 @@
 												</div>
 											</cfloop>
 										</cfloop>
-									</div><!-- /col-md-6 (docs) -->
+									</div><!-- /col-md-4 (docs) -->
 								</div>
 							</div>
 						</div>
@@ -489,12 +489,12 @@
 				var docs = $(this).closest('.docs');
 				var runner = $(this).closest('.resourceWrapper').find('.runner');
 				docs.hide();
-				runner.removeClass("col-md-6").addClass("col-md-12");
+				runner.removeClass("col-md-8").addClass("col-md-12");
 			});
 			$(".showDocs").on("click", function(){
 				var docs = $(this).closest('.resourceWrapper').find('.docs');
 				var runner = $(this).closest('.runner');
-				runner.removeClass("col-md-12").addClass("col-md-6");
+				runner.removeClass("col-md-12").addClass("col-md-8");
 				docs.show();
 			});
 		});
