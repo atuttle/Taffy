@@ -175,7 +175,10 @@
 
 						<cfset local.err = application._taffy.status.skippedResources[local.i] />
 						<cfset local.exceptionHasErrorCode = structKeyExists(local.err, "Exception") AND structKeyExists(local.err.Exception, "ErrorCode")>
-						<cfset local.errorCode = local.exceptionHasErrorCode and local.err.Exception.ErrorCode>
+						<cfset local.errorCode = "" />
+						<cfif local.exceptionHasErrorCode>
+							<cfset local.errorCode = local.err.Exception.ErrorCode>
+						</cfif>
 
 						<div class="alert alert-warning">
 							<cfif local.errorCode EQ "taffy.resources.DuplicateUriPattern">
