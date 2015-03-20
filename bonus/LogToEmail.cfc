@@ -14,14 +14,16 @@
 	<cffunction name="saveLog">
 		<cfargument name="exception" />
 
+		<cfset var local = StructNew() />
+
 		<cfset variables.config = removeEmailPrefix(variables.config)>
 
 		<!--- to conform to the cfmail attribute name and be backward compatible with emailSubj --->
 		<cfset variables.config.subject = variables.config.subj>
 
-		<cfset var attributeCollection = variables.config>
+		<cfset local.attributeCollection = variables.config>
 
-		<cfmail attributeCollection="#attributeCollection#">
+		<cfmail attributeCollection="#local.attributeCollection#">
 			<cfif variables.config.type eq "text">
 				Exception Report
 
