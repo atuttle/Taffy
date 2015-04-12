@@ -43,12 +43,12 @@
 		<cfargument name="cb" type="any" required="no" />
 		<cfscript>
 			var local = {};
-			if (structKeyExists(server, "railo")) {
+			if (not server.ColdFusion.ProductName eq "ColdFusion"){
 				local.Columns = listToArray(arguments.q.getColumnList(false));
-			}
-			else {
+			}else{
 				local.Columns = arguments.q.getMetaData().getColumnLabels();
 			}
+
 			local.QueryArray = ArrayNew(1);
 			for (local.RowIndex = 1; local.RowIndex <= arguments.q.RecordCount; local.RowIndex++){
 				local.Row = {};
@@ -78,10 +78,9 @@
 		</cfif>
 
 		<cfscript>
-			if (structKeyExists(server, "railo")) {
+			if (not server.ColdFusion.ProductName eq "ColdFusion"){
 				local.Columns = listToArray(arguments.q.getColumnList(false));
-			}
-			else {
+			}else{
 				local.Columns = arguments.q.getMetaData().getColumnLabels();
 			}
 
