@@ -216,7 +216,7 @@
 				<cfoutput>
 					<cfloop from="1" to="#arrayLen(application._taffy.uriMatchOrder)#" index="local.resource">
 						<cfset local.currentResource = application._taffy.endpoints[application._taffy.uriMatchOrder[local.resource]] />
-						<cfset local.resourceHTTPID = local.currentResource.beanName & "_" & hash(local.currentResource.srcURI) />
+						<cfset local.resourceHTTPID = rereplace(local.currentResource.beanName & "_" & hash(local.currentResource.srcURI), "[^0-9a-zA-Z_]", "_", "all") />
 						<div class="panel panel-default">
 							<div class="panel-heading">
 								<h4 class="panel-title">
