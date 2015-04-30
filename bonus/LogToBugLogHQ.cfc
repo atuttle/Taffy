@@ -5,7 +5,7 @@
 		<cfargument name="tracker" />
 
 <!--- <cfdump var="#arguments.config#" abort="true" /> --->
-		<cfif !structKeyExists(arguments, "tracker")>
+		<cfif structKeyExists(arguments, "tracker")>
 			<!--- used to inject mocking object for testing --->
 			<cfset variables.blhq = arguments.tracker />
 		<cfelse>
