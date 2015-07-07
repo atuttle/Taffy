@@ -19,6 +19,24 @@
 		<cfreturn true />
 	</cffunction>
 
+	<!---
+		onTaffyRequestEnd gives you the opportunity to access the request after it has been processed by the service.
+		If you override this function, you MUST either return TRUE or a representation object
+		(eg either taffy.core.nativeJsonSerializer or your default representation class)
+	--->
+	<cffunction name="onTaffyRequestEnd" output="false">
+		<cfargument name="verb" />
+		<cfargument name="cfc" />
+		<cfargument name="requestArguments" />
+		<cfargument name="mimeExt" />
+		<cfargument name="headers" />
+		<cfargument name="methodMetadata" />
+		<cfargument name="matchedURI" />
+		<cfargument name="parsedResponse" />
+		<cfargument name="originalResponse" />
+		<cfreturn true />
+	</cffunction>
+
 	<!--- override these functions to implement caching hooks --->
 	<cffunction name="validCacheExists" output="false">
 		<cfargument name="cacheKey" />
@@ -453,6 +471,32 @@
 
 			</cfif>
 		</cfif>
+
+		<!--- ...after the service has finished... --->
+		<cfset m.beforeOnTaffyRequestEnd = getTickCount() />
+		<cfset _taffyRequest.continue = onTaffyRequestEnd(
+			_taffyRequest.verb
+			,_taffyRequest.matchDetails.beanName
+			,_taffyRequest.requestArguments
+			,_taffyRequest.returnMimeExt
+			,_taffyRequest.headers
+			,_taffyRequest.methodMetadata
+			,local.parsed.matchDetails.srcUri
+			,_taffyRequest.resultSerialized
+			,_taffyRequest.result.getData()
+		) />
+		<cfset m.afterOnTaffyRequestEnd = getTickCount() />
+		<cfset m.otrTime = m.afterOnTaffyRequestEnd - m.beforeOnTaffyRequestEnd />
+
+		<cfif not structKeyExists(_taffyRequest, "continue")>
+			<!--- developer forgot to return true --->
+			<cfthrow
+				message="Error in your onTaffyRequestEnd method"
+				detail="Your onTaffyRequestEnd method returned no value. Expected: Return TRUE or call noData()/representationOf()."
+				errorcode="400"
+			/>
+		</cfif>
+
 		<cfreturn true />
 	</cffunction>
 
