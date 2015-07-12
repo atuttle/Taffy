@@ -27,7 +27,7 @@
 				meta = getMetadata(b);
 				_recurse_ResolveDependencies(b, meta);
 				return b;
-			}else if (!isNull(this.externalBeanFactory) and this.externalBeanFactory.containsBean(arguments.beanName)){
+			}else if (externalBeanExists(arguments.beanName)){
 				return this.externalBeanFactory.getBean(arguments.beanName);
 			}else{
 				throwError(message="Bean name '#arguments.beanName#' not found.", type="Taffy.Factory.BeanNotFound");
@@ -48,8 +48,14 @@
 		<cfargument name="includeTransients" default="true">
 		<cfargument name="includeExternal" default="false">
 		<cfscript>
-			return structKeyExists(this.beans, arguments.beanName) or (arguments.includeTransients and transientExists(arguments.beanName) or
-				(arguments.includeExternal and !isNull(this.externalBeanFactory) and this.externalBeanFactory.containsBean(arguments.beanName)));
+			return structKeyExists(this.beans, arguments.beanName) or (arguments.includeTransients and transientExists(arguments.beanName)) or
+				(arguments.includeExternal and arguments.includeExternal and externalBeanExists(arguments.beanName));
+		</cfscript>
+	</cffunction>
+	<cffunction name="externalBeanExists" access="private" output="false" returnType="boolean">
+		<cfargument required="true" name="beanName">
+		<cfscript>
+			return !isNull(this.externalBeanFactory) and this.externalBeanFactory.containsBean(arguments.beanName);
 		</cfscript>
 	</cffunction>
 	<cffunction name="loadBeansFromPath" access="public" output="false" returnType="void">
