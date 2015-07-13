@@ -4,8 +4,8 @@
 		this.beans = structNew();
 		this.transients = structNew();
 		//functionality
-		function init(component externalBeanFactory){
-			if (!isNull(arguments.externalBeanFactory)) {
+		function init(externalBeanFactory){
+			if (structKeyExists(arguments, "externalBeanFactory")) {
 				this.externalBeanFactory = arguments.externalBeanFactory;
 			}
 			return this;
@@ -49,13 +49,13 @@
 		<cfargument name="includeExternal" default="false">
 		<cfscript>
 			return structKeyExists(this.beans, arguments.beanName) or (arguments.includeTransients and transientExists(arguments.beanName)) or
-				(arguments.includeExternal and arguments.includeExternal and externalBeanExists(arguments.beanName));
+				(arguments.includeExternal and externalBeanExists(arguments.beanName));
 		</cfscript>
 	</cffunction>
 	<cffunction name="externalBeanExists" access="private" output="false" returnType="boolean">
 		<cfargument required="true" name="beanName">
 		<cfscript>
-			return !isNull(this.externalBeanFactory) and this.externalBeanFactory.containsBean(arguments.beanName);
+			return structKeyExists(this, "externalBeanFactory") and this.externalBeanFactory.containsBean(arguments.beanName);
 		</cfscript>
 	</cffunction>
 	<cffunction name="loadBeansFromPath" access="public" output="false" returnType="void">
