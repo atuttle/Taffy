@@ -4,7 +4,10 @@
 		this.beans = structNew();
 		this.transients = structNew();
 		//functionality
-		function init(){
+		function init(externalBeanFactory){
+			if (structKeyExists(arguments, "externalBeanFactory")) {
+				this.externalBeanFactory = arguments.externalBeanFactory;
+			}
 			return this;
 		}
 		// Proxy to beanExists to provide similar interface to ColdSpring
@@ -17,13 +20,15 @@
 		function getBean(beanName){
 			var b = 0;
 			var meta = 0;
-			if (beanExists(arguments.beanName, false)){
+			if (beanExists(arguments.beanName, false, false)){
 				return this.beans[arguments.beanName];
 			}else if (transientExists(arguments.beanName)){
 				b = createObject('component', this.transients[arguments.beanName]);
 				meta = getMetadata(b);
 				_recurse_ResolveDependencies(b, meta);
 				return b;
+			}else if (externalBeanExists(arguments.beanName)){
+				return this.externalBeanFactory.getBean(arguments.beanName);
 			}else{
 				throwError(message="Bean name '#arguments.beanName#' not found.", type="Taffy.Factory.BeanNotFound");
 			}
@@ -41,8 +46,16 @@
 	<cffunction name="beanExists" output="false">
 		<cfargument required="true" name="beanName">
 		<cfargument name="includeTransients" default="true">
+		<cfargument name="includeExternal" default="false">
 		<cfscript>
-			return structKeyExists(this.beans, arguments.beanName) or (includeTransients and transientExists(arguments.beanName));
+			return structKeyExists(this.beans, arguments.beanName) or (arguments.includeTransients and transientExists(arguments.beanName)) or
+				(arguments.includeExternal and externalBeanExists(arguments.beanName));
+		</cfscript>
+	</cffunction>
+	<cffunction name="externalBeanExists" access="private" output="false" returnType="boolean">
+		<cfargument required="true" name="beanName">
+		<cfscript>
+			return structKeyExists(this, "externalBeanFactory") and this.externalBeanFactory.containsBean(arguments.beanName);
 		</cfscript>
 	</cffunction>
 	<cffunction name="loadBeansFromPath" access="public" output="false" returnType="void">
@@ -156,7 +169,7 @@
 				<cfset local.fname = arguments.metaData.functions[local.f].name />
 				<cfif len(local.fname) gt 3>
 					<cfset local.propName = right(local.fname, len(local.fname)-3) />
-					<cfif left(local.fname, 3) eq "set" and beanExists(local.propName)>
+					<cfif left(local.fname, 3) eq "set" and beanExists(local.propName, true, true)>
 						<cfset evaluate("arguments.bean.#local.fname#(getBean('#local.propName#'))") />
 					</cfif>
 				</cfif>
@@ -165,7 +178,7 @@
 		<cfif structKeyExists(arguments.metaData, "properties") and isArray(arguments.metaData.properties)>
 			<cfloop from="1" to="#arrayLen(arguments.metaData.properties)#" index="local.p">
 				<cfset local.propName = arguments.metaData.properties[local.p].name />
-				<cfif beanExists(local.propName) or transientExists(local.propName)>
+				<cfif beanExists(local.propName, true, true)>
 					<cfset arguments.bean[local.propName] = getBean(local.propName) />
 				</cfif>
 			</cfloop>

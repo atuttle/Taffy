@@ -531,18 +531,16 @@
 		<cfset local.noResources = false />
 		<cfif directoryExists(local.resourcePath)>
 			<!--- setup internal bean factory --->
-			<cfset local._taffy.factory = createObject("component", "taffy.core.factory").init() />
+			<cfset local._taffy.factory = createObject("component", "taffy.core.factory") />
+			<cfif structKeyExists(local._taffy, "externalBeanFactory")>
+				<cfset local._taffy.factory.init(local._taffy.externalBeanFactory) />
+			<cfelse>
+				<cfset local._taffy.factory.init() />
+			</cfif>
 			<cfset local._taffy.factory.loadBeansFromPath(local.resourcePath, guessResourcesCFCPath(), guessResourcesFullPath(), true, local._taffy) />
 			<cfset local._taffy.beanList = local._taffy.factory.getBeanList() />
 			<cfset local._taffy.endpoints = cacheBeanMetaData(local._taffy.factory, local._taffy.beanList, local._taffy) />
 			<cfset local._taffy.status.internalBeanFactoryUsed = true />
-			<!---
-				if both an external bean factory and the internal factory are in use (because of /resources folder),
-				resolve dependencies for each bean of internal factory with the external factory's resources
-			--->
-			<cfif local._taffy.status.externalBeanFactoryUsed>
-				<cfset resolveDependencies(local._taffy.endpoints, local._taffy.factory, local._taffy.externalBeanFactory) />
-			</cfif>
 		<cfelseif local._taffy.status.externalBeanFactoryUsed>
 			<!--- only using external factory, so create a pointer to it --->
 			<cfset local._taffy.factory = local._taffy.externalBeanFactory />
@@ -1085,43 +1083,6 @@
 			</cfif>
 		</cfloop>
 		<cfreturn local.endpoints />
-	</cffunction>
-
-	<cffunction name="resolveDependencies" access="private" output="false" returnType="void" hint="used to resolve dependencies of internal beans using external bean factory">
-		<cfargument name="endpoints" />
-		<cfargument name="internalBeanFactory" />
-		<cfargument name="externalBeanFactory" />
-		<cfset var local = StructNew() />
-		<cfloop list="#structKeyList(arguments.endpoints)#" index="local.endpoint">
-			<cfset local.bean = arguments.internalBeanFactory.getBean(arguments.endpoints[local.endpoint].beanName) />
-			<cfset local.md = getMetadata( local.bean ) />
-			<cfset local.methods = local.md.functions />
-			<!--- get list of method names --->
-			<cfset local.methodNames = "" />
-			<cfloop from="1" to="#arrayLen(local.methods)#" index="local.m">
-				<cfset local.methodNames = listAppend(local.methodNames, local.methods[local.m].name) />
-			</cfloop>
-			<!--- look for setters --->
-			<cfloop list="#local.methodNames#" index="local.method">
-				<cfif left(local.method, 3) eq "set" and len(local.method) gt 3>
-					<!--- we've found a dependency, try to resolve it --->
-					<cfset local.beanName = right(local.method, len(local.method) - 3) />
-					<cfif arguments.externalBeanFactory.containsBean(local.beanName)>
-						<cfset local.dependency = arguments.externalBeanFactory.getBean(local.beanName) />
-						<cfset evaluate("local.bean.#local.method#(local.dependency)") />
-					</cfif>
-				</cfif>
-			</cfloop>
-			<!--- also resolve properties --->
-			<cfif structKeyExists(local.md, "properties") and isArray(local.md.properties)>
-				<cfloop from="1" to="#arrayLen(local.md.properties)#" index="local.p">
-					<cfset local.propName = local.md.properties[local.p].name />
-					<cfif arguments.externalBeanFactory.containsBean(local.propName)>
-						<cfset local.bean[local.propName] = arguments.externalBeanFactory.getBean(local.propName) />
-					</cfif>
-				</cfloop>
-			</cfif>
-		</cfloop>
 	</cffunction>
 
 	<cffunction name="getBeanListFromExternalFactory" output="false" access="private" returntype="String">
