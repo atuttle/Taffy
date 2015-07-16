@@ -60,7 +60,7 @@ $(function(){
 				delete tokens[t];
 		}
 		var result = uri.supplant(tokens);
-		result += (q.length) ? '?' + q : '';
+		result += (q.length) ? '?' + decodeURIComponent(q) : '';
 		resource.find('.resourceUri').val(result);
 	});
 
@@ -99,7 +99,7 @@ $(function(){
 			,path = uri.supplant(form);
 
 		var verb = resource.find('.reqMethod option:checked').val();
-		var body = (verb === 'GET' || verb === 'DELETE') ? params(qParams(resource)) : resource.find('.reqBody textarea').val();
+		var body = (verb === 'GET' || verb === 'DELETE') ? qParams(resource) : resource.find('.reqBody textarea').val();
 		var reqHeaders = resource.find('.requestHeaders').val().replace(/\r/g, '').split('\n');
 		var headers = {
 			Accept: resource.find('.reqFormat option:checked').val()

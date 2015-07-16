@@ -881,10 +881,19 @@
 		</cfif>
 		<!--- query_string input is also key-value pairs --->
 		<cfloop list="#arguments.queryString#" delimiters="&" index="local.t">
+			<cfset local.qsKey = urlDecode(listFirst(local.t,'=')) />
+			<cfset local.qsValue = "" />
 			<cfif listLen(local.t,'=') eq 2>
-				<cfset local.returnData[listFirst(local.t,'=')] = urlDecode(listLast(local.t,'=')) />
+				<cfset local.qsValue = urlDecode(listLast(local.t,'=')) />
+			</cfif>
+			<cfif (len(local.qsKey) gt 2) and (right(local.qsKey, 2) eq "[]")>
+				<cfset local.qsKey = left(local.qsKey, len(local.qsKey) - 2) />
+				<cfif not structKeyExists(local.returnData, local.qsKey)>
+					<cfset local.returnData[local.qsKey] = arrayNew(1) />
+				</cfif>
+				<cfset arrayAppend(local.returnData[local.qsKey], local.qsValue) />
 			<cfelse>
-				<cfset local.returnData[listFirst(local.t,'=')] = "" />
+				<cfset local.returnData[local.qsKey] = local.qsValue />
 			</cfif>
 		</cfloop>
 		<!--- if a mime type is requested as part of the url ("whatever.json"), then extract that so taffy can use it --->
