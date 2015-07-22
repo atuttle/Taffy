@@ -35,7 +35,6 @@
 
 		<!--- Define local variables --->
 		<cfset var payload = structNew() />
-		<cfset var exceptions = arrayNew(1) />
 
 		<!--- Add Project API key to payload --->
 		<cfset payload["apiKey"] = variables.config.apiKey />
@@ -66,7 +65,7 @@
 		<cfset payload["events"][1]["metaData"]["request"]["requestUrl"] = cgi.request_url />
 
 		<!--- Send log to Bugsnag --->
-		<cfhttp url="https://notify.bugsnag.com" method="post" result="response">
+		<cfhttp url="https://notify.bugsnag.com" method="post">
 			<cfhttpparam type="header" name="Content-Type" value="application/json" />
 			<cfhttpparam type="body" value="#serializeJSON(payload)#" />
 		</cfhttp>
