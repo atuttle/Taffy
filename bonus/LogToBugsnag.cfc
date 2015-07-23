@@ -128,7 +128,7 @@
 	<!---
 		Converts the specified code details to be included to the strack trace element
 	--->
-	<cffunction name="convertCodePrint" access="public" returntype="struct" output="true">
+	<cffunction name="convertCodePrint" access="private" returntype="struct" output="false">
 		<cfargument name="codePrintText" type="string" required="true" />
 
 		<!--- Define local variables --->
