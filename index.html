@@ -61,36 +61,29 @@
 
 					<h3>Contributors</h3>
 					<p>Many people have helped make Taffy what it is today and I can't thank them enough for <a href="https://github.com/atuttle/Taffy/graphs/contributors">their contributions</a>.</p>
-					<p>
-						<a class="avatar" href="https://github.com/bpanulla"><img src="https://avatars1.githubusercontent.com/u/55125?v=3&s=100" /></a>
-						<a class="avatar" href="https://github.com/jbvanzuylen"><img src="https://avatars0.githubusercontent.com/u/3265243?v=3&s=100" /></a>
-						<a class="avatar" href="https://github.com/danshort"><img src="https://avatars3.githubusercontent.com/u/44993?v=3&s=100" /></a>
-						<a class="avatar" href="https://github.com/damonmiller"><img src="https://avatars3.githubusercontent.com/u/446158?v=3&s=100" /></a>
-						<a class="avatar" href="https://github.com/bpamiri"><img src="https://avatars3.githubusercontent.com/u/180555?v=3&s=100" /></a>
-						<a class="avatar" href="https://github.com/mgersting"><img src="https://avatars1.githubusercontent.com/u/891160?v=3&s=100" /></a>
-						<a class="avatar" href="https://github.com/MWers"><img src="https://avatars1.githubusercontent.com/u/808995?v=3&s=100" /></a>
-						<a class="avatar" href="https://github.com/sneiland"><img src="https://avatars3.githubusercontent.com/u/632619?v=3&s=100" /></a>
-						<a class="avatar" href="https://github.com/dominic-oconnor"><img src="https://avatars3.githubusercontent.com/u/385739?v=3&s=100" /></a>
-						<a class="avatar" href="https://github.com/gregmoser"><img src="https://avatars1.githubusercontent.com/u/363820?v=3&s=100" /></a>
-						<a class="avatar" href="https://github.com/commadelimited"><img src="https://avatars0.githubusercontent.com/u/563460?v=3&s=100" /></a>
-						<a class="avatar" href="https://github.com/billrawlinson"><img src="https://avatars0.githubusercontent.com/u/3034352?v=3&s=100" /></a>
-						<a class="avatar" href="https://github.com/gitter-badger"><img src="https://avatars3.githubusercontent.com/u/8518239?v=3&s=100" /></a>
-						<a class="avatar" href="https://github.com/coke"><img src="https://avatars0.githubusercontent.com/u/50257?v=3&s=100" /></a>
-						<a class="avatar" href="https://github.com/dshuck"><img src="https://avatars3.githubusercontent.com/u/240818?v=3&s=100" /></a>
-						<a class="avatar" href="https://github.com/sethstone"><img src="https://avatars1.githubusercontent.com/u/281819?v=3&s=100" /></a>
-						<a class="avatar" href="https://github.com/scrittler"><img src="https://avatars2.githubusercontent.com/u/1237204?v=3&s=100" /></a>
-						<a class="avatar" href="https://github.com/barneyb"><img src="https://avatars0.githubusercontent.com/u/82654?v=3&s=100" /></a>
-						<a class="avatar" href="https://github.com/cameroncf"><img src="https://avatars3.githubusercontent.com/u/789760?v=3&s=100" /></a>
-						<a class="avatar" href="https://github.com/phipps73"><img src="https://avatars0.githubusercontent.com/u/2196844?v=3&s=100" /></a>
-						<a class="avatar" href="https://github.com/cfchef"><img src="https://avatars3.githubusercontent.com/u/3632399?v=3&s=100" /></a>
-						<a class="avatar" href="https://github.com/ryanguill"><img src="https://avatars1.githubusercontent.com/u/1149698?v=3&s=100" /></a>
-					</p>
+					<p id="contributors"></p>
 				</section>
 
 				<script type="text/javascript">
 					var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
 					document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+
+					function addContributors(payload){
+						var $contribs = document.getElementById('contributors');
+						payload.data.forEach(function(contrib){
+
+							//don't show my own headshot
+							if (contrib.author.login === 'atuttle') return;
+
+							var a = document.createElement('a');
+							a.href = contrib.author.html_url;
+							a.className = 'avatar';
+							a.innerHTML = '<img src="' + contrib.author.avatar_url + '&s=100" />';
+							$contribs.appendChild( a );
+						});
+					}
 				</script>
+				<script src="https://api.github.com/repos/atuttle/Taffy/stats/contributors?callback=addContributors"></script>
 				<script type="text/javascript">
 					try {
 						var pageTracker = _gat._getTracker("UA-2284831-5");
