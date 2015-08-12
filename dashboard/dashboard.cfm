@@ -33,129 +33,93 @@
 					</div>
 					<div class="modal-body">
 						<cfoutput>
-
-							<div class="col-sm-6">
-								<strong>Reload on every request:</strong>
-							</div>
-							<div class="col-sm-6">
-								<a class="label label-default" href="<cfoutput>#getDocUrl('reloadOnEveryRequest')#</cfoutput>">?</a>
-								#yesNoFormat(application._taffy.settings.reloadOnEveryRequest)#
-							</div>
-
-							<div class="col-sm-6">
-								<strong>Return Exceptions as JSON:</strong>
-							</div>
-							<div class="col-sm-6">
-								<a class="label label-default" href="<cfoutput>#getDocUrl('returnExceptionsAsJson')#</cfoutput>">?</a>
-								#yesNoFormat(application._taffy.settings.returnExceptionsAsJson)#
-							</div>
-
-							<div class="col-sm-6">
-								<strong>CORS:</strong>
-							</div>
-							<div class="col-sm-6">
-								<a class="label label-default" href="<cfoutput>#getDocUrl('allowCrossDomain')#</cfoutput>">?</a>
-								<cfif application._taffy.settings.allowCrossDomain EQ 'false'>No<cfelse>Yes</cfif>
-							</div>
-
-							<div class="col-sm-6">
-								<strong>E-Tags:</strong>
-							</div>
-							<div class="col-sm-6">
-								<a class="label label-default" href="<cfoutput>#getDocUrl('useEtags')#</cfoutput>">?</a>
-								#yesNoFormat(application._taffy.settings.useEtags)#
-							</div>
-
-							<div class="col-sm-6">
-								<strong>JSONP:</strong>
-							</div>
-							<div class="col-sm-6">
-								<a class="label label-default" href="<cfoutput>#getDocUrl('jsonp')#</cfoutput>">?</a>
-								<cfif application._taffy.settings.jsonp eq false>
-									No
-								<cfelse>
-									?<strong>#application._taffy.settings.jsonp#=</strong>...
-								</cfif>
-							</div>
-
-							<div class="col-sm-6">
-								<strong>Endpoint URL Param:</strong>
-							</div>
-							<div class="col-sm-6">
-								<a class="label label-default" href="<cfoutput>#getDocUrl('endpointURLParam')#</cfoutput>">?</a>
-								#application._taffy.settings.endpointURLParam#
-							</div>
-
-							<div class="col-sm-6">
-								<strong>Serializer:</strong>
-							</div>
-							<div class="col-sm-6">
-								<a class="label label-default" href="<cfoutput>#getDocUrl('serializer')#</cfoutput>">?</a>
-								#application._taffy.settings.serializer#
-							</div>
-
-							<div class="col-sm-6">
-								<strong>Return Formats:</strong>
-							</div>
-							<div class="col-sm-6">
-								<ul>
-									<cfloop list="#structKeyList(application._taffy.settings.mimeTypes)#" index="local.m">
-										<li>#local.m#</li>
-									</cfloop>
-								</ul>
-							</div>
-
-							<div class="col-sm-6">
-								<strong>Global Headers:</strong>
-							</div>
-							<div class="col-sm-6">
-								<a class="label label-default" href="<cfoutput>#getDocUrl('globalHeaders')#</cfoutput>">?</a>
-								<dl>
-									<cfloop list="#structKeyList(application._taffy.settings.globalHeaders)#" index="local.h">
-										<dt>#local.h#</dt>
-										<dd>#application._taffy.settings.globalHeaders[local.h]#</dd>
-									</cfloop>
-								</dl>
-								<cfif structIsEmpty(application._taffy.settings.globalHeaders)>
-									None
-								</cfif>
-							</div>
-
-							<div class="col-sm-6">
-								<strong>Exception Log Adapter:</strong>
-							</div>
-							<div class="col-sm-6">
-								<a class="label label-default" href="<cfoutput>#getDocUrl('exceptionLogAdapter')#</cfoutput>">?</a>
-								#application._taffy.settings.exceptionLogAdapter#
-							</div>
-
-							<div class="col-sm-6">
-								<strong>Exception Log Adapter Config:</strong>
-							</div>
-							<div class="col-sm-6">
-								<a class="label label-default" href="<cfoutput>#getDocUrl('exceptionLogAdapterConfig')#</cfoutput>">?</a>
-								<cfif isSimpleValue(application._taffy.settings.exceptionLogAdapterConfig)>
-									#application._taffy.settings.exceptionLogAdapterConfig#
-								<cfelse>
-									<dl>
-										<cfloop list="#structKeyList(application._taffy.settings.exceptionLogAdapterConfig)#" index="local.k">
-											<dt>#local.k#</dt>
-											<dd>#application._taffy.settings.exceptionLogAdapterConfig[local.k]#</dd>
-										</cfloop>
-									</dl>
-								</cfif>
-							</div>
-
-							<div class="col-sm-6">
-								<strong>Unhandled Paths:</strong>
-							</div>
-							<div class="col-sm-6">
-								<!--- <a class="label label-default" href="<cfoutput>#getDocUrl('unhandledPaths')#</cfoutput>">?</a> --->
-								<ul>
-									<cfloop list="#application._taffy.settings.unhandledPaths#" index="local.p">
-										<li>#local.p#</li>
-									</cfloop>
-								</ul>
+							<div class="table-responsive">
+								<table class="table table-striped">
+									<tr>
+										<td><strong>Reload on every request:</strong></td>
+										<td><a class="label label-default" href="<cfoutput>#getDocUrl('reloadOnEveryRequest')#</cfoutput>">?</a>
+										#yesNoFormat(application._taffy.settings.reloadOnEveryRequest)#</td>
+									</tr>
+									<tr>
+										<td><strong>Return Exceptions as JSON:</strong></td>
+										<td><a class="label label-default" href="<cfoutput>#getDocUrl('returnExceptionsAsJson')#</cfoutput>">?</a>
+										#yesNoFormat(application._taffy.settings.returnExceptionsAsJson)#</td>
+									</tr>
+									<tr>
+										<td><strong>CORS:</strong></td>
+										<td><a class="label label-default" href="<cfoutput>#getDocUrl('allowCrossDomain')#</cfoutput>">?</a>
+										<cfif application._taffy.settings.allowCrossDomain EQ 'false'>No<cfelse>Yes</cfif></td>
+									</tr>
+									<tr>
+										<td><strong>E-Tags:</strong></td>
+										<td><a class="label label-default" href="<cfoutput>#getDocUrl('useEtags')#</cfoutput>">?</a>
+										#yesNoFormat(application._taffy.settings.useEtags)#</td>
+									</tr>
+									<tr>
+										<td><strong>JSONP:</strong></td>
+										<td><a class="label label-default" href="<cfoutput>#getDocUrl('jsonp')#</cfoutput>">?</a>
+										<cfif application._taffy.settings.jsonp eq false>No<cfelse>?<strong>#application._taffy.settings.jsonp#=</strong>...
+										</cfif></td>
+									</tr>
+									<tr>
+										<td><strong>Endpoint URL Param:</strong></td>
+										<td><a class="label label-default" href="<cfoutput>#getDocUrl('endpointURLParam')#</cfoutput>">?</a>
+										#application._taffy.settings.endpointURLParam#</td>
+									</tr>
+									<tr>
+										<td><strong>Serializer:</strong></td>
+										<td><a class="label label-default" href="<cfoutput>#getDocUrl('serializer')#</cfoutput>">?</a>
+										#application._taffy.settings.serializer#</td>
+									</tr>
+									<tr>
+										<td><strong>Return Formats:</strong></td>
+										<td><ul>
+											<cfloop list="#structKeyList(application._taffy.settings.mimeTypes)#" index="local.m">
+												<li>#local.m#</li>
+											</cfloop>
+										</ul></td>
+									</tr>
+									<tr>
+										<td><strong>Global Headers:</strong></td>
+										<td><a class="label label-default" href="<cfoutput>#getDocUrl('globalHeaders')#</cfoutput>">?</a>
+										<dl>
+											<cfloop list="#structKeyList(application._taffy.settings.globalHeaders)#" index="local.h">
+												<dt>#local.h#</dt>
+												<dd>#application._taffy.settings.globalHeaders[local.h]#</dd>
+											</cfloop>
+										</dl>
+										<cfif structIsEmpty(application._taffy.settings.globalHeaders)>
+											None
+										</cfif></td>
+									</tr>
+									<tr>
+										<td><strong>Exception Log Adapter:</strong></td>
+										<td><a class="label label-default" href="<cfoutput>#getDocUrl('exceptionLogAdapter')#</cfoutput>">?</a>
+										#application._taffy.settings.exceptionLogAdapter#</td>
+									</tr>
+									<tr>
+										<td><strong>Exception Log Adapter Config:</strong></td>
+										<td><a class="label label-default" href="<cfoutput>#getDocUrl('exceptionLogAdapterConfig')#</cfoutput>">?</a>
+										<cfif isSimpleValue(application._taffy.settings.exceptionLogAdapterConfig)>
+											#application._taffy.settings.exceptionLogAdapterConfig#
+										<cfelse>
+											<dl>
+												<cfloop list="#structKeyList(application._taffy.settings.exceptionLogAdapterConfig)#" index="local.k">
+													<dt>#local.k#</dt>
+													<dd>#application._taffy.settings.exceptionLogAdapterConfig[local.k]#</dd>
+												</cfloop>
+											</dl>
+										</cfif></td>
+									</tr>
+									<tr>
+										<td><strong>Unhandled Paths:</strong></td>
+										<td><ul>
+											<cfloop list="#application._taffy.settings.unhandledPaths#" index="local.p">
+												<li>#local.p#</li>
+											</cfloop>
+										</ul></td>
+									</tr>
+								</table>
 							</div>
 
 						</cfoutput>
