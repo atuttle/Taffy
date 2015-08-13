@@ -31,10 +31,10 @@
 						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
 						<h4 class="modal-title" id="frameworkConfig">Framework Configuration</h4>
 					</div>
-					<div class="modal-body">
+					<div class="modal-body" style="padding:0">
 						<cfoutput>
 							<div class="table-responsive">
-								<table class="table table-striped">
+								<table class="table table-striped" style="margin-bottom:0">
 									<tr>
 										<td><strong>Reload on every request:</strong></td>
 										<td><a class="label label-default" href="<cfoutput>#getDocUrl('reloadOnEveryRequest')#</cfoutput>">?</a>
