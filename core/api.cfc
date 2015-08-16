@@ -934,8 +934,7 @@
 			</cfif>
 		<cfelse>
 			<!--- check if a server-level mapping exists --->
-			<cfset local.serverMappings = createObject("java", "coldfusion.server.ServiceFactory").getRuntimeService().getMappings() />
-			<cfif structKeyExists(local.serverMappings, "/resources")>
+			<cfif directoryExists("/resources")>
 				<cfreturn "/resources" />
 			</cfif>
 		</cfif>
