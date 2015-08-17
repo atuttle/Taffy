@@ -926,18 +926,9 @@
 	</cffunction>
 
 	<cffunction name="guessResourcesPath" access="private" output="false" returntype="string" hint="used to try and figure out the absolute path of the /resources folder even though this file may not be in the web root">
-		<!--- if /resources has been explicitly defined in an application mapping, it should take precedence --->
-		<cfif structKeyExists(this, "mappings")>
-			<!--- if app-level mappings are defined, server-level should be ignored entirely (hence the nested condition here) --->
-			<cfif structKeyExists(this.mappings, "/resources")>
-				<cfreturn "/resources" />
-			</cfif>
-		<cfelse>
-			<!--- check if a server-level mapping exists --->
-			<cfset local.serverMappings = createObject("java", "coldfusion.server.ServiceFactory").getRuntimeService().getMappings() />
-			<cfif structKeyExists(local.serverMappings, "/resources")>
-				<cfreturn "/resources" />
-			</cfif>
+		<!--- if /resources has been explicitly defined in an server/application mapping, it should take precedence --->
+		<cfif directoryExists("/resources")>
+			<cfreturn "/resources" />
 		</cfif>
 
 		<!--- if all else fails, fall through to guessing where /resources lives --->
