@@ -78,7 +78,7 @@
 		</cfif>
 
 		<cfscript>
-			if (structKeyExists(server, "railo")) {
+			if (structKeyExists(server, "railo") or structKeyExists(server, "lucee")) {
 				local.Columns = listToArray(arguments.q.getColumnList(false));
 			}
 			else {
