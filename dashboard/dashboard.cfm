@@ -265,6 +265,7 @@
 												<textarea
 													rows="#listLen(structKeyList(application._taffy.settings.dashboardHeaders, '|'), '|')+1#"
 													class="form-control input-sm requestHeaders"
+													placeholder="X-MY-HEADER: VALUE"
 													><cfloop list="#structKeyList(application._taffy.settings.dashboardHeaders, '|')#" delimiters="|" index="k">#k#: #application._taffy.settings.dashboardHeaders[k]##chr(13)##chr(10)#</cfloop></textarea>
 											</div>
 
