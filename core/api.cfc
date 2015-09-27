@@ -934,7 +934,9 @@
 
 	<cffunction name="guessResourcesPath" access="private" output="false" returntype="string" hint="used to try and figure out the absolute path of the /resources folder even though this file may not be in the web root">
 		<!--- if /resources has been explicitly defined in an server/application mapping, it should take precedence --->
-		<cfif directoryExists("/resources")>
+		<cfif directoryExists(expandPath("resources"))>
+			<cfreturn "resources" />
+		<cfelseif directoryExists(expandPath("/resources"))>
 			<cfreturn "/resources" />
 		</cfif>
 
@@ -955,7 +957,7 @@
 
 	<cffunction name="guessResourcesCFCPath" access="private" output="false" returntype="string">
 		<cfset var path = guessResourcesPath() />
-		<cfset path = right(path, len(path)-1) />
+		<cfif left(path, 1) eq "/"><cfset path = right(path, len(path)-1) /></cfif>
 		<cfreturn reReplace(path, "\/", ".", "all") />
 	</cffunction>
 
