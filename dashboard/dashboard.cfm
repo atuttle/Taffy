@@ -215,8 +215,14 @@
 												</cfif>
 											</select>
 											<input type="text" class="resourceUri form-control" value="#local.currentResource.srcUri#" onclick="this.select()" />
+											<div class="toggles">
+												<a class="expander" data-target="##qp_#local.resourceHTTPID#">+Query Params</a>
+												&nbsp;<a class="expander" data-target="##accept_#local.resourceHTTPID#">+Accept</a>
+												&nbsp;<a class="expander" data-target="##head_#local.resourceHTTPID#">+Headers</a>
+												&nbsp;<a class="expander" data-target="##auth_#local.resourceHTTPID#">+Basic Auth</a>
+											</div>
 
-											<div class="queryParams">
+											<div class="queryParams expandable" id="qp_#local.resourceHTTPID#">
 												<h4>Query String Parameters: <span class="text-muted">(optional)</span></h4>
 												<div class="qparam row form-group">
 													<div class="col-md-4">
@@ -232,14 +238,16 @@
 												</div>
 											</div>
 
-											<h4>Accept:</h4>
-											<select class="form-control input-sm reqFormat">
-												<cfloop list="#structKeyList(application._taffy.settings.mimeTypes)#" index="local.mime">
-													<option value="#local.mime#"
-														<cfif application._taffy.settings.defaultMime eq application._taffy.settings.mimeTypes[local.mime]>selected="selected"</cfif>
-													>#application._taffy.settings.mimeTypes[local.mime]#</option>
-												</cfloop>
-											</select>
+											<div class="expandable" id="accept_#local.resourceHTTPID#">
+												<h4>Accept:</h4>
+												<select class="form-control input-sm reqFormat">
+													<cfloop list="#structKeyList(application._taffy.settings.mimeTypes)#" index="local.mime">
+														<option value="#local.mime#"
+															<cfif application._taffy.settings.defaultMime eq application._taffy.settings.mimeTypes[local.mime]>selected="selected"</cfif>
+														>#application._taffy.settings.mimeTypes[local.mime]#</option>
+													</cfloop>
+												</select>
+											</div>
 
 											<cfif arrayLen(local.currentResource.tokens) gt 0>
 												<div class="reqTokens">
@@ -260,7 +268,7 @@
 												</div>
 											</cfif>
 
-											<div class="reqHeaders">
+											<div class="reqHeaders expandable" id="head_#local.resourceHTTPID#">
 												<h4>Request Headers:</h4>
 												<textarea
 													rows="#listLen(structKeyList(application._taffy.settings.dashboardHeaders, '|'), '|')+1#"
@@ -269,10 +277,12 @@
 													><cfloop list="#structKeyList(application._taffy.settings.dashboardHeaders, '|')#" delimiters="|" index="k">#k#: #application._taffy.settings.dashboardHeaders[k]##chr(13)##chr(10)#</cfloop></textarea>
 											</div>
 
-											<h4>Basic Auth:</h4>
-											<div class="basicAuth row">
-											  	<div class="col-md-6"><input type="text" name="username" class="form-control" placeholder="Username" value="" /></div>
-											  	<div class="col-md-6"><input type="password" name="password" class="form-control" placeholder="Password" value="" /></div>
+											<div class="expandable" id="auth_#local.resourceHTTPID#">
+												<h4>Basic Auth:</h4>
+												<div class="basicAuth row">
+													<div class="col-md-6"><input type="text" name="username" class="form-control" placeholder="Username" value="" /></div>
+													<div class="col-md-6"><input type="password" name="password" class="form-control" placeholder="Password" value="" /></div>
+												</div>
 											</div>
 
 											<div class="reqBody">

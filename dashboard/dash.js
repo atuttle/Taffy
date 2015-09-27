@@ -389,3 +389,96 @@ var Base64 = {
 		return string;
 	}
 }
+
+function expandingFormElements(){
+
+	var updateTabindexes = function(){
+		var invisible_parent_class = '.expandable';
+		var parent_visible_modifier_class = '.active';
+
+		var nextTabIndex = 1;
+		$('input,select,textarea,button').not('[type=hidden]').each(function(elem){
+			var $elem = $( this );
+			if ( $elem.parents( invisible_parent_class ).length > 0 ){
+				//could be invisible...
+				if ( $elem.parents( invisible_parent_class + parent_visible_modifier_class ).length > 0 ){
+					//is visible, give it a tab index
+					$elem.attr( 'tabindex', nextTabIndex );
+					nextTabIndex++;
+				}
+			}else{
+				$elem.attr( 'tabindex', nextTabIndex );
+				nextTabIndex++;
+			}
+		});
+	}
+
+	var handleExpansion = function(e){
+		var $this = $(this)
+		   ,$target = $( $this.data('target') )
+		   ,isVisible = $target.hasClass('active');
+
+		if ( $this.is('a') ){
+
+			e.preventDefault();
+			if (isVisible){
+				$target.removeClass('active');
+				$this.closest('.hide-on-expand').show('fast');
+			}else{
+				$target.addClass('active');
+				$this.closest('.hide-on-expand').hide('fast');
+			}
+			updateTabindexes();
+			return false;
+
+		}else if ( $this.is('input[type=checkbox]') ){
+
+			if ( $this.prop('checked') ){
+				$target.addClass('active');
+			}else{
+				$target.removeClass('active');
+			}
+
+		}else if ( $this.is('input[type=radio]') ){
+
+			var expand = $this.data('expand') && $this.is(':checked');
+
+			if ( expand ){
+				$target.addClass('active');
+			}else{
+				$target.removeClass('active');
+			}
+
+		}else if ( $this.is('select') ){
+
+			var selectedOption = $this.find('option:selected');
+			var expand = selectedOption.data('expand');
+
+			if ( expand ){
+				$target.addClass('active');
+			}else{
+				$target.removeClass('active');
+			}
+
+		}else if ( $this.is('input[type=text]') ){
+
+			if ( $this.val().trim().length > 0 ){
+				$target.addClass('active');
+			}else{
+				$target.removeClass('active');
+			}
+
+		}
+
+		updateTabindexes();
+	}
+
+	$('a.expander').on('click', handleExpansion);
+	$('input.expander,select.expander').on('keyup change', handleExpansion);
+
+	//initialize starting state of text fields
+	$('input.expander,select.expander').each(function(){
+		handleExpansion.apply(this);
+	});
+}
+expandingFormElements();
