@@ -458,13 +458,16 @@
 				var docs = $(this).closest('.docs');
 				var runner = $(this).closest('.resourceWrapper').find('.runner');
 				docs.hide();
-				runner.removeClass("col-md-8").addClass("col-md-12");
+				runner.removeClass("col-md-8").addClass("col-md-12").find('.showDocs').show();
 			});
 			$(".showDocs").on("click", function(){
 				var docs = $(this).closest('.resourceWrapper').find('.docs');
 				var runner = $(this).closest('.runner');
 				runner.removeClass("col-md-12").addClass("col-md-8");
 				docs.show();
+				$(this).hide();
+			}).each(function(){
+				$(this).click();
 			});
 		});
 		function submitRequest( verb, resource, headers, body, callback ){
