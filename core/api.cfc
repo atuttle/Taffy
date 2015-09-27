@@ -319,6 +319,13 @@
 					/>
 					<cfset m.afterResource = getTickCount() />
 					<cfset m.resourceTime = m.afterResource - m.beforeResource />
+					<cfif !isDefined("_taffyRequest.result")>
+						<cfthrow
+							message="Resource did not return a value"
+							detail="The resource is expected to return a call to rep()/representationOf() or noData(). It appears there was no return at all."
+							errorcode="taffy.resources.ResourceReturnsNothing"
+						/>
+					</cfif>
 					<cfif ucase(_taffyRequest.verb) eq "GET">
 						<cfset m.cacheSaveStart = getTickCount() />
 						<cfset setCachedResponse(local.cacheKey, _taffyRequest.result.getData()) />
