@@ -24,14 +24,14 @@ $(function(){
 	$(".resource .reqMethod").on('change', function(){
 		var resource = $(this).closest('.resource');
 		var method = resource.find('.reqMethod option:checked').html();
-		if (method === 'GET' || method === 'DELETE'){
+		if (method === 'GET' || method === 'DELETE' || method == 'OPTIONS'){
 			resource.find('.reqBody').hide('fast');
-			resource.find('.queryParams').show('fast');
+			resource.find('.queryParams');
 		}else{
 			var args = window.taffy.resources[resource.data('beanName')][method.toLowerCase()];
 			var ta = resource.find('.reqBody').show('fast').find('textarea');
 			ta.val(JSON.stringify(args, null, 3));
-			resource.find('.queryParams').hide('fast').find('input').val('');
+			resource.find('.queryParams').find('input').val('');
 		}
 	});
 
