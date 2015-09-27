@@ -210,6 +210,9 @@
 														<option value="#local.verb#">#local.verb#</option>
 													</cfif>
 												</cfloop>
+												<cfif application._taffy.settings.allowCrossDomain NEQ 'false'>
+													<option value="OPTIONS">OPTIONS</option>
+												</cfif>
 											</select>
 											<input type="text" class="resourceUri form-control" value="#local.currentResource.srcUri#" onclick="this.select()" />
 
