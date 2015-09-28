@@ -97,7 +97,7 @@
 				AND listFindNoCase(cgi.script_name, "index.cfm", "/") EQ listLen(cgi.script_name, "/")>
 				<cfif NOT application._taffy.settings.disableDashboard>
 					<cfif StructKeyExists( URL, "docs" )>
-						<cfinclude template="../dashboard/docs.cfm" />
+						<cfinclude template="#application._taffy.settings.docsPath#" />
 					<cfelse>
 						<cfinclude template="../dashboard/dashboard.cfm" />
 					</cfif>
@@ -204,7 +204,7 @@
 			AND listFindNoCase(cgi.script_name, "index.cfm", "/") EQ listLen(cgi.script_name, "/")>
 			<cfif NOT application._taffy.settings.disableDashboard>
 				<cfif StructKeyExists( URL, "docs" )>
-					<cfinclude template="../dashboard/docs.cfm" />
+					<cfinclude template="#application._taffy.settings.docsPath#" />
 				<cfelse>
 					<cfinclude template="../dashboard/dashboard.cfm" />
 				</cfif>
@@ -214,7 +214,7 @@
 					<cflocation url="#application._taffy.settings.disabledDashboardRedirect#" addtoken="false" />
 					<cfabort />
 				<cfelseif application._taffy.settings.showDocsWhenDashboardDisabled>
-					<cfinclude template="../dashboard/docs.cfm" />
+					<cfinclude template="#application._taffy.settings.docsPath#" />
 					<cfabort />
 				<cfelse>
 					<cfset throwError(403, "Forbidden") />
@@ -515,6 +515,7 @@
 		<cfset local.defaultConfig.docs = structNew() />
 		<cfset local.defaultConfig.docs.APIName = "Your API Name (variables.framework.docs.APIName)" />
 		<cfset local.defaultConfig.docs.APIVersion = "0.0.0 (variables.framework.docs.APIVersion)" />
+		<cfset local.defaultConfig.docsPath = "../dashboard/docs.cfm" />
 		<cfset local.defaultConfig.defaultMime = "" />
 		<cfset local.defaultConfig.debugKey = "debug" />
 		<cfset local.defaultConfig.reloadKey = "reload" />
