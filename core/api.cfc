@@ -481,7 +481,7 @@
 
 		<!--- ...after the service has finished... --->
 		<cfset m.beforeOnTaffyRequestEnd = getTickCount() />
-		<cfset _taffyRequest.continue = onTaffyRequestEnd(
+		<cfset onTaffyRequestEnd(
 			_taffyRequest.verb
 			,_taffyRequest.matchDetails.beanName
 			,_taffyRequest.requestArguments
@@ -489,20 +489,11 @@
 			,_taffyRequest.headers
 			,_taffyRequest.methodMetadata
 			,local.parsed.matchDetails.srcUri
-			,_taffyRequest.resultSerialized
-			,_taffyRequest.result.getData()
-		) />
-		<cfset m.afterOnTaffyRequestEnd = getTickCount() />
-		<cfset m.otrTime = m.afterOnTaffyRequestEnd - m.beforeOnTaffyRequestEnd />
-
-		<cfif not structKeyExists(_taffyRequest, "continue")>
-			<!--- developer forgot to return true --->
-			<cfthrow
-				message="Error in your onTaffyRequestEnd method"
-				detail="Your onTaffyRequestEnd method returned no value. Expected: Return TRUE or call noData()/representationOf()."
-				errorcode="400"
-			/>
-		</cfif>
+			,structKeyExists( _taffyRequest, 'resultSerialized' ) ? _taffyRequest.resultSerialized : ''
+			,structKeyExists( _taffyRequest, 'result' ) ? _taffyRequest.result.getData() : {}
+			) />
+		<cfset m.otreTime = getTickCount() - m.beforeOnTaffyRequestEnd />
+		<cfheader name="X-TIME-IN-ONTAFFYREQUESTEND" value="#m.otreTime#" />
 
 		<cfreturn true />
 	</cffunction>
