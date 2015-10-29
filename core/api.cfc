@@ -1358,7 +1358,7 @@
 		<cfset local.credentials.password = "" />
 		<cftry>
 			<cfset local.encodedCredentials = ListLast( GetPageContext().getRequest().getHeader("Authorization"), " " ) />
-			<cfset local.decodedCredentials = toString( toBinary( local.EncodedCredentials ) ) />
+			<cfset local.decodedCredentials = toString( toBinary( local.EncodedCredentials ), "iso-8859-1" ) />
 			<cfset local.credentials.username = listFirst( local.decodedCredentials, ":" ) />
 			<cfset local.credentials.password = listRest( local.decodedCredentials, ":" ) />
 			<cfcatch></cfcatch>
