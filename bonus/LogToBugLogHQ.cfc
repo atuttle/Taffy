@@ -5,7 +5,7 @@
 		<cfargument name="tracker" />
 
 <!--- <cfdump var="#arguments.config#" abort="true" /> --->
-		<cfif !structKeyExists(arguments, "tracker")>
+		<cfif structKeyExists(arguments, "tracker")>
 			<!--- used to inject mocking object for testing --->
 			<cfset variables.blhq = arguments.tracker />
 		<cfelse>
@@ -31,7 +31,11 @@
 
 		<cfset var msg = '' />
 
-		<cfif structKeyExists(exception, "message")>
+		<cfif structKeyExists(exception, 'rootcause') && structKeyExists(exception.rootcause, 'cause') && structKeyExists(exception.rootcause.cause, 'message')>
+			<cfset msg = exception.rootcause.cause.message />
+		<cfelseif structKeyExists(exception, 'cause') && structKeyExists(exception.cause, 'message')>
+			<cfset msg = exception.cause.message />
+		<cfelseif structKeyExists(exception, 'message')>
 			<cfset msg = exception.message />
 		<cfelse>
 			<cfset msg = variables.message />
