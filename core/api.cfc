@@ -83,7 +83,7 @@
 			(
 				application._taffy.settings.reloadOnEveryRequest eq true
 			)>
-			<cfif !local.reloadedInThisRequest><!--- prevent double reloads --->
+			<cfif !local.reloadedInThisRequest and !isUnhandledPathRequest(arguments.targetPath)><!--- prevent double reloads --->
 				<cfset onApplicationStart() />
 			</cfif>
 		</cfif>
