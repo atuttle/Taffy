@@ -34,6 +34,7 @@
 		<cfargument name="matchedURI" />
 		<cfargument name="parsedResponse" />
 		<cfargument name="originalResponse" />
+		<cfargument name="statusCode"	/>
 		<cfreturn true />
 	</cffunction>
 
