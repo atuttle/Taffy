@@ -34,6 +34,7 @@
 		<cfargument name="matchedURI" />
 		<cfargument name="parsedResponse" />
 		<cfargument name="originalResponse" />
+		<cfargument name="statusCode"	/>
 		<cfreturn true />
 	</cffunction>
 
@@ -491,6 +492,7 @@
 			,local.parsed.matchDetails.srcUri
 			,structKeyExists( _taffyRequest, 'resultSerialized' ) ? _taffyRequest.resultSerialized : ''
 			,structKeyExists( _taffyRequest, 'result' ) ? _taffyRequest.result.getData() : {}
+			,_taffyRequest.statusArgs.statusCode
 			) />
 		<cfset m.otreTime = getTickCount() - m.beforeOnTaffyRequestEnd />
 		<cfheader name="X-TIME-IN-ONTAFFYREQUESTEND" value="#m.otreTime#" />
