@@ -34,6 +34,7 @@
 		<cfargument name="matchedURI" />
 		<cfargument name="parsedResponse" />
 		<cfargument name="originalResponse" />
+		<cfargument name="statusCode"	/>
 		<cfreturn true />
 	</cffunction>
 
@@ -83,7 +84,7 @@
 			(
 				application._taffy.settings.reloadOnEveryRequest eq true
 			)>
-			<cfif !local.reloadedInThisRequest><!--- prevent double reloads --->
+			<cfif !local.reloadedInThisRequest and !isUnhandledPathRequest(arguments.targetPath)><!--- prevent double reloads --->
 				<cfset onApplicationStart() />
 			</cfif>
 		</cfif>
@@ -491,6 +492,7 @@
 			,local.parsed.matchDetails.srcUri
 			,structKeyExists( _taffyRequest, 'resultSerialized' ) ? _taffyRequest.resultSerialized : ''
 			,structKeyExists( _taffyRequest, 'result' ) ? _taffyRequest.result.getData() : {}
+			,_taffyRequest.statusArgs.statusCode
 			) />
 		<cfset m.otreTime = getTickCount() - m.beforeOnTaffyRequestEnd />
 		<cfheader name="X-TIME-IN-ONTAFFYREQUESTEND" value="#m.otreTime#" />
@@ -1358,7 +1360,7 @@
 		<cfset local.credentials.password = "" />
 		<cftry>
 			<cfset local.encodedCredentials = ListLast( GetPageContext().getRequest().getHeader("Authorization"), " " ) />
-			<cfset local.decodedCredentials = toString( toBinary( local.EncodedCredentials ) ) />
+			<cfset local.decodedCredentials = toString( toBinary( local.EncodedCredentials ), "iso-8859-1" ) />
 			<cfset local.credentials.username = listFirst( local.decodedCredentials, ":" ) />
 			<cfset local.credentials.password = listRest( local.decodedCredentials, ":" ) />
 			<cfcatch></cfcatch>
