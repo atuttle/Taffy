@@ -480,6 +480,16 @@
 			</cfif>
 		</cfif>
 
+		<cfset local.resultSerialized = "" />
+		<cfif structKeyExists( _taffyRequest, "resultSerialized" )>
+			<cfset local.resultSerialized = _taffyRequest.resultSerialized />
+		</cfif>
+
+		<cfset local.result = StructNew() />
+		<cfif structKeyExists( _taffyRequest, "result" )>
+			<cfset local.result = _taffyRequest.result.getData() />
+		</cfif>
+
 		<!--- ...after the service has finished... --->
 		<cfset m.beforeOnTaffyRequestEnd = getTickCount() />
 		<cfset onTaffyRequestEnd(
@@ -490,8 +500,8 @@
 			,_taffyRequest.headers
 			,_taffyRequest.methodMetadata
 			,local.parsed.matchDetails.srcUri
-			,IIf((structKeyExists( _taffyRequest, 'resultSerialized')), _taffyRequest.resultSerialized, '')
-			,IIf((structKeyExists( _taffyRequest, 'result')), _taffyRequest.result.getData(), StructNew())
+			,local.resultSerialized
+			,local.result
 			,_taffyRequest.statusArgs.statusCode
 			) />
 		<cfset m.otreTime = getTickCount() - m.beforeOnTaffyRequestEnd />
