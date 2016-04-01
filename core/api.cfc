@@ -490,8 +490,8 @@
 			,_taffyRequest.headers
 			,_taffyRequest.methodMetadata
 			,local.parsed.matchDetails.srcUri
-			,structKeyExists( _taffyRequest, 'resultSerialized' ) ? _taffyRequest.resultSerialized : ''
-			,structKeyExists( _taffyRequest, 'result' ) ? _taffyRequest.result.getData() : {}
+			,IIf((structKeyExists( _taffyRequest, 'resultSerialized')), _taffyRequest.resultSerialized, '')
+			,IIf((structKeyExists( _taffyRequest, 'result')), _taffyRequest.result.getData(), StructNew())
 			,_taffyRequest.statusArgs.statusCode
 			) />
 		<cfset m.otreTime = getTickCount() - m.beforeOnTaffyRequestEnd />
