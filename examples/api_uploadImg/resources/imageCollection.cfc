@@ -7,7 +7,7 @@
 
 		<cffile
 			action="upload"
-			destination="#expandPath('/taffy/examples/api_uploadImg/_scratch/')#"
+			destination="#getTempDirectory()#"
 			fileField="img"
 			nameConflict="MakeUnique"
 			result="local.uploadResult"
