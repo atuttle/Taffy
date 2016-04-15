@@ -185,7 +185,7 @@
 		<cfargument name="targetPage" type="string" required="true" />
 
 		<cfset var _taffyRequest = {} />
-		<cfset request._taffyRequest = _taffyRequest />`
+		<cfset request._taffyRequest = _taffyRequest />
 		<cfset var local = {} />
 		<cfset var m = '' />
 
