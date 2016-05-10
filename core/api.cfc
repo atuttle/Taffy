@@ -1299,7 +1299,18 @@
 			<cfset func = metadata.functions[f] />
 			<!--- ignore hidden methods, if access is not set, assume public --->
 			<cfif not structKeyExists(func, "access") or (func.access neq "private" and func.access neq "package")>
-				<cfset arrayAppend(result.functions, func) />
+				<!--- check to see if this function is already in the list. If so, overwrite, otherwise append --->
+				<cfset foundFunc = False />
+				<cfloop from="1" to="#arrayLen( result.functions )#" index="g">
+					<cfif result.functions[g].NAME EQ func.NAME>
+						<cfset result.functions[g] = func />
+						<cfset foundFunc = True />
+						<cfbreak />
+					</cfif>
+				</cfloop>
+				<cfif NOT foundFunc>
+					<cfset arrayAppend(result.functions, func) />
+				</cfif>
 			</cfif>
 		</cfloop>
 		<cfreturn result />
