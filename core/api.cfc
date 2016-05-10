@@ -1274,6 +1274,9 @@
 		<cfargument name="metadata" type="struct" required="true" />
 		<cfset var result = StructNew() />
 		<cfset var func = '' />
+		<cfset var f = 0 />
+		<cfset var g = 0 />
+		<cfset var foundFunc = false />
 		<cfset result.functions = arrayNew(1) />
 		<!--- don't recurse if we've reached the base component --->
 		<cfif structKeyExists(metadata, "extends") and not metadata.extends.fullname eq "taffy.core.resource">
