@@ -38,7 +38,7 @@
 									<code style="float:right; margin-top: -15px; display: inline-block;">#local.currentResource.srcUri#</code>
 								</h4>
 							</div>
-							<div id="#local.currentResource.beanName#">
+							<div id="#local.currentResource.beanName#" class="in">
 								<div class="panel-body resourceWrapper">
 									<div class="col-md-12 docs">
 										<cfset local.metadata = getMetaData(application._taffy.factory.getBean(local.currentResource.beanName)) />
