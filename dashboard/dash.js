@@ -60,7 +60,7 @@ $(function(){
 				delete tokens[t];
 		}
 		var result = uri.supplant(tokens);
-		result += (q.length) ? '?' + decodeURIComponent(q) : '';
+		result += (q.length) ? '?' + q : '';
 		resource.find('.resourceUri').val(result);
 	});
 
