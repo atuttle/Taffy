@@ -134,7 +134,7 @@ $(function(){
 			reset.show();
 			headers = parseHeaders(headers);
 
-			if (headers['Content-Type'].indexOf('application/json') > -1 || headers['Content-Type'].indexOf('text/json') > -1){
+			if (headers['content-type'].indexOf('application/json') > -1 || headers['content-type'].indexOf('text/json') > -1){
 				//indentation!
 				if (body.length){
 					body = JSON.stringify(JSON.parse(body), null, 3);
@@ -231,7 +231,7 @@ function params(query){
 
 function parseHeaders(h){
 	var out = {};
-	var chunks = h.split('\n');
+	var chunks = h.toLowerCase().split('\n');
 	for (var i=0,j=chunks.length; i<j; i++){
 		var bits = chunks[i].split(': ');
 		if (bits[0].length)
