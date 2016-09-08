@@ -50,7 +50,7 @@ Features and bug fixes are coordinated via the [GitHub issues list](https://gith
 
 We have [a mailing list for Taffy Users][1]. Feel free to ask for help, discuss potential bugs, and share new ideas there.
 
-I also frequent/idle in the **#ColdFusion** channel [on Freenode](https://kiwiirc.com/client/irc.freenode.net/) (IRC).
+You can also find us in the [CFML Slack][4], where there is even a dedicated **#taffy** channel.
 
 ## Open Source!
 
@@ -75,3 +75,4 @@ It means you can use Taffy pretty much any way you like. You can fork it. You ca
 [1]:https://groups.google.com/forum/#!forum/taffy-users
 [2]:https://github.com/atuttle/TaffyDocs
 [3]:http://atuttle.github.com/Taffy/documentation.html
+[4]:http://cfml-slack.herokuapp.com
