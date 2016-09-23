@@ -6,7 +6,7 @@
 		taffy:mime="application/json;text/json"
 		taffy:default="true"
 		hint="serializes data as JSON">
-			<cfreturn serializeJSON(variables.data) />
+			<cfreturn replace(serializeJSON(variables.data), chr(2), '', 'ALL') />
 	</cffunction>
 
 </cfcomponent>

@@ -1,4 +1,4 @@
-[![Taffy: The REST framework for ColdFusion and Railo](https://raw.github.com/atuttle/Taffy/master/dashboard/logo-lg.png)](http://taffy.io)
+[![Taffy: The REST framework for ColdFusion and Lucee](https://raw.github.com/atuttle/Taffy/master/dashboard/logo-lg.png)](http://taffy.io)
 
 You're here because creating REST APIs with the native functionality in ColdFusion 10+, Railo, and Lucee is verbose, complex, and developer-hostile. Or maybe you're still on an older version of ColdFusion.
 
@@ -12,14 +12,15 @@ It's easy to debug because error messages are returned as JSON by default and it
 
 ## Currently Supported Versions
 
+* Taffy 3.1.x
 * Taffy 3.0.x
 * Taffy 2.2.x
 
-If you file a bug or ask for support please indicate which version of Taffy you're using. If it's an older release, we usually ask you to upgrade. Officially, we promise to support the current and previous **minor** releases and the last **minor** release of the previous **major** release. Taffy follows versioning guidelines defined in [semver](http://semver.org/).
+If you file a bug or ask for support please indicate which version of Taffy you're using. If it's an older release, we usually ask you to upgrade. Officially, we promise to support the current and previous **minor** releases and the last **minor** release of the previous **major** release. To the best of our abilities Taffy follows the versioning guidelines defined in [semver](http://semver.org/).
 
 Supported versions get priority for bug fixes. No promises are made to fix bugs filed against **unsupported** versions. If your version is supported and your bug is reproducible and isolatable, we'll do everything within our power to address it.
 
-If you're on an unsupported version, upgrade is not an option in your case, and you still have an isolatable and reproducible bug, [contact me](http://fusiongrokker.com/page/contact-me) to discuss further options.
+If you're on an unsupported version, upgrade is not an option in your case, and you still have an isolatable and reproducible bug, [contact me](http://twitter.com/adamtuttle) to discuss further options.
 
 ## Running the Tests
 
@@ -29,7 +30,7 @@ To run the tests, you must have [MxUnit](http://mxunit.org/) installed at `/mxun
 1. Point your browser at `http://localhost/taffy/tests/` to initialize the test-harness API that the tests will use
 1. Point your browser at `http://localhost/taffy/tests/tests/` to run the test suite.
 
-If you are on vanilla Tomcat or another app server (most Railo users are), you may find that you need to [add an additional servlet mapping](http://docs.taffy.io/3.0.0/#Tomcat-JBoss--and-other-app-server--Idiosyncrasies) to get the tests to run.
+If you are on vanilla Tomcat or another app server (most Railo users are), you may find that you need to [add an additional servlet mapping](http://docs.taffy.io/3.1.0#tomcat-jboss-and-other-app-server-idiosyncrasies) to get the tests to run.
 
 Please [report any errors or failures as bugs](https://github.com/atuttle/Taffy/issues), and be sure to include relevant platform information.
 
@@ -39,7 +40,7 @@ Primary documentation is available at [docs.taffy.io](http://docs.taffy.io), wit
 
 ### You can contribute to the documentation
 
-If you would like to contribute to documentation, [please read this blog post][2]. If you still have questions, [ask them on our mailing list][1]. :)
+Contributing documentation changes is as easy as submitting a pull request to the [TaffyDocs][2] repo.
 
 ## Roadmap
 
@@ -49,7 +50,7 @@ Features and bug fixes are coordinated via the [GitHub issues list](https://gith
 
 We have [a mailing list for Taffy Users][1]. Feel free to ask for help, discuss potential bugs, and share new ideas there.
 
-I also frequent/idle in the **#ColdFusion** channel [on Freenode](https://kiwiirc.com/client/irc.freenode.net/) (IRC).
+You can also find us in the [CFML Slack][4], where there is even a dedicated **#taffy** channel.
 
 ## Open Source!
 
@@ -72,5 +73,6 @@ Part of the beauty of open source is that _you can affect change_. You can help 
 It means you can use Taffy pretty much any way you like. You can fork it. You can include it in a proprietary product, sell it, and not give us a dime. Pretty much the only thing you can't do is hold us accountable if anything goes wrong.
 
 [1]:https://groups.google.com/forum/#!forum/taffy-users
-[2]:http://fusiongrokker.com/post/how-you-can-contribute-to-taffy-documentation
+[2]:https://github.com/atuttle/TaffyDocs
 [3]:http://atuttle.github.com/Taffy/documentation.html
+[4]:http://cfml-slack.herokuapp.com
