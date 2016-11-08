@@ -47,7 +47,7 @@
 										<cfset local.found = { get=false, post=false, put=false, patch=false, delete=false } />
 										<cfloop from="1" to="#arrayLen(local.docData.functions)#" index="local.f">
 											<cfset local.func = local.docData.functions[local.f] />
-											<cfset verbs = "GET,POST,PUT,DELETE,OPTIONS,HEAD" />
+											<cfset verbs = "GET,POST,PUT,PATCH,DELETE,OPTIONS,HEAD" />
 											<cfset thisVerb = local.func.name />
 											<cfif structKeyExists(local.func,"taffy_verb")>
 												<cfset thisVerb = local.func.taffy_verb />
