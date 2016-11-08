@@ -128,5 +128,10 @@
 			<cfreturn createObject("component", arguments.repClass) />
 		</cfif>
 	</cffunction>
+	
+	<cffunction name="addDebugData" access="package" output="false">
+		<cfargument name="data" type="any" />
+		<cfset request.debugData = arguments.data />
+	</cffunction>
 
 </cfcomponent>
