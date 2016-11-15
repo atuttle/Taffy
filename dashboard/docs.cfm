@@ -38,7 +38,7 @@
 									<code style="float:right; margin-top: -15px; display: inline-block;">#local.currentResource.srcUri#</code>
 								</h4>
 							</div>
-							<div id="#local.currentResource.beanName#">
+							<div id="#local.currentResource.beanName#" class="in">
 								<div class="panel-body resourceWrapper">
 									<div class="col-md-12 docs">
 										<cfset local.metadata = getMetaData(application._taffy.factory.getBean(local.currentResource.beanName)) />
@@ -47,7 +47,7 @@
 										<cfset local.found = { get=false, post=false, put=false, patch=false, delete=false } />
 										<cfloop from="1" to="#arrayLen(local.docData.functions)#" index="local.f">
 											<cfset local.func = local.docData.functions[local.f] />
-											<cfset verbs = "GET,POST,PUT,DELETE,OPTIONS,HEAD" />
+											<cfset verbs = "GET,POST,PUT,PATCH,DELETE,OPTIONS,HEAD" />
 											<cfset thisVerb = local.func.name />
 											<cfif structKeyExists(local.func,"taffy_verb")>
 												<cfset thisVerb = local.func.taffy_verb />

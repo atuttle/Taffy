@@ -3,6 +3,8 @@
 
 		this.name = hash(getCurrentTemplatePath());
 
+		this.mappings["/resources"] = listDeleteAt(cgi.script_name, listLen(cgi.script_name, "/"), "/") & "/resources";
+
 		variables.framework = {};
 		variables.framework.debugKey = "debug";
 		variables.framework.reloadKey = "reload";

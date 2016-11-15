@@ -34,6 +34,10 @@
 		<cfargument name="matchedURI" />
 		<cfargument name="parsedResponse" />
 		<cfargument name="originalResponse" />
+<<<<<<< HEAD
+=======
+		<cfargument name="statusCode" />
+>>>>>>> refs/remotes/atuttle/master
 		<cfreturn true />
 	</cffunction>
 
@@ -83,7 +87,7 @@
 			(
 				application._taffy.settings.reloadOnEveryRequest eq true
 			)>
-			<cfif !local.reloadedInThisRequest><!--- prevent double reloads --->
+			<cfif !local.reloadedInThisRequest and !isUnhandledPathRequest(arguments.targetPath)><!--- prevent double reloads --->
 				<cfset onApplicationStart() />
 			</cfif>
 		</cfif>
@@ -97,7 +101,7 @@
 				AND listFindNoCase(cgi.script_name, "index.cfm", "/") EQ listLen(cgi.script_name, "/")>
 				<cfif NOT application._taffy.settings.disableDashboard>
 					<cfif StructKeyExists( URL, "docs" )>
-						<cfinclude template="../dashboard/docs.cfm" />
+						<cfinclude template="#application._taffy.settings.docsPath#" />
 					<cfelse>
 						<cfinclude template="../dashboard/dashboard.cfm" />
 					</cfif>
@@ -184,6 +188,7 @@
 		<cfargument name="targetPage" type="string" required="true" />
 
 		<cfset var _taffyRequest = {} />
+		<cfset request._taffyRequest = _taffyRequest />
 		<cfset var local = {} />
 		<cfset var m = '' />
 
@@ -204,7 +209,7 @@
 			AND listFindNoCase(cgi.script_name, "index.cfm", "/") EQ listLen(cgi.script_name, "/")>
 			<cfif NOT application._taffy.settings.disableDashboard>
 				<cfif StructKeyExists( URL, "docs" )>
-					<cfinclude template="../dashboard/docs.cfm" />
+					<cfinclude template="#application._taffy.settings.docsPath#" />
 				<cfelse>
 					<cfinclude template="../dashboard/dashboard.cfm" />
 				</cfif>
@@ -214,7 +219,7 @@
 					<cflocation url="#application._taffy.settings.disabledDashboardRedirect#" addtoken="false" />
 					<cfabort />
 				<cfelseif application._taffy.settings.showDocsWhenDashboardDisabled>
-					<cfinclude template="../dashboard/docs.cfm" />
+					<cfinclude template="#application._taffy.settings.docsPath#" />
 					<cfabort />
 				<cfelse>
 					<cfset throwError(403, "Forbidden") />
@@ -337,6 +342,13 @@
 					/>
 					<cfset m.afterResource = getTickCount() />
 					<cfset m.resourceTime = m.afterResource - m.beforeResource />
+					<cfif !isDefined("_taffyRequest.result")>
+						<cfthrow
+							message="Resource did not return a value"
+							detail="The resource is expected to return a call to rep()/representationOf() or noData(). It appears there was no return at all."
+							errorcode="taffy.resources.ResourceReturnsNothing"
+						/>
+					</cfif>
 					<cfif ucase(_taffyRequest.verb) eq "GET">
 						<cfset m.cacheSaveStart = getTickCount() />
 						<cfset setCachedResponse(local.cacheKey, _taffyRequest.result.getData()) />
@@ -472,9 +484,25 @@
 			</cfif>
 		</cfif>
 
+<<<<<<< HEAD
 		<!--- ...after the service has finished... --->
 		<cfset m.beforeOnTaffyRequestEnd = getTickCount() />
 		<cfset _taffyRequest.continue = onTaffyRequestEnd(
+=======
+		<cfset local.resultSerialized = "" />
+		<cfif structKeyExists( _taffyRequest, "resultSerialized" )>
+			<cfset local.resultSerialized = _taffyRequest.resultSerialized />
+		</cfif>
+
+		<cfset local.result = StructNew() />
+		<cfif structKeyExists( _taffyRequest, "result" )>
+			<cfset local.result = _taffyRequest.result.getData() />
+		</cfif>
+
+		<!--- ...after the service has finished... --->
+		<cfset m.beforeOnTaffyRequestEnd = getTickCount() />
+		<cfset onTaffyRequestEnd(
+>>>>>>> refs/remotes/atuttle/master
 			_taffyRequest.verb
 			,_taffyRequest.matchDetails.beanName
 			,_taffyRequest.requestArguments
@@ -482,6 +510,7 @@
 			,_taffyRequest.headers
 			,_taffyRequest.methodMetadata
 			,local.parsed.matchDetails.srcUri
+<<<<<<< HEAD
 			,_taffyRequest.resultSerialized
 			,_taffyRequest.result.getData()
 		) />
@@ -496,6 +525,14 @@
 				errorcode="400"
 			/>
 		</cfif>
+=======
+			,local.resultSerialized
+			,local.result
+			,_taffyRequest.statusArgs.statusCode
+			) />
+		<cfset m.otreTime = getTickCount() - m.beforeOnTaffyRequestEnd />
+		<cfheader name="X-TIME-IN-ONTAFFYREQUESTEND" value="#m.otreTime#" />
+>>>>>>> refs/remotes/atuttle/master
 
 		<cfreturn true />
 	</cffunction>
@@ -510,13 +547,14 @@
 		<cfheader name="X-TAFFY-RELOADED" value="true" />
 		<cfset request.taffyReloaded = true />
 		<cfset local._taffy = structNew() />
-		<cfset local._taffy.version = "3.0.2" />
+		<cfset local._taffy.version = "3.1.0" />
 		<cfset local._taffy.endpoints = structNew() />
 		<!--- default settings --->
 		<cfset local.defaultConfig = structNew() />
 		<cfset local.defaultConfig.docs = structNew() />
 		<cfset local.defaultConfig.docs.APIName = "Your API Name (variables.framework.docs.APIName)" />
 		<cfset local.defaultConfig.docs.APIVersion = "0.0.0 (variables.framework.docs.APIVersion)" />
+		<cfset local.defaultConfig.docsPath = "../dashboard/docs.cfm" />
 		<cfset local.defaultConfig.defaultMime = "" />
 		<cfset local.defaultConfig.debugKey = "debug" />
 		<cfset local.defaultConfig.reloadKey = "reload" />
@@ -575,18 +613,16 @@
 		<cfset local.noResources = false />
 		<cfif directoryExists(local.resourcePath)>
 			<!--- setup internal bean factory --->
-			<cfset local._taffy.factory = createObject("component", "taffy.core.factory").init() />
+			<cfset local._taffy.factory = createObject("component", "taffy.core.factory") />
+			<cfif structKeyExists(local._taffy, "externalBeanFactory")>
+				<cfset local._taffy.factory.init(local._taffy.externalBeanFactory) />
+			<cfelse>
+				<cfset local._taffy.factory.init() />
+			</cfif>
 			<cfset local._taffy.factory.loadBeansFromPath(local.resourcePath, guessResourcesCFCPath(), guessResourcesFullPath(), true, local._taffy) />
 			<cfset local._taffy.beanList = local._taffy.factory.getBeanList() />
 			<cfset local._taffy.endpoints = cacheBeanMetaData(local._taffy.factory, local._taffy.beanList, local._taffy) />
 			<cfset local._taffy.status.internalBeanFactoryUsed = true />
-			<!---
-				if both an external bean factory and the internal factory are in use (because of /resources folder),
-				resolve dependencies for each bean of internal factory with the external factory's resources
-			--->
-			<cfif local._taffy.status.externalBeanFactoryUsed>
-				<cfset resolveDependencies(local._taffy.endpoints, local._taffy.factory, local._taffy.externalBeanFactory) />
-			</cfif>
 		<cfelseif local._taffy.status.externalBeanFactoryUsed>
 			<!--- only using external factory, so create a pointer to it --->
 			<cfset local._taffy.factory = local._taffy.externalBeanFactory />
@@ -927,10 +963,19 @@
 		</cfif>
 		<!--- query_string input is also key-value pairs --->
 		<cfloop list="#arguments.queryString#" delimiters="&" index="local.t">
+			<cfset local.qsKey = urlDecode(listFirst(local.t,'=')) />
+			<cfset local.qsValue = "" />
 			<cfif listLen(local.t,'=') eq 2>
-				<cfset local.returnData[listFirst(local.t,'=')] = urlDecode(listLast(local.t,'=')) />
+				<cfset local.qsValue = urlDecode(listLast(local.t,'=')) />
+			</cfif>
+			<cfif (len(local.qsKey) gt 2) and (right(local.qsKey, 2) eq "[]")>
+				<cfset local.qsKey = left(local.qsKey, len(local.qsKey) - 2) />
+				<cfif not structKeyExists(local.returnData, local.qsKey)>
+					<cfset local.returnData[local.qsKey] = arrayNew(1) />
+				</cfif>
+				<cfset arrayAppend(local.returnData[local.qsKey], local.qsValue) />
 			<cfelse>
-				<cfset local.returnData[listFirst(local.t,'=')] = "" />
+				<cfset local.returnData[local.qsKey] = local.qsValue />
 			</cfif>
 		</cfloop>
 		<!--- if a mime type is requested as part of the url ("whatever.json"), then extract that so taffy can use it --->
@@ -963,18 +1008,11 @@
 	</cffunction>
 
 	<cffunction name="guessResourcesPath" access="private" output="false" returntype="string" hint="used to try and figure out the absolute path of the /resources folder even though this file may not be in the web root">
-		<!--- if /resources has been explicitly defined in an application mapping, it should take precedence --->
-		<cfif structKeyExists(this, "mappings")>
-			<!--- if app-level mappings are defined, server-level should be ignored entirely (hence the nested condition here) --->
-			<cfif structKeyExists(this.mappings, "/resources")>
-				<cfreturn "/resources" />
-			</cfif>
-		<cfelse>
-			<!--- check if a server-level mapping exists --->
-			<cfset local.serverMappings = createObject("java", "coldfusion.server.ServiceFactory").getRuntimeService().getMappings() />
-			<cfif structKeyExists(local.serverMappings, "/resources")>
-				<cfreturn "/resources" />
-			</cfif>
+		<!--- if /resources has been explicitly defined in an server/application mapping, it should take precedence --->
+		<cfif directoryExists(expandPath("resources"))>
+			<cfreturn "resources" />
+		<cfelseif directoryExists(expandPath("/resources"))>
+			<cfreturn "/resources" />
 		</cfif>
 
 		<!--- if all else fails, fall through to guessing where /resources lives --->
@@ -994,7 +1032,7 @@
 
 	<cffunction name="guessResourcesCFCPath" access="private" output="false" returntype="string">
 		<cfset var path = guessResourcesPath() />
-		<cfset path = right(path, len(path)-1) />
+		<cfif left(path, 1) eq "/"><cfset path = right(path, len(path)-1) /></cfif>
 		<cfreturn reReplace(path, "\/", ".", "all") />
 	</cffunction>
 
@@ -1129,43 +1167,6 @@
 			</cfif>
 		</cfloop>
 		<cfreturn local.endpoints />
-	</cffunction>
-
-	<cffunction name="resolveDependencies" access="private" output="false" returnType="void" hint="used to resolve dependencies of internal beans using external bean factory">
-		<cfargument name="endpoints" />
-		<cfargument name="internalBeanFactory" />
-		<cfargument name="externalBeanFactory" />
-		<cfset var local = StructNew() />
-		<cfloop list="#structKeyList(arguments.endpoints)#" index="local.endpoint">
-			<cfset local.bean = arguments.internalBeanFactory.getBean(arguments.endpoints[local.endpoint].beanName) />
-			<cfset local.md = getMetadata( local.bean ) />
-			<cfset local.methods = local.md.functions />
-			<!--- get list of method names --->
-			<cfset local.methodNames = "" />
-			<cfloop from="1" to="#arrayLen(local.methods)#" index="local.m">
-				<cfset local.methodNames = listAppend(local.methodNames, local.methods[local.m].name) />
-			</cfloop>
-			<!--- look for setters --->
-			<cfloop list="#local.methodNames#" index="local.method">
-				<cfif left(local.method, 3) eq "set" and len(local.method) gt 3>
-					<!--- we've found a dependency, try to resolve it --->
-					<cfset local.beanName = right(local.method, len(local.method) - 3) />
-					<cfif arguments.externalBeanFactory.containsBean(local.beanName)>
-						<cfset local.dependency = arguments.externalBeanFactory.getBean(local.beanName) />
-						<cfset evaluate("local.bean.#local.method#(local.dependency)") />
-					</cfif>
-				</cfif>
-			</cfloop>
-			<!--- also resolve properties --->
-			<cfif structKeyExists(local.md, "properties") and isArray(local.md.properties)>
-				<cfloop from="1" to="#arrayLen(local.md.properties)#" index="local.p">
-					<cfset local.propName = local.md.properties[local.p].name />
-					<cfif arguments.externalBeanFactory.containsBean(local.propName)>
-						<cfset local.bean[local.propName] = arguments.externalBeanFactory.getBean(local.propName) />
-					</cfif>
-				</cfloop>
-			</cfif>
-		</cfloop>
 	</cffunction>
 
 	<cffunction name="getBeanListFromExternalFactory" output="false" access="private" returntype="String">
@@ -1396,7 +1397,7 @@
 		<cfset local.credentials.password = "" />
 		<cftry>
 			<cfset local.encodedCredentials = ListLast( GetPageContext().getRequest().getHeader("Authorization"), " " ) />
-			<cfset local.decodedCredentials = toString( toBinary( local.EncodedCredentials ) ) />
+			<cfset local.decodedCredentials = toString( toBinary( local.EncodedCredentials ), "iso-8859-1" ) />
 			<cfset local.credentials.username = listFirst( local.decodedCredentials, ":" ) />
 			<cfset local.credentials.password = listRest( local.decodedCredentials, ":" ) />
 			<cfcatch></cfcatch>
@@ -1412,6 +1413,9 @@
 		<cfargument name="metadata" type="struct" required="true" />
 		<cfset var result = StructNew() />
 		<cfset var func = '' />
+		<cfset var f = 0 />
+		<cfset var g = 0 />
+		<cfset var foundFunc = false />
 		<cfset result.functions = arrayNew(1) />
 		<!--- don't recurse if we've reached the base component --->
 		<cfif structKeyExists(metadata, "extends") and not metadata.extends.fullname eq "taffy.core.resource">
@@ -1437,7 +1441,18 @@
 			<cfset func = metadata.functions[f] />
 			<!--- ignore hidden methods, if access is not set, assume public --->
 			<cfif not structKeyExists(func, "access") or (func.access neq "private" and func.access neq "package")>
-				<cfset arrayAppend(result.functions, func) />
+				<!--- check to see if this function is already in the list. If so, overwrite, otherwise append --->
+				<cfset foundFunc = False />
+				<cfloop from="1" to="#arrayLen( result.functions )#" index="g">
+					<cfif result.functions[g].NAME EQ func.NAME>
+						<cfset result.functions[g] = func />
+						<cfset foundFunc = True />
+						<cfbreak />
+					</cfif>
+				</cfloop>
+				<cfif NOT foundFunc>
+					<cfset arrayAppend(result.functions, func) />
+				</cfif>
 			</cfif>
 		</cfloop>
 		<cfreturn result />

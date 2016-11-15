@@ -1,5 +1,13 @@
 <cfcomponent hint="base class for taffy REST components">
 
+	<cffunction name="forceString">
+		<cfargument name="data" required="true" hint="the data that is being forced to serialize as a string" />
+		<cfreturn chr(2) & arguments.data />
+	</cffunction>
+
+	<cfset variables.encode = structNew() />
+	<cfset variables.encode.string = forceString />
+
 	<!--- helper functions --->
 	<cffunction name="representationOf" access="public" output="false" hint="returns an object capable of serializing the data in a variety of formats">
 		<cfargument name="data" required="true" hint="any simple or complex data that should be returned for the request" />
@@ -43,7 +51,7 @@
 		<cfargument name="cb" type="any" required="no" />
 		<cfscript>
 			var local = {};
-			if (structKeyExists(server, "railo")) {
+			if (structKeyExists(server, "railo") or structKeyExists(server, "lucee")) {
 				local.Columns = listToArray(arguments.q.getColumnList(false));
 			}
 			else {
@@ -78,7 +86,7 @@
 		</cfif>
 
 		<cfscript>
-			if (structKeyExists(server, "railo")) {
+			if (structKeyExists(server, "railo") or structKeyExists(server, "lucee")) {
 				local.Columns = listToArray(arguments.q.getColumnList(false));
 			}
 			else {
@@ -119,6 +127,11 @@
 		<cfelse>
 			<cfreturn createObject("component", arguments.repClass) />
 		</cfif>
+	</cffunction>
+	
+	<cffunction name="addDebugData" access="package" output="false">
+		<cfargument name="data" type="any" />
+		<cfset request.debugData = arguments.data />
 	</cffunction>
 
 </cfcomponent>

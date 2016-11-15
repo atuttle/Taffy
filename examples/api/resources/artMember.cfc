@@ -2,6 +2,8 @@
 
 	<cfset variables.dummyData = StructNew() />
 	<cfset variables.dummyData.whatever = true />
+	<cfset variables.dummyData.phone = encode.string(5558675309) />
+	<cfset variables.dummyData.phoneNumeric = 5558675309 />
 
 	<cffunction name="get" access="public" output="false">
 		<cfreturn representationOf(variables.dummyData).withStatus(200) />
