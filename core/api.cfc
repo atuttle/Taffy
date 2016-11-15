@@ -34,10 +34,7 @@
 		<cfargument name="matchedURI" />
 		<cfargument name="parsedResponse" />
 		<cfargument name="originalResponse" />
-<<<<<<< HEAD
-=======
 		<cfargument name="statusCode" />
->>>>>>> refs/remotes/atuttle/master
 		<cfreturn true />
 	</cffunction>
 
@@ -484,11 +481,6 @@
 			</cfif>
 		</cfif>
 
-<<<<<<< HEAD
-		<!--- ...after the service has finished... --->
-		<cfset m.beforeOnTaffyRequestEnd = getTickCount() />
-		<cfset _taffyRequest.continue = onTaffyRequestEnd(
-=======
 		<cfset local.resultSerialized = "" />
 		<cfif structKeyExists( _taffyRequest, "resultSerialized" )>
 			<cfset local.resultSerialized = _taffyRequest.resultSerialized />
@@ -502,7 +494,6 @@
 		<!--- ...after the service has finished... --->
 		<cfset m.beforeOnTaffyRequestEnd = getTickCount() />
 		<cfset onTaffyRequestEnd(
->>>>>>> refs/remotes/atuttle/master
 			_taffyRequest.verb
 			,_taffyRequest.matchDetails.beanName
 			,_taffyRequest.requestArguments
@@ -510,29 +501,12 @@
 			,_taffyRequest.headers
 			,_taffyRequest.methodMetadata
 			,local.parsed.matchDetails.srcUri
-<<<<<<< HEAD
-			,_taffyRequest.resultSerialized
-			,_taffyRequest.result.getData()
-		) />
-		<cfset m.afterOnTaffyRequestEnd = getTickCount() />
-		<cfset m.otrTime = m.afterOnTaffyRequestEnd - m.beforeOnTaffyRequestEnd />
-
-		<cfif not structKeyExists(_taffyRequest, "continue")>
-			<!--- developer forgot to return true --->
-			<cfthrow
-				message="Error in your onTaffyRequestEnd method"
-				detail="Your onTaffyRequestEnd method returned no value. Expected: Return TRUE or call noData()/representationOf()."
-				errorcode="400"
-			/>
-		</cfif>
-=======
 			,local.resultSerialized
 			,local.result
 			,_taffyRequest.statusArgs.statusCode
 			) />
 		<cfset m.otreTime = getTickCount() - m.beforeOnTaffyRequestEnd />
 		<cfheader name="X-TIME-IN-ONTAFFYREQUESTEND" value="#m.otreTime#" />
->>>>>>> refs/remotes/atuttle/master
 
 		<cfreturn true />
 	</cffunction>
