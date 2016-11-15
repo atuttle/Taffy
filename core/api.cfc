@@ -412,6 +412,8 @@
 		<!--- result data --->
 		<cfif structKeyExists(_taffyRequest,'result')>
 			<cfset _taffyRequest.resultType = _taffyRequest.result.getType() />
+			<cfset local.resultSerialized = '' />
+			<cfset local.debug = false />
 
 			<cfif _taffyRequest.resultType eq "textual">
 				<!--- serialize the representation's data into the requested mime type --->
@@ -453,11 +455,11 @@
 
 				<cfcontent reset="true" type="#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#; charset=utf-8" />
 				<cfif _taffyRequest.resultSerialized neq ('"' & '"')>
-					<cfoutput>#_taffyRequest.resultSerialized#</cfoutput>
+					<cfset local.resultSerialized = _taffyRequest.resultSerialized />
 				</cfif>
 				<!--- debug output --->
 				<cfif structKeyExists(url, application._taffy.settings.debugKey)>
-					<cfoutput><h3>Request Details:</h3><cfdump var="#_taffyRequest#"></cfoutput>
+					<cfset local.debug = true />
 				</cfif>
 
 			<cfelseif _taffyRequest.resultType eq "filename">
@@ -507,6 +509,14 @@
 			) />
 		<cfset m.otreTime = getTickCount() - m.beforeOnTaffyRequestEnd />
 		<cfheader name="X-TIME-IN-ONTAFFYREQUESTEND" value="#m.otreTime#" />
+
+		<cfif len(trim(local.resultSerialized))>
+			<cfoutput>#local.resultSerialized#</cfoutput>
+		</cfif>
+		<!--- debug output --->
+		<cfif local.debug>
+			<cfoutput><h3>Request Details:</h3><cfdump var="#_taffyRequest#"></cfoutput>
+		</cfif>
 
 		<cfreturn true />
 	</cffunction>
