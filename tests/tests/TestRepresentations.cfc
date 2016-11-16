@@ -23,6 +23,13 @@
 		assertEquals(42, variables.serializer.getStatus());
 	}
 
+	function test_withStatus_getStatusText(){
+		variables.serializer.withStatus(404, "Not Found");
+		assertEquals("Not Found", variables.serializer.getStatusText());
+		variables.serializer.withStatus(418);
+		assertEquals("I'm a teapot", variables.serializer.getStatusText());
+	}
+
 	function test_withHeaders_getHeaders(){
 		local.h = {};
 		local.h['x-dude'] = 'dude!';
