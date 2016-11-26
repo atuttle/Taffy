@@ -881,7 +881,7 @@
 		<cfset var fn = application._taffy.contentTypes[ct] />
 		<cfset var args = {} />
 		<cfset args.body = arguments.body />
-		<cfset result = {} />
+		<cfset var result = {} />
 		<cfinvoke
 			component="#application._taffy.settings.deserializer#"
 			method="#fn#"
