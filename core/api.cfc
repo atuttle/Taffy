@@ -880,8 +880,9 @@
 		<cfset var ct = listFirst(arguments.contentType,';') />
 		<cfset var fn = application._taffy.contentTypes[ct] />
 		<cfset var args = {} />
-		<cfset args.body = arguments.body />
 		<cfset var result = {} />
+		<cfset args.body = arguments.body />
+
 		<cfinvoke
 			component="#application._taffy.settings.deserializer#"
 			method="#fn#"
