@@ -30,10 +30,16 @@
 				Exception Timestamp: <cfoutput>#dateformat(now(), 'yyyy-mm-dd')# #timeformat(now(), 'HH:MM:SS tt')#</cfoutput>
 
 				<cfdump var="#arguments.exception#" format="text" />
+				<cfif isDefined('request.debugData')>
+					<cfdump var="#request.debugData#" label="debug data" format="text"/>
+				</cfif>
 			<cfelse>
 				<h2>Exception Report</h2>
 				<p><strong>Exception Timestamp:</strong> <cfoutput>#dateformat(now(), 'yyyy-mm-dd')# #timeformat(now(), 'HH:MM:SS tt')#</cfoutput></p>
 				<cfdump var="#arguments.exception#" />
+				<cfif isDefined('request.debugData')>
+					<cfdump var="#request.debugData#" label="debug data" />
+				</cfif>
 			</cfif>
 		</cfmail>
 	</cffunction>

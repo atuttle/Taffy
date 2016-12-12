@@ -412,6 +412,8 @@
 		<!--- result data --->
 		<cfif structKeyExists(_taffyRequest,'result')>
 			<cfset _taffyRequest.resultType = _taffyRequest.result.getType() />
+			<cfset local.resultSerialized = '' />
+			<cfset local.debug = false />
 
 			<cfif _taffyRequest.resultType eq "textual">
 				<!--- serialize the representation's data into the requested mime type --->
@@ -453,11 +455,11 @@
 
 				<cfcontent reset="true" type="#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#; charset=utf-8" />
 				<cfif _taffyRequest.resultSerialized neq ('"' & '"')>
-					<cfoutput>#_taffyRequest.resultSerialized#</cfoutput>
+					<cfset local.resultSerialized = _taffyRequest.resultSerialized />
 				</cfif>
 				<!--- debug output --->
 				<cfif structKeyExists(url, application._taffy.settings.debugKey)>
-					<cfoutput><h3>Request Details:</h3><cfdump var="#_taffyRequest#"></cfoutput>
+					<cfset local.debug = true />
 				</cfif>
 
 			<cfelseif _taffyRequest.resultType eq "filename">
@@ -481,6 +483,16 @@
 			</cfif>
 		</cfif>
 
+		<cfset local.resultSerialized = "" />
+		<cfif structKeyExists( _taffyRequest, "resultSerialized" )>
+			<cfset local.resultSerialized = _taffyRequest.resultSerialized />
+		</cfif>
+
+		<cfset local.result = StructNew() />
+		<cfif structKeyExists( _taffyRequest, "result" )>
+			<cfset local.result = _taffyRequest.result.getData() />
+		</cfif>
+
 		<!--- ...after the service has finished... --->
 		<cfset m.beforeOnTaffyRequestEnd = getTickCount() />
 		<cfset onTaffyRequestEnd(
@@ -491,12 +503,20 @@
 			,_taffyRequest.headers
 			,_taffyRequest.methodMetadata
 			,local.parsed.matchDetails.srcUri
-			,structKeyExists( _taffyRequest, 'resultSerialized' ) ? _taffyRequest.resultSerialized : ''
-			,structKeyExists( _taffyRequest, 'result' ) ? _taffyRequest.result.getData() : {}
+			,local.resultSerialized
+			,local.result
 			,_taffyRequest.statusArgs.statusCode
 			) />
 		<cfset m.otreTime = getTickCount() - m.beforeOnTaffyRequestEnd />
 		<cfheader name="X-TIME-IN-ONTAFFYREQUESTEND" value="#m.otreTime#" />
+
+		<cfif len(trim(local.resultSerialized))>
+			<cfoutput>#local.resultSerialized#</cfoutput>
+		</cfif>
+		<!--- debug output --->
+		<cfif local.debug>
+			<cfoutput><h3>Request Details:</h3><cfdump var="#_taffyRequest#"></cfoutput>
+		</cfif>
 
 		<cfreturn true />
 	</cffunction>
@@ -860,8 +880,9 @@
 		<cfset var ct = listFirst(arguments.contentType,';') />
 		<cfset var fn = application._taffy.contentTypes[ct] />
 		<cfset var args = {} />
+		<cfset var result = {} />
 		<cfset args.body = arguments.body />
-		<cfset result = {} />
+
 		<cfinvoke
 			component="#application._taffy.settings.deserializer#"
 			method="#fn#"
