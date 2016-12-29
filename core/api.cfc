@@ -403,7 +403,7 @@
 			<cfheader name="X-TIME-IN-CACHE-CHECK" value="#m.cacheCheckTime#" />
 		</cfif>
 		<cfif structKeyExists(m, "cacheGetTime")>
-			<cfheader name="X-TIME-IN-CACHE-GET" value="#m.cacheSaveTime#" />
+			<cfheader name="X-TIME-IN-CACHE-GET" value="#m.cacheGetTime#" />
 		</cfif>
 		<cfif structKeyExists(m, "cacheSaveTime")>
 			<cfheader name="X-TIME-IN-CACHE-SAVE" value="#m.cacheSaveTime#" />
@@ -450,7 +450,10 @@
 				</cfif>
 
 				<cfset m.done = getTickCount() />
-				<cfset m.taffyTime = m.done - m.init - m.parseTime - m.otrTime - m.resourceTime - m.serializeTime />
+				<cfset m.taffyTime = m.done - m.init - m.parseTime - m.otrTime - m.serializeTime />
+				<cfif structKeyExists(m, "resourceTime")>
+					<cfset m.taffyTime -= m.resourceTime />
+				</cfif>
 				<cfheader name="X-TIME-IN-TAFFY" value="#m.taffyTime#" />
 
 				<cfcontent reset="true" type="#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#; charset=utf-8" />
