@@ -134,7 +134,7 @@ $(function(){
 			reset.show();
 			headers = parseHeaders(headers);
 
-			if (headers['content-type'].indexOf('application/json') > -1 || headers['content-type'].indexOf('text/json') > -1){
+			if (headers['content-type'].indexOf('application/json') > -1 || headers['content-type'].indexOf('text/json') > -1 || headers['content-type'].indexOf('application/vnd.api+json') > -1){
 				//indentation!
 				if (body.length){
 					body = JSON.stringify(JSON.parse(body), null, 3);
