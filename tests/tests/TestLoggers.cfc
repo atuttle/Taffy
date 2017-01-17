@@ -1,5 +1,24 @@
 <cfcomponent extends="base">
 	<cfscript>
+		function test_suppression() {
+
+			var mockSuppressionTracker = "";
+			var suppressionAdapter = "";
+			var suppressionSettings = {};
+			var fakeError = {};
+
+			suppressionAdapter = createObject("component", "taffy.bonus.LogSuppression").init(
+				suppressionSettings
+				, mockSuppressionTracker
+			);
+
+			//fake error
+			fakeError.message = "This is a test error";
+			fakeError.detail = "Rubber Baby Buggy Bumper";
+			suppressionAdapter.saveLog(fakeError);
+
+			//nothing happens.. so it passes. mostly this just makes sure there are no syntax errors in the component.
+		}
 
 		function test_hoth(){
 			var mockHoth = mock();
