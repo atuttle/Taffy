@@ -188,6 +188,7 @@
 		<cfset request._taffyRequest = _taffyRequest />
 		<cfset var local = {} />
 		<cfset var m = '' />
+		<cfset local.debug = false />
 
 		<cfset _taffyRequest.metrics = {} />
 		<cfset m = _taffyRequest.metrics />
@@ -413,7 +414,6 @@
 		<cfif structKeyExists(_taffyRequest,'result')>
 			<cfset _taffyRequest.resultType = _taffyRequest.result.getType() />
 			<cfset local.resultSerialized = '' />
-			<cfset local.debug = false />
 
 			<cfif _taffyRequest.resultType eq "textual">
 				<!--- serialize the representation's data into the requested mime type --->
