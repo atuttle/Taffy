@@ -24,6 +24,11 @@
 				<cfoutput>
 					<cfloop from="1" to="#arrayLen(application._taffy.uriMatchOrder)#" index="local.resource">
 						<cfset local.currentResource = application._taffy.endpoints[application._taffy.uriMatchOrder[local.resource]] />
+						<cfset local.beanMeta = getMetaData(application._taffy.factory.getBean(local.currentResource.beanName)) />
+						<cfif structKeyExists(local.beanMeta, "taffy_docs_hide")
+								OR structKeyExists(local.beanMeta, "taffy:docs:hide")>
+							<cfscript>continue;</cfscript>
+						</cfif>
 						<div class="panel panel-default">
 							<div class="panel-heading">
 								<h4 class="panel-title">
@@ -54,7 +59,9 @@
 											<cfelseif structKeyExists(local.func,"taffy:verb")>
 												<cfset thisVerb = local.func['taffy:verb'] />
 											</cfif>
-											<cfif listFindNoCase(verbs, thisVerb) eq 0>
+											<cfif listFindNoCase(verbs, thisVerb) eq 0
+													OR structKeyExists(local.func, "taffy_docs_hide")
+													OR structKeyExists(local.func, "taffy:docs:hide")>
 												<cfscript>continue;</cfscript><!--- this has to be script for CF8 compat --->
 											</cfif>
 											<cfset local.found[local.func.name] = true />
@@ -64,6 +71,10 @@
 											</cfif>
 											<cfloop from="1" to="#arrayLen(local.func.parameters)#" index="local.p">
 												<cfset local.param = local.func.parameters[local.p] />
+												<cfif structKeyExists(local.param, "taffy_docs_hide")
+														OR structKeyExists(local.param, "taffy:docs:hide")>
+													<cfscript>continue;</cfscript>
+												</cfif>
 												<div class="row">
 													<div class="col-md-11 col-md-offset-1">
 															<cfif not structKeyExists(local.param, 'required') or not local.param.required>
