@@ -235,7 +235,7 @@ function parseHeaders(h){
 	for (var i=0,j=chunks.length; i<j; i++){
 		var bits = chunks[i].split(': ');
 		if (bits[0].length)
-			out[bits[0]] = bits[1];
+			out[bits[0].toLowerCase()] = bits[1];
 	}
 	return out;
 }
