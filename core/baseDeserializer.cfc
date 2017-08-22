@@ -8,6 +8,8 @@
 		<cfset var pair = "" />
 		<cfset var kv = [] />
 		<cfset var ix = 0 />
+		<cfset var k = "" />
+		<cfset var v = "" />
 
 		<cfif not find('=', arguments.body)>
 			<cfset throwError(400, "You've indicated that you're sending form-encoded data but it doesn't appear to be valid. Aborting request.") />
@@ -16,7 +18,13 @@
 		<cfloop from="1" to="#arrayLen(pairs)#" index="ix">
 			<cfset pair = pairs[ix] />
 			<cfset kv = listToArray(pair, "=", true) />
-			<cfset response[kv[1]] = urlDecode( kv[2] ) />
+			<cfset k = kv[1] />
+			<cfset v = urlDecode( kv[2] ) />
+			<cfif structKeyExists( response, k )>
+				<cfset response[k] = listAppend(response[k], v)>
+			<cfelse>
+				<cfset response[k] = v>
+			</cfif>
 		</cfloop>
 
 		<cfreturn response />
