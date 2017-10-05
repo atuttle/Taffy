@@ -1,0 +1,24 @@
+language: java
+sudo: false
+jdk:
+- oraclejdk8
+env:
+  global:
+    - TEST_RUNNER_URI=/test/run.cfm
+  matrix:
+    - CFENGINE=lucee@4.5.3
+    - CFENGINE=lucee@5.1
+    - CFENGINE=adobe@10
+    - CFENGINE=adobe@11
+    - CFENGINE=adobe@2016
+    - CFENGINE=adobe@9
+before_install:
+- git clone https://github.com/foundeo/cfmatrix.git cfmatrix
+install:
+- cfmatrix/bin/box install commandbox-cfconfig
+- cfmatrix/bin/box recipe recipeFile=cfmatrix/ci.boxr CFENGINE=$CFENGINE
+before_script:
+- cfmatrix/bin/box cfconfig cfmapping save /Taffy `pwd`
+- chmod +x cfmatrix/run.sh
+script:
+- "./cfmatrix/run.sh"

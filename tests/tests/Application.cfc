@@ -2,6 +2,8 @@
 
 <cfset this.name = 'Taffy_testSuite' />	<!---uses the same application name as the api Application.cfc for scope sharing --->
 
+<cfset this.mappings["/mxunit"] = expandPath("../testbox/system/compat/")>
+<cfset this.mappings["/testbox"] = expandPath("../testbox/")>
 
 <cffunction name="onRequestStart" returnType="void" access="public" output="false">
 	<cfif NOT isDefined('application._taffy')>
