@@ -4,7 +4,7 @@ jdk:
 - oraclejdk8
 env:
   global:
-    - TEST_RUNNER_URI=/test/run.cfm
+    - TEST_RUNNER_URI=/tests/tests/run.cfm?reporter=text
   matrix:
     - CFENGINE=lucee@4.5.3
     - CFENGINE=lucee@5.1
@@ -19,6 +19,7 @@ install:
 - cfmatrix/bin/box recipe recipeFile=cfmatrix/ci.boxr CFENGINE=$CFENGINE
 before_script:
 - cfmatrix/bin/box cfconfig cfmapping save /Taffy `pwd`
+- cfmatrix/bin/box cfconfig cfmapping list
 - chmod +x cfmatrix/run.sh
 script:
 - "./cfmatrix/run.sh"
