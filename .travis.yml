@@ -18,8 +18,8 @@ install:
 - cfmatrix/bin/box install commandbox-cfconfig
 - cfmatrix/bin/box recipe recipeFile=cfmatrix/ci.boxr CFENGINE=$CFENGINE
 before_script:
-- cfmatrix/bin/box cfconfig cfmapping save /Taffy `pwd`
-- cfmatrix/bin/box cfconfig cfmapping list
+- cfmatrix/bin/box cfconfig cfmapping save /Taffy `pwd` cfengine=$CFENGINE
+- cfmatrix/bin/box cfconfig cfmapping list cfengine=$CFENGINE
 - chmod +x cfmatrix/run.sh
 script:
 - "./cfmatrix/run.sh"
