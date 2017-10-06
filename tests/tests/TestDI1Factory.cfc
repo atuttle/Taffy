@@ -1,12 +1,12 @@
-<cfcomponent extends="base">
-	<cfscript>
+component extends="base" { 
+	
 
 		function beforeTests(){
 
 		}
 
 
-		function loads_directory_named_resources() {
+		function test_loads_directory_named_resources() {
 			// Setup external factory to read resource directory.  Ignore resources that were designed to cause errors.
 			local.config = {
 				exclude = ["uriDoesnt","uriAliasDoesnt","conflict"]
@@ -37,7 +37,7 @@
 		}
 
 
-		function loads_explicit_named_resources() {
+		function test_loads_explicit_named_resources() {
 			// Setup external factory to read resource directory.  Ignore resources that were designed to cause errors.
 			local.config = {
 				exclude = ["uriDoesnt","uriAliasDoesnt","conflict"],
@@ -72,7 +72,6 @@
 		private function _getVariables(){
 			return variables;
 		}
+}
 
 
-	</cfscript>
-</cfcomponent>

@@ -15,7 +15,7 @@
 
 		}
 
-		function conflicting_URIs_get_skipped() {
+		function test_conflicting_URIs_get_skipped() {
 			assertTrue(checkIfOneSkippedRessourceContainsExpectedException("errorCode", "taffy.resources.DuplicateUriPattern"), "Conflicting URIs not showing in errors");
 		}
 	</cfscript>

@@ -9,7 +9,7 @@
 		assertEquals(10, variables.serializer.getData());
 	}
 
-	function noData_returns_empty_rep_obj(){
+	function test_noData_returns_empty_rep_obj(){
 		local.result = variables.serializer.noData();
 		local.meta = getMetaData(local.result);
 		// debug(local.meta);
