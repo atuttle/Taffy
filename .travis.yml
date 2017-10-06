@@ -6,8 +6,8 @@ env:
   global:
     - TEST_RUNNER_URI=/tests/tests/run.cfm?reporter=text
   matrix:
-    - CFENGINE=lucee@4.5.3
-    - CFENGINE=lucee@5.1
+    - CFENGINE=lucee@4.5
+    - CFENGINE=lucee@5
     - CFENGINE=adobe@10
     - CFENGINE=adobe@11
     - CFENGINE=adobe@2016
@@ -18,8 +18,7 @@ install:
 - cfmatrix/bin/box install commandbox-cfconfig
 - cfmatrix/bin/box recipe recipeFile=cfmatrix/ci.boxr CFENGINE=$CFENGINE
 before_script:
-- cfmatrix/bin/box cfconfig cfmapping save /Taffy `pwd` cfengine=$CFENGINE
-- cfmatrix/bin/box cfconfig cfmapping list cfengine=$CFENGINE
+- cfmatrix/bin/box cfconfig cfmapping list
 - chmod +x cfmatrix/run.sh
 script:
 - "./cfmatrix/run.sh"
