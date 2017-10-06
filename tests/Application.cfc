@@ -1,12 +1,17 @@
 <cfcomponent extends="taffy.core.api" output="false">
 	<cfscript>
 		this.name = "Taffy_testSuite";
+		this.dirPath = getDirectoryFromPath(getCurrentTemplatePath());
+		this.mappings["/resources"] = this.dirPath & "resources/";
+		this.mappings["/mxunit"] = this.dirPath & "testbox/system/compat/";
+		this.mappings["/testbox"] = this.dirPath & "testbox/";
+		
 
 		variables.framework = {};
 		variables.framework.disableDashboard = false;
 		variables.framework.reloadKey = "reload";
 		variables.framework.unhandledPaths = "/Taffy/tests/someFolder,/Taffy/tests/tests,/tests/someFolder,/tests/tests";
-		variables.framework.serializer = "customJsonSerializer";
+		variables.framework.serializer = "nativeJsonSerializer";
 		variables.framework.useEtags = true;
 		variables.framework.globalHeaders = {};
 		variables.framework.globalHeaders["x-foo-globalheader"] = "snafu";
@@ -19,6 +24,7 @@
 			return "test";
 		}
 
+		
 		function onTaffyRequest(verb, cfc, requestArguments, mimeExt, headers, methodMetadata, matchedURI) {
 			var local = {};
 
