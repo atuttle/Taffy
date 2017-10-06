@@ -25,15 +25,20 @@
 					<cfloop from="1" to="#arrayLen(application._taffy.uriMatchOrder)#" index="local.resource">
 						<cfset local.currentResource = application._taffy.endpoints[application._taffy.uriMatchOrder[local.resource]] />
 						<cfset local.beanMeta = getMetaData(application._taffy.factory.getBean(local.currentResource.beanName)) />
-						<cfif structKeyExists(local.beanMeta, "taffy_docs_hide")
-								OR structKeyExists(local.beanMeta, "taffy:docs:hide")>
+						<cfif structKeyExists(local.beanMeta, "taffy_docs_hide") OR structKeyExists(local.beanMeta, "taffy:docs:hide")>
 							<cfscript>continue;</cfscript>
 						</cfif>
 						<div class="panel panel-default">
 							<div class="panel-heading">
 								<h4 class="panel-title">
 									<a href="###local.currentResource.beanName#" class="accordion-toggle" data-toggle="collapse" data-parent="##resourcesAccordion">
-										#local.currentResource.beanName#
+										<cfif structKeyExists(local.beanMeta, "taffy:docs:name")>
+											#local.beanMeta['taffy:docs:name']#
+										<cfelseif structKeyExists(local.beanMeta, "taffy_docs_name")>
+											#local.beanMeta['taffy_docs_name']#
+										<cfelse>
+											#local.currentResource.beanName#
+										</cfif>
 									</a>
 									<cfloop list="DELETE|warning,PATCH|warning,PUT|warning,POST|danger,GET|primary" index="local.verb">
 										<cfif structKeyExists(local.currentResource.methods, listFirst(local.verb,'|'))>
