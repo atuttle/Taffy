@@ -1,7 +1,7 @@
 {
     "devDependencies":{
         "testbox":"^2.5.0+107",
-        "commandbox-cfconfig":">=0.9"
+        "commandbox-cfconfig":">=0.9.0-alpha"
     },
     "installPaths":{
         "testbox":"tests/testbox"
