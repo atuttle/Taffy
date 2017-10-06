@@ -685,7 +685,7 @@
 
 		<cfset requestObj.body = getRequestBody() />
 		<cfset requestObj.contentType = cgi.content_type />
-		<cfif len(requestObj.body) AND requestObj.body != "null">
+		<cfif len(requestObj.body) AND requestObj.body neq "null">
 			<cfif findNoCase("multipart/form-data", requestObj.contentType)>
 				<!--- do nothing, to support the way railo handles multipart requests (just avoids the error condition below) --->
 				<cfset requestObj.queryString = cgi.query_string />
