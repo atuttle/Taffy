@@ -24,15 +24,7 @@
 			return "test";
 		}
 
-		function onRequestStart(targetPath="") {
-			if (right(arguments.targetPath, 7) == "run.cfm") {
-				include "run.cfm";
-				return true;
-			} else {
-				return super.onRequestStart(arguments.targetPath);
-			}
-		}
-
+		
 		function onTaffyRequest(verb, cfc, requestArguments, mimeExt, headers, methodMetadata, matchedURI) {
 			var local = {};
 

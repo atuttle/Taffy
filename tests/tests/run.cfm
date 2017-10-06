@@ -23,10 +23,10 @@
 
 
 <cfset bundles=[]>
-<cfset files = directoryList(getDirectoryFromPath(getCurrentTemplatePath()), false, "name")>
-<cfloop array="#files#" index="file">
-	<cfif left(getFileFromPath(file), 4) IS "Test">
-		<cfset arrayAppend(bundles, "Taffy.tests.tests." & replace(getFileFromPath(file), ".cfc", ""))>
+<cfdirectory action="list" directory="#getDirectoryFromPath(getCurrentTemplatePath())#" name="files">
+<cfloop query="files">
+	<cfif left(getFileFromPath(files.name), 4) IS "Test">
+		<cfset arrayAppend(bundles, "Taffy.tests.tests." & replace(getFileFromPath(files.name), ".cfc", ""))>
 
 	</cfif>
 </cfloop>
