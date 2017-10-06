@@ -12,6 +12,7 @@ css/*
 
 #testbox
 tests/testbox
+di1/
 
 ### Intellij ###
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm

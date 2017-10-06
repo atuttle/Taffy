@@ -13,9 +13,11 @@
     },
     "devDependencies":{
         "testbox":"^2.5.0+107",
-        "commandbox-cfconfig":"be"
+        "commandbox-cfconfig":"be",
+        "di1":"git+https://github.com/framework-one/di1.git"
     },
     "installPaths":{
-        "testbox":"tests/testbox/"
+        "testbox":"tests/testbox/",
+        "di1":"di1"
     }
 }
