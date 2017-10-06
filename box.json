@@ -5,6 +5,5 @@
     },
     "installPaths":{
         "testbox":"tests/testbox"
-    },
-
+    }
 }
