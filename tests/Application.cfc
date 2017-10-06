@@ -26,7 +26,7 @@
 
 		function onRequestStart(targetPath="") {
 			if (right(arguments.targetPath, 7) == "run.cfm") {
-				include template="run.cfm";
+				include "run.cfm";
 				return true;
 			} else {
 				return super.onRequestStart(arguments.targetPath);
