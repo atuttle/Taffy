@@ -2,6 +2,7 @@
 	<cfscript>
 
 		function beforeTests(){
+			request["_testsRunning"] = true;
 			variables.taffy = createObject("component","taffy.tests.Application");
 			makePublic(variables.taffy, "getBeanFactory");
 			variables.factory = variables.taffy.getBeanFactory();
@@ -61,7 +62,7 @@
 
 		function test_lists_skipped_resources(){
 			variables.factory.loadBeansFromPath( expandPath('/taffy/tests/resourcesError'), 'taffy.tests.resourcesError', expandPath('/taffy/tests/resourcesError'), true, variables.taffy);
-			// debug(variables.taffy.status);
+			debug(variables.taffy.status);
 			assertTrue(structKeyExists(variables.taffy.status, "skippedResources"));
 			assertTrue( arrayLen(variables.taffy.status.skippedResources) gt 0 );
 		}
