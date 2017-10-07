@@ -14,10 +14,12 @@
     "devDependencies":{
         "testbox":"^2.5.0+107",
         "commandbox-cfconfig":"be",
-        "di1":"git+https://github.com/framework-one/di1.git"
+        "di1":"git+https://github.com/framework-one/di1.git",
+        "hoth":"git+https://github.com/aarongreenlee/Hoth.git"
     },
     "installPaths":{
         "testbox":"tests/testbox/",
-        "di1":"di1"
+        "di1":"tests/di1",
+        "Hoth":"tests/Hoth/"
     }
 }

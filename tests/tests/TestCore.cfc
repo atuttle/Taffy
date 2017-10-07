@@ -283,8 +283,8 @@
 		}
 
 		function test_external_file_request_passes_through(){
-			local.result = getUrl('http://#CGI.SERVER_NAME#:#CGI.SERVER_PORT#/taffy/tests/someFolder/someOtherFile.cfm');
-			// debug(local.result);
+			local.result = getUrl('http://#CGI.SERVER_NAME#:#CGI.SERVER_PORT##replace(cgi.script_name, "/tests/tests/run.cfm", "/tests/someFolder/someOtherFile.cfm")#');
+			debug(local.result);
 			assertTrue(findNoCase('woot', local.result.fileContent), "Was not able to get the DMZ file.");
 		}
 
@@ -528,9 +528,9 @@
 		function test_properly_handles_arbitrary_cors_headers(){
 			//see: https://github.com/atuttle/Taffy/issues/144
 			application._taffy.settings.allowCrossDomain = true;
-			local.h = { "Access-Control-Request-Headers" = "goat, pigeon, man-bear-pig"};
+			local.h = { "Access-Control-Request-Headers" = "goat, pigeon, man-bear-pig", "Origin":"http://#cgi.server_name#/"};
 			local.result = apiCall("get", "/echo/dude.json", "", local.h);
-			// debug(local.result);
+			//debug(local.result);
 			assertTrue(local.result.responseHeader["Access-Control-Allow-Headers"] contains "goat");
 			assertTrue(local.result.responseHeader["Access-Control-Allow-Headers"] contains "pigeon");
 			assertTrue(local.result.responseHeader["Access-Control-Allow-Headers"] contains "man-bear-pig");
@@ -539,7 +539,7 @@
 		function test_properly_handles_arbitrary_cors_headers_on_error(){
 			//see: https://github.com/atuttle/Taffy/issues/159
 			application._taffy.settings.allowCrossDomain = true;
-			local.h = { "Access-Control-Request-Headers" = "goat, pigeon, man-bear-pig"};
+			local.h = { "Access-Control-Request-Headers" = "goat, pigeon, man-bear-pig", "Origin":"http://#cgi.server_name#/"};
 			local.result = apiCall("get", "/throwException.json", "", local.h);
 			// debug(local.result);
 			assertTrue(structKeyExists(local.result.responseHeader, "Access-Control-Allow-Origin"));
