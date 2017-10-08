@@ -181,11 +181,25 @@
 					<cfloop from="1" to="#arrayLen(application._taffy.uriMatchOrder)#" index="local.resource">
 						<cfset local.currentResource = application._taffy.endpoints[application._taffy.uriMatchOrder[local.resource]] />
 						<cfset local.resourceHTTPID = rereplace(local.currentResource.beanName & "_" & hash(local.currentResource.srcURI), "[^0-9a-zA-Z_]", "_", "all") />
+						<cfset local.md = getMetaData(application._taffy.factory.getBean(local.currentResource.beanName)) />
+						<cfif structKeyExists(local.md, "taffy_dashboard_hide") OR structKeyExists(local.md, "taffy:dashboard:hide")>
+							<cfscript>continue;</cfscript>
+						</cfif>
 						<div class="panel panel-default">
 							<div class="panel-heading">
 								<h4 class="panel-title">
 									<a href="###local.resourceHTTPID#" class="accordion-toggle" data-toggle="collapse" data-parent="##resourcesAccordion">
-										#local.currentResource.beanName#
+										<cfif structKeyExists(local.md, "taffy:dashboard:name")>
+											#local.md['taffy:dashboard:name']#
+										<cfelseif structKeyExists(local.md, "taffy_dashboard_name")>
+											#local.md['taffy_dashboard_name']#
+										<cfelseif structKeyExists(local.md, "taffy:docs:name")>
+											#local.md['taffy:docs:name']#
+										<cfelseif structKeyExists(local.md, "taffy_docs_name")>
+											#local.md['taffy_docs_name']#
+										<cfelse>
+											#local.currentResource.beanName#
+										</cfif>
 									</a>
 									<cfloop list="DELETE|warning,PATCH|warning,PUT|warning,POST|danger,GET|primary" index="local.verb">
 										<cfif structKeyExists(local.currentResource.methods, listFirst(local.verb,'|'))>
@@ -288,7 +302,6 @@
 											<div class="reqBody">
 												<h4>Request Body:</h4>
 												<textarea id="#local.resourceHTTPID#_RequestBody" class="form-control input-sm" rows="5"></textarea>
-												<cfset local.md = getMetaData(application._taffy.factory.getBean(local.currentResource.beanName)) />
 												<cfif structKeyExists(local.md,"functions")>
 													<cfset local.functions = local.md.functions />
 												<cfelse>
