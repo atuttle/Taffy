@@ -563,27 +563,28 @@
 
 			//works with /echo_alias/{ID}
 			local.result = apiCall("get", "/echo_alias/4", "");
-			// debug(local.result);
+			//debug(local.result);
+			 
 			assertEquals(200, val(local.result.statusCode));
-			assertEquals(serializeJSON({ID=4}), local.result.fileContent);
+			assertEquals(serializeJSON({ID="4"}), local.result.fileContent);
 
 			//works with /echo_alias
 			local.result = apiCall("get", "/echo_alias", "");
 			// debug(local.result);
 			assertEquals(200, val(local.result.statusCode));
-			assertEquals(serializeJSON({ID=0}), local.result.fileContent);
+			assertEquals(serializeJSON({ID="0"}), local.result.fileContent);
 
 			//works with /echo_alias/ (trailing slash)
 			local.result = apiCall("get", "/echo_alias/", "");
 			// debug(local.result);
 			assertEquals(200, val(local.result.statusCode));
-			assertEquals(serializeJSON({ID=0}), local.result.fileContent);
+			assertEquals(serializeJSON({ID="0"}), local.result.fileContent);
 
 			//works with /echo_alias?ID=x
 			local.result = apiCall("get", "/echo_alias", "ID=2");
 			// debug(local.result);
 			assertEquals(200, val(local.result.statusCode));
-			assertEquals(serializeJSON({ID=2}), local.result.fileContent);
+			assertEquals(serializeJSON({ID="2"}), local.result.fileContent);
 		}
 	</cfscript>
 
