@@ -1,6 +1,14 @@
 component extends="base" { 
 	
 
+		function setup(){ 
+			reloadFramework();
+		}
+
+		function teardown() {
+			reloadFramework();
+		}
+
 		function beforeTests(){
 
 		}
@@ -12,25 +20,29 @@ component extends="base" {
 				exclude = ["uriDoesnt","uriAliasDoesnt","conflict"]
 			};
 
-			variables.beanFactory = createObject("component", "di1.ioc").init(["/taffy/tests/resources"], local.config);
+			local.beanFactory = createObject("component", "di1.ioc").init(["/taffy/tests/resources"], local.config);
 
 
 			// Setup Taffy with new bean factory to use and call 'onApplicationStart' to properly initialize.
-			variables.taffy = createObject("component","taffy.tests.Application");
+			local.taffy = createObject("component","taffy.tests.Application");
 
-			makePublic(variables.taffy, "getExternalBeanFactory");
-			makePublic(variables.taffy, "getBeanListFromExternalFactory");
+			makePublic(local.taffy, "getExternalBeanFactory");
+			makePublic(local.taffy, "getBeanListFromExternalFactory");
 
-			injectMethod(variables.taffy, this, "_getVariables", "getVariables");
+			injectMethod(local.taffy, this, "_getVariables", "getVariables");
 
-			local.vars = variables.taffy.getVariables();
-			local.vars.framework.beanFactory = variables.beanFactory;
+			local.vars = local.taffy.getVariables();
+			local.vars.framework.beanFactory = local.beanFactory;
 
-			variables.taffy.onApplicationStart();
+			local.taffy.onApplicationStart();
 
 
 			// Grab the resource list and compare.
-			local.resourceList = variables.taffy.getBeanListFromExternalFactory(variables.taffy.getExternalBeanFactory());
+			local.resourceList = local.taffy.getBeanListFromExternalFactory(local.taffy.getExternalBeanFactory());
+
+			structDelete(local.vars.framework, "beanFactory");
+			
+			local.taffy.onApplicationStart();
 
 			debug("Available resources from external factory: '" & replace(local.resourceList, ",", ", ", "all") & "'");
 			assert(listLen(local.resourceList) gt 0, "No resources were loaded from the external factory.");
@@ -44,25 +56,29 @@ component extends="base" {
 				omitDirectoryAliases = true
 			};
 
-			variables.beanFactory = createObject("component", "di1.ioc").init(["/taffy/tests/resources"], local.config);
+			local.beanFactory = createObject("component", "di1.ioc").init(["/taffy/tests/resources"], local.config);
 
 
 			// Setup Taffy with new bean factory to use and call 'onApplicationStart' to properly initialize.
-			variables.taffy = createObject("component","taffy.tests.Application");
+			local.taffy = createObject("component","taffy.tests.Application");
 
-			makePublic(variables.taffy, "getExternalBeanFactory");
-			makePublic(variables.taffy, "getBeanListFromExternalFactory");
+			makePublic(local.taffy, "getExternalBeanFactory");
+			makePublic(local.taffy, "getBeanListFromExternalFactory");
 
-			injectMethod(variables.taffy, this, "_getVariables", "getVariables");
+			injectMethod(local.taffy, this, "_getVariables", "getVariables");
 
-			local.vars = variables.taffy.getVariables();
-			local.vars.framework.beanFactory = variables.beanFactory;
+			local.vars = local.taffy.getVariables();
 
-			variables.taffy.onApplicationStart();
+			local.vars.framework.beanFactory = local.beanFactory;
+
+			local.taffy.onApplicationStart();
 
 
 			// Grab the resource list and compare.
-			local.resourceList = variables.taffy.getBeanListFromExternalFactory(variables.taffy.getExternalBeanFactory());
+			local.resourceList = local.taffy.getBeanListFromExternalFactory(local.taffy.getExternalBeanFactory());
+
+			structDelete(local.vars.framework, "beanFactory");
+			local.taffy.onApplicationStart();
 
 			debug("Available resources from external factory: '" & replace(local.resourceList, ",", ", ", "all") & "'");
 			assert(listLen(local.resourceList) gt 0, "No resources were loaded from the external factory.");

@@ -74,4 +74,10 @@
 		<cfreturn expectedExceptionAttributeValueFound>
 	</cffunction>
 
+	<cffunction name="reloadFramework" access="private">
+		<cfset local.apiRootURL	= getDirectoryFromPath(cgi.script_name) />
+		<cfset local.apiRootURL	= listDeleteAt(local.apiRootURL,listLen(local.apiRootURL,'/'),'/') />
+		<cfhttp method="GET" url="http://#CGI.SERVER_NAME#:#CGI.SERVER_PORT##local.apiRootURL#/index.cfm?#application._taffy.settings.reloadkey#=#application._taffy.settings.reloadPassword#" />
+	</cffunction>
+
 </cfcomponent>
