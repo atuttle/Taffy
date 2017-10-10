@@ -41,7 +41,7 @@
 			<cfset msg = variables.message />
 		</cfif>
 
-		<cfset reqHeaders = getHTTPRequestData().headers />
+		<cfset var reqHeaders = getHTTPRequestData().headers />
 		<cfset var reqBody = getHTTPRequestData().content />
 		<!--- on input with content-type "application/json" CF seems to expose it as binary data. Here we convert it back to plain text --->
 		<cfif isBinary(reqBody)>
