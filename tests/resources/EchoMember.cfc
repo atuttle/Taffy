@@ -7,7 +7,7 @@
 		<cfset local.headers = {}/>
 		<cfset local.headers['x-dude'] = "dude!" />
 		<cfset local.res = {} />
-		<cfset local.res.id = arguments.id />
+		<cfset local.res["id"] = arguments.id />
 		<cfif structKeyExists(arguments, "dataFromOTR")>
 			<cfset local.res.dataFromOTR = arguments.dataFromOTR />
 		</cfif>

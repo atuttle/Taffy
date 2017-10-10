@@ -1,11 +1,17 @@
 <cfcomponent extends="base">
 	<cfscript>
 
+		function setup() {
+			reloadFramework();
+		}
+
+
 		function beforeTests(){
 			request["_testsRunning"] = true;
 			variables.taffy = createObject("component","taffy.tests.Application");
 			makePublic(variables.taffy, "getBeanFactory");
 			variables.factory = variables.taffy.getBeanFactory();
+			//debug(variables.factory);
 			variables.factory.loadBeansFromPath( expandPath('/taffy/tests/resources'), 'taffy.tests.resources', expandPath('/taffy/tests/resources'), true, variables.taffy);
 		}
 

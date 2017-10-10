@@ -1,9 +1,7 @@
 <cfcomponent extends="base">
 
 	<cffunction name="setup">
-		<cfset local.apiRootURL	= getDirectoryFromPath(cgi.script_name) />
-		<cfset local.apiRootURL	= listDeleteAt(local.apiRootURL,listLen(local.apiRootURL,'/'),'/') />
-		<cfhttp method="GET" url="http://#CGI.SERVER_NAME#:#CGI.SERVER_PORT##local.apiRootURL#/index.cfm?#application._taffy.settings.reloadkey#=#application._taffy.settings.reloadPassword#" />
+		<cfset reloadFramework()>
 	</cffunction>
 
 	<cfscript>
@@ -31,22 +29,23 @@
 		}
 
 		function test_returns_etag_header(){
+			//both requests should yeild the same etag header
 			local.result = apiCall("get", "/echo/foo.json", "");
-			// debug(local.result);
-			local.testStruct = StructNew();
-			local.testStruct.ID = "foo";
-			local.expectedValue = local.testStruct.hashCode();
+			local.result2 = apiCall("get", "/echo/foo.json", "")
+			
 			assertTrue(structKeyExists(local.result.responseHeader, "Etag"));
-			assertEquals(local.expectedValue, local.result.responseHeader.etag);
+			assertTrue(structKeyExists(local.result2.responseHeader, "Etag"));
+			assertEquals(local.result2.responseHeader.etag, local.result.responseHeader.etag);
 		}
 
 		function test_returns_304_when_not_modified(){
-			local.testStruct = StructNew();
-			local.testStruct.ID = "foo";
+			local.result = apiCall("get", "/echo/foo.json", "");
+			assertTrue(structKeyExists(local.result.responseHeader, "Etag"));
+
 			local.h = {};
-			local.h['if-none-match'] = local.testStruct.hashCode();
+			local.h['if-none-match'] = local.result.responseHeader.etag;
 			local.result = apiCall("get", "/echo/foo.json", "", local.h);
-			// debug(local.result);
+			debug(local.result);
 			assertEquals(304, val(local.result.responseHeader.status_code));
 		}
 
@@ -564,27 +563,28 @@
 
 			//works with /echo_alias/{ID}
 			local.result = apiCall("get", "/echo_alias/4", "");
-			// debug(local.result);
+			//debug(local.result);
+			 
 			assertEquals(200, val(local.result.statusCode));
-			assertEquals(serializeJSON({ID=4}), local.result.fileContent);
+			assertEquals(serializeJSON({ID="4"}), local.result.fileContent);
 
 			//works with /echo_alias
 			local.result = apiCall("get", "/echo_alias", "");
 			// debug(local.result);
 			assertEquals(200, val(local.result.statusCode));
-			assertEquals(serializeJSON({ID=0}), local.result.fileContent);
+			assertEquals(serializeJSON({ID="0"}), local.result.fileContent);
 
 			//works with /echo_alias/ (trailing slash)
 			local.result = apiCall("get", "/echo_alias/", "");
 			// debug(local.result);
 			assertEquals(200, val(local.result.statusCode));
-			assertEquals(serializeJSON({ID=0}), local.result.fileContent);
+			assertEquals(serializeJSON({ID="0"}), local.result.fileContent);
 
 			//works with /echo_alias?ID=x
 			local.result = apiCall("get", "/echo_alias", "ID=2");
 			// debug(local.result);
 			assertEquals(200, val(local.result.statusCode));
-			assertEquals(serializeJSON({ID=2}), local.result.fileContent);
+			assertEquals(serializeJSON({ID="2"}), local.result.fileContent);
 		}
 	</cfscript>
 
