@@ -1039,7 +1039,8 @@
 
 		<cfset var inBracketCount = 0 />
 		<cfset var output = [] />
-		<cfset var s = createObject("java", "java.lang.StringBuffer").init("") />
+		<!--- <cfset var s = createObject("java", "java.lang.StringBuffer").init("") /> --->
+		<cfset var s = "">
 		<cfset var c = "" />
 		<cfloop array="#trim(input).toCharArray()#" index="c">
 			<cfif c EQ "{">
@@ -1048,14 +1049,19 @@
 				<cfset inBracketCount -= 1 />
 			</cfif>
 			<cfif c EQ "," AND inBracketCount EQ 0>
-				<cfset arrayAppend(output, s.toString()) />
-				<cfset s.setLength(0) />
+				<!--- <cfset arrayAppend(output, s.toString()) />
+				<cfset s.setLength(0) />  --->
+				<cfset arrayAppend(output, s) />
+				<cfset s = "" />
 			<cfelse>
-				<cfset s.append(c) />
+				<!--- <cfset s.append(c) />  --->
+				<cfset s = s & c />
 			</cfif>
 		</cfloop>
-		<cfif s.length() GT 0>
-			<cfset arrayAppend(output, s.toString()) />
+		<!--- <cfif s.length() GT 0>
+			<cfset arrayAppend(output, s.toString()) />  --->
+		<cfif s NEQ "">
+			<cfset arrayAppend(output, s) />
 		</cfif>
 	<cfreturn output />
 	</cffunction>
