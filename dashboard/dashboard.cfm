@@ -501,6 +501,13 @@
 			var args = '';
 			var dType = null;
 
+			<cfif Len(application._taffy.settings.csrfToken.cookieName) AND Len(application._taffy.settings.csrfToken.headerName)>
+				var csrfCookie = getCookie('<cfoutput>#application._taffy.settings.csrfToken.cookieName#</cfoutput>');
+				if (csrfCookie) {
+					headers['<cfoutput>#application._taffy.settings.csrfToken.headerName#</cfoutput>'] = csrfCookie;
+				}
+			</cfif>
+
 			url += '<cfoutput>#cgi.SCRIPT_NAME#</cfoutput>' + '?' + endpointURLParam + '=' + encodeURIComponent(endpoint);
 			if( resource.indexOf('?') && resource.split('?')[1] ){
 				url += '&' + resource.split('?')[1];
@@ -534,6 +541,16 @@
 					, xhr.responseText							//body
 				);
 			});
+		}
+
+		function getCookie(name) {
+			var nameEQ = name + '=', ca = document.cookie.split(';'), i = 0, c;
+				for(;i < ca.length;i++) {
+					c = ca[i];
+					while (c[0]==' ') c = c.substring(1);
+					if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length);
+				}
+			return null;
 		}
 	</script>
 </body>
