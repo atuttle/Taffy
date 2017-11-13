@@ -49,6 +49,7 @@
 	<cffunction name="queryToArray" access="private" returntype="array" output="false">
 		<cfargument name="q" type="query" required="yes" />
 		<cfargument name="cb" type="any" required="no" />
+		<cfargument name="uc" type="boolean" required="no" default="false" hint="transform column names to uppercase" />
 		<cfscript>
 			var local = {};
 			if (structKeyExists(server, "railo") or structKeyExists(server, "lucee")) {
@@ -56,6 +57,11 @@
 			}
 			else {
 				local.Columns = arguments.q.getMetaData().getColumnLabels();
+			}
+			if (arguments.uc) {
+				for (local.ColumnIndex = 1; local.ColumnIndex <= ArrayLen( local.Columns ); local.ColumnIndex++){
+					local.Columns[ local.ColumnIndex ] = uCase(local.Columns[ local.ColumnIndex ]);
+				}
 			}
 			local.QueryArray = ArrayNew(1);
 			for (local.RowIndex = 1; local.RowIndex <= arguments.q.RecordCount; local.RowIndex++){
