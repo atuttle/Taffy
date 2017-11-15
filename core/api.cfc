@@ -563,6 +563,9 @@
 		<cfset local.defaultConfig.returnExceptionsAsJson = true />
 		<cfset local.defaultConfig.exceptionLogAdapter = "taffy.bonus.LogToDevNull" />
 		<cfset local.defaultConfig.exceptionLogAdapterConfig = StructNew() />
+		<cfset local.defaultConfig.csrfToken = structNew() />
+		<cfset local.defaultConfig.csrfToken.cookieName = "" />
+		<cfset local.defaultConfig.csrfToken.headerName = "" />
 		<!--- status --->
 		<cfset local._taffy.status = structNew() />
 		<cfset local._taffy.status.internalBeanFactoryUsed = false />
