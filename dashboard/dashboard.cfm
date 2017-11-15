@@ -502,9 +502,16 @@
 			var dType = null;
 
 			<cfif Len(application._taffy.settings.csrfToken.cookieName) AND Len(application._taffy.settings.csrfToken.headerName)>
-				var csrfCookie = getCookie('<cfoutput>#application._taffy.settings.csrfToken.cookieName#</cfoutput>');
+				<cfif structKeyExists(GetFunctionList(), "encodeForJavascript")>
+					<cfset local.csrfCookieName = encodeForJavascript(application._taffy.settings.csrfToken.cookieName)>
+					<cfset local.csrfHeaderName = encodeForJavascript(application._taffy.settings.csrfToken.headerName)>
+				<cfelse>
+					<cfset local.csrfCookieName = jsStringFormat(application._taffy.settings.csrfToken.cookieName)>
+					<cfset local.csrfHeaderName = jsStringFormat(application._taffy.settings.csrfToken.headerName)>
+				</cfif>
+				var csrfCookie = getCookie('<cfoutput>#local.csrfCookieName#</cfoutput>');
 				if (csrfCookie) {
-					headers['<cfoutput>#application._taffy.settings.csrfToken.headerName#</cfoutput>'] = csrfCookie;
+					headers['<cfoutput>#local.csrfHeaderName#</cfoutput>'] = csrfCookie;
 				}
 			</cfif>
 
