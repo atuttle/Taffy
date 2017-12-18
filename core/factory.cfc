@@ -7,9 +7,9 @@
 	</cfscript>
 
 	<cffunction name="init" output="false">
-		<cfargument name="externalBeanFactory" default="">
+		<cfargument name="externalBeanFactory">
 	<cfscript>
-			if (structKeyExists(arguments, "externalBeanFactory") AND arguments.externalBeanFactory neq "") {
+			if (structKeyExists(arguments, "externalBeanFactory")) {
 				this.externalBeanFactory = arguments.externalBeanFactory;
 			}
 			return this;
