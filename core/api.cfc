@@ -1338,6 +1338,10 @@
 		<cfreturn newRepresentation().noData() />
 	</cffunction>
 
+	<cffunction name="noContent" access="public" output="false">
+		<cfreturn newRepresentation().noContent() />
+	</cffunction>
+
 	<cffunction name="representationOf" access="public" output="false">
 		<cfargument name="data" required="true" />
 		<cfreturn newRepresentation().setData( arguments.data ) />

@@ -98,6 +98,14 @@
 		<cfreturn this />
 	</cffunction>
 
+	<cffunction name="noContent" access="public" output="false" hint="returns empty representation instance">
+		<!--- According to issue #365 https://github.com/atuttle/Taffy/issues/365
+				noContent() returns with HTTP status code 204 and Content-Type as text/plain (omitting this header is difficult and maybe not recommanded)
+				noData() is kept 'as is' for backward compatibility with existing implementations
+		--->
+		<cfreturn this.withStatus(204).withHeaders({"Content-Type":"text/plain"}) />
+	</cffunction>
+
 	<cffunction name="setFileName" access="public" output="false" hint="Pass in a file-name (fully qualified, e.g. c:\temp\img.jpg) to have Taffy stream this file back to the client">
 		<cfargument name="file" type="string" required="true" />
 		<cfset variables.type = 2 />
