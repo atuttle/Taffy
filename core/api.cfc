@@ -558,6 +558,7 @@
 		<cfset local.defaultConfig.allowCrossDomain = false />
 		<cfset local.defaultConfig.useEtags = false />
 		<cfset local.defaultConfig.jsonp = false />
+		<cfset local.defaultConfig.noDataSends204NoContent = false />
 		<cfset local.defaultConfig.globalHeaders = structNew() />
 		<cfset local.defaultConfig.mimeTypes = structNew() />
 		<cfset local.defaultConfig.returnExceptionsAsJson = true />

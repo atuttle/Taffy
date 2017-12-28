@@ -95,7 +95,11 @@
 	</cffunction>
 
 	<cffunction name="noData" access="public" output="false" hint="returns empty representation instance">
-		<cfreturn this />
+		<cfif application._taffy.settings.noDataSends204NoContent>
+			<cfreturn this.noContent() />
+		<cfelse>
+			<cfreturn this />
+		</cfif>
 	</cffunction>
 
 	<cffunction name="noContent" access="public" output="false" hint="returns empty representation instance">
