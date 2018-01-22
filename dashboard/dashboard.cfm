@@ -307,24 +307,28 @@
 												<cfelse>
 													<cfset local.functions = arrayNew(1) />
 												</cfif>
+												
 												<!--- only save body templates for POST & PUT --->
 												<cfloop from="1" to="#arrayLen(local.functions)#" index="local.f">
 													<cfif local.functions[local.f].name eq "POST" or local.functions[local.f].name eq "PUT" or local.functions[local.f].name eq "PATCH">
 														<cfset local.args = {} />
 														<!--- get a list of all function arguments --->
 														<cfloop from="1" to="#arrayLen(local.functions[local.f].parameters)#" index="local.parm">
-															<cfif not structKeyExists(local.functions[local.f].parameters[local.parm],"type")>
-																<cfset local.args[local.functions[local.f].parameters[local.parm].name] = '' />
-															<cfelseif local.functions[local.f].parameters[local.parm].type eq 'struct'>
-																<cfset local.args[local.functions[local.f].parameters[local.parm].name] = structNew() />
-															<cfelseif local.functions[local.f].parameters[local.parm].type eq 'array'>
-																<cfset local.args[local.functions[local.f].parameters[local.parm].name] = arrayNew(1) />
-															<cfelseif local.functions[local.f].parameters[local.parm].type eq 'numeric'>
-																<cfset local.args[local.functions[local.f].parameters[local.parm].name] = 0 />
-															<cfelseif local.functions[local.f].parameters[local.parm].type eq 'boolean'>
-																<cfset local.args[local.functions[local.f].parameters[local.parm].name] = true />
-															<cfelse>
-																<cfset local.args[local.functions[local.f].parameters[local.parm].name] = '' />
+															<cfset local.paramAttributes = local.functions[local.f].parameters[local.parm]>
+															<cfif not structKeyExists(local.paramAttributes, "TAFFY_DOCS_HIDE")>
+																<cfif not structKeyExists(local.paramAttributes,"type")>
+																	<cfset local.args[local.paramAttributes.name] = '' />
+																<cfelseif local.paramAttributes.type eq 'struct'>
+																	<cfset local.args[local.paramAttributes.name] = structNew() />
+																<cfelseif local.paramAttributes.type eq 'array'>
+																	<cfset local.args[local.paramAttributes.name] = arrayNew(1) />
+																<cfelseif local.paramAttributes.type eq 'numeric'>
+																	<cfset local.args[local.paramAttributes.name] = 0 />
+																<cfelseif local.paramAttributes.type eq 'boolean'>
+																	<cfset local.args[local.paramAttributes.name] = true />
+																<cfelse>
+																	<cfset local.args[local.paramAttributes.name] = '' />
+																</cfif>
 															</cfif>
 														</cfloop>
 														<!--- omit uri tokens --->
@@ -373,6 +377,7 @@
 													<cfset local.param = local.func.parameters[local.p] />
 													<div class="row">
 														<div class="col-md-11 col-md-offset-1">
+															<cfif not structKeyExists(local.param, "TAFFY_DOCS_HIDE")>
 																<cfif not structKeyExists(local.param, 'required') or not local.param.required>
 																	optional
 																<cfelse>
@@ -391,8 +396,9 @@
 																<cfelse>
 																	<!--- no default value --->
 																</cfif>
-															<cfif structKeyExists(local.param, "hint")>
-																<br/><span class="doc">#local.param.hint#</span>
+																<cfif structKeyExists(local.param, "hint")>
+																	<br/><span class="doc">#local.param.hint#</span>
+																</cfif>
 															</cfif>
 														</div>
 													</div>
