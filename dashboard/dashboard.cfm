@@ -315,7 +315,7 @@
 														<!--- get a list of all function arguments --->
 														<cfloop from="1" to="#arrayLen(local.functions[local.f].parameters)#" index="local.parm">
 															<cfset local.paramAttributes = local.functions[local.f].parameters[local.parm]>
-															<cfif structKeyExists(local.paramAttributes, "taffy_docs_hide") or structKeyExists(local.paramAttributes, "taffy:docs:hide")>
+															<cfif structKeyExists(local.paramAttributes, "taffy_docs_hide") OR structKeyExists(local.paramAttributes, "taffy:docs:hide") OR structKeyExists(local.paramAttributes, "taffy_dashboard_hide") OR structKeyExists(local.paramAttributes, "taffy:dashboard:hide")>
 																<cfscript>continue;</cfscript>
 															</cfif>
 															<cfif not structKeyExists(local.paramAttributes,"type")>
@@ -369,7 +369,7 @@
 											<cfset local.func = local.docData.functions[local.f] />
 											<cfset local.found[local.func.name] = true />
 											<!--- skip methods that are hidden --->
-											<cfif structKeyExists(local.func, "taffy_docs_hide") or structKeyExists(local.func, "taffy:docs:hide")>
+											<cfif structKeyExists(local.func, "taffy_docs_hide") OR structKeyExists(local.func, "taffy:docs:hide") OR structKeyExists(local.func, "taffy_dashboard_hide") OR structKeyExists(local.func, "taffy:dashboard:hide")>
 												<cfscript>continue;</cfscript>
 											</cfif>
 											<!--- exclude methods that are not exposed as REST verbs --->
@@ -380,7 +380,7 @@
 												</cfif>
 												<cfloop from="1" to="#arrayLen(local.func.parameters)#" index="local.p">
 													<cfset local.param = local.func.parameters[local.p] />
-													<cfif structKeyExists(local.param, "taffy_docs_hide") or structKeyExists(local.param, "taffy:docs:hide")>
+													<cfif structKeyExists(local.param, "taffy_docs_hide") OR structKeyExists(local.param, "taffy:docs:hide") OR structKeyExists(local.param, "taffy_dashboard_hide") OR structKeyExists(local.param, "taffy:dashboard:hide")>
 														<cfscript>continue;</cfscript>
 													</cfif>
 													<div class="row">
