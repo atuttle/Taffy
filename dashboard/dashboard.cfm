@@ -368,6 +368,10 @@
 										<cfloop from="1" to="#arrayLen(local.docData.functions)#" index="local.f">
 											<cfset local.func = local.docData.functions[local.f] />
 											<cfset local.found[local.func.name] = true />
+											<!--- skip methods that are hidden --->
+											<cfif structKeyExists(local.func, "taffy_docs_hide") or structKeyExists(local.func, "taffy:docs:hide")>
+												<cfscript>continue;</cfscript>
+											</cfif>
 											<!--- exclude methods that are not exposed as REST verbs --->
 											<cfif listFindNoCase('get,post,put,delete,patch',local.func.name) OR structKeyExists(local.func,'taffy_verb') OR structKeyExists(local.func,'taffy:verb')>
 	 											<div class="col-md-12"><strong>#local.func.name#</strong></div>
