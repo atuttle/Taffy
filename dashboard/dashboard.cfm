@@ -315,20 +315,21 @@
 														<!--- get a list of all function arguments --->
 														<cfloop from="1" to="#arrayLen(local.functions[local.f].parameters)#" index="local.parm">
 															<cfset local.paramAttributes = local.functions[local.f].parameters[local.parm]>
-															<cfif not structKeyExists(local.paramAttributes, "TAFFY_DOCS_HIDE")>
-																<cfif not structKeyExists(local.paramAttributes,"type")>
-																	<cfset local.args[local.paramAttributes.name] = '' />
-																<cfelseif local.paramAttributes.type eq 'struct'>
-																	<cfset local.args[local.paramAttributes.name] = structNew() />
-																<cfelseif local.paramAttributes.type eq 'array'>
-																	<cfset local.args[local.paramAttributes.name] = arrayNew(1) />
-																<cfelseif local.paramAttributes.type eq 'numeric'>
-																	<cfset local.args[local.paramAttributes.name] = 0 />
-																<cfelseif local.paramAttributes.type eq 'boolean'>
-																	<cfset local.args[local.paramAttributes.name] = true />
-																<cfelse>
-																	<cfset local.args[local.paramAttributes.name] = '' />
-																</cfif>
+															<cfif structKeyExists(local.paramAttributes, "taffy_docs_hide") or structKeyExists(local.paramAttributes, "taffy:docs:hide")>
+																<cfscript>continue;</cfscript>
+															</cfif>
+															<cfif not structKeyExists(local.paramAttributes,"type")>
+																<cfset local.args[local.paramAttributes.name] = '' />
+															<cfelseif local.paramAttributes.type eq 'struct'>
+																<cfset local.args[local.paramAttributes.name] = structNew() />
+															<cfelseif local.paramAttributes.type eq 'array'>
+																<cfset local.args[local.paramAttributes.name] = arrayNew(1) />
+															<cfelseif local.paramAttributes.type eq 'numeric'>
+																<cfset local.args[local.paramAttributes.name] = 0 />
+															<cfelseif local.paramAttributes.type eq 'boolean'>
+																<cfset local.args[local.paramAttributes.name] = true />
+															<cfelse>
+																<cfset local.args[local.paramAttributes.name] = '' />
 															</cfif>
 														</cfloop>
 														<!--- omit uri tokens --->
@@ -377,28 +378,29 @@
 													<cfset local.param = local.func.parameters[local.p] />
 													<div class="row">
 														<div class="col-md-11 col-md-offset-1">
-															<cfif not structKeyExists(local.param, "TAFFY_DOCS_HIDE")>
-																<cfif not structKeyExists(local.param, 'required') or not local.param.required>
-																	optional
+															<cfif structKeyExists(local.param, "taffy_docs_hide") or structKeyExists(local.param, "taffy:docs:hide")>
+																<cfscript>continue;</cfscript>
+															</cfif>
+															<cfif not structKeyExists(local.param, 'required') or not local.param.required>
+																optional
+															<cfelse>
+																required
+															</cfif>
+															<cfif structKeyExists(local.param, "type")>
+																#local.param.type#
+															</cfif>
+															<strong>#local.param.name#</strong>
+															<cfif structKeyExists(local.param, "default")>
+																<cfif local.param.default eq "">
+																	(default: "")
 																<cfelse>
-																	required
+																	(default: #local.param.default#)
 																</cfif>
-																<cfif structKeyExists(local.param, "type")>
-																	#local.param.type#
-																</cfif>
-																<strong>#local.param.name#</strong>
-																<cfif structKeyExists(local.param, "default")>
-																	<cfif local.param.default eq "">
-																		(default: "")
-																	<cfelse>
-																		(default: #local.param.default#)
-																	</cfif>
-																<cfelse>
-																	<!--- no default value --->
-																</cfif>
-																<cfif structKeyExists(local.param, "hint")>
-																	<br/><span class="doc">#local.param.hint#</span>
-																</cfif>
+															<cfelse>
+																<!--- no default value --->
+															</cfif>
+															<cfif structKeyExists(local.param, "hint")>
+																<br/><span class="doc">#local.param.hint#</span>
 															</cfif>
 														</div>
 													</div>
