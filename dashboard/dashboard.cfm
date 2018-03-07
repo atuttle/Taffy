@@ -380,11 +380,11 @@
 												</cfif>
 												<cfloop from="1" to="#arrayLen(local.func.parameters)#" index="local.p">
 													<cfset local.param = local.func.parameters[local.p] />
+													<cfif structKeyExists(local.param, "taffy_docs_hide") or structKeyExists(local.param, "taffy:docs:hide")>
+														<cfscript>continue;</cfscript>
+													</cfif>
 													<div class="row">
 														<div class="col-md-11 col-md-offset-1">
-															<cfif structKeyExists(local.param, "taffy_docs_hide") or structKeyExists(local.param, "taffy:docs:hide")>
-																<cfscript>continue;</cfscript>
-															</cfif>
 															<cfif not structKeyExists(local.param, 'required') or not local.param.required>
 																optional
 															<cfelse>
