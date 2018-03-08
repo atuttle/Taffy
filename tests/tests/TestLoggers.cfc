@@ -19,17 +19,17 @@
 			fakeError.message = "This is a test error";
 			fakeError.detail = "Rubber Baby Buggy Bumper";
 			hothAdapter.saveLog(fakeError);
-			
+
 			callLog = mockHoth.$callLog();
 			debug(callLog);
 			assertTrue(structKeyExists(callLog, "track"), "should call track method");
 			assertTrue(isStruct(callLog.track[1][1]), "args should be a struct");
 			assertEquals(callLog.track[1][1].message, fakeError.message);
-			
+
 		}
 
 		function test_BugLogHQ(){
-			var mockBLHQ = mock();
+			var mockBLHQ = getMockBox().createMock(className="bugLog.buglogListener", callLogging=true);
 			var blhqAdapter = '';
 			var blhqSettings = { bugLogListener = "http://localhost/bugLog/listeners/bugLogListenerREST.cfm" };
 			var fakeError = {};
