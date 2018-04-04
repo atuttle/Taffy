@@ -12,12 +12,12 @@ $(function(){
 		var method = resource.find('.reqMethod option:checked').html();
 		if (method === 'GET' || method === 'DELETE'){
 			resource.find('.reqBody').hide('fast');
-			resource.find('.queryParams').show('fast');
+			resource.find('.queryParams').addClass('active');
 		}else{
 			var args = window.taffy.resources[resource.data('beanName')][method.toLowerCase()];
 			var ta = resource.find('.reqBody').show('fast').find('textarea');
 			ta.val(JSON.stringify(args, null, 3));
-			resource.find('.queryParams').hide('fast');
+			resource.find('.queryParams').removeClass('active');
 		}
 	});
 	//hide request body form field for GET/DELETE on method change
@@ -26,7 +26,6 @@ $(function(){
 		var method = resource.find('.reqMethod option:checked').html();
 		if (method === 'GET' || method === 'DELETE' || method == 'OPTIONS'){
 			resource.find('.reqBody').hide('fast');
-			resource.find('.queryParams');
 		}else{
 			var args = window.taffy.resources[resource.data('beanName')][method.toLowerCase()];
 			var ta = resource.find('.reqBody').show('fast').find('textarea');
