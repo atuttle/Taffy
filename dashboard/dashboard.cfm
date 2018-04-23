@@ -307,24 +307,29 @@
 												<cfelse>
 													<cfset local.functions = arrayNew(1) />
 												</cfif>
+												
 												<!--- only save body templates for POST & PUT --->
 												<cfloop from="1" to="#arrayLen(local.functions)#" index="local.f">
 													<cfif local.functions[local.f].name eq "POST" or local.functions[local.f].name eq "PUT" or local.functions[local.f].name eq "PATCH">
 														<cfset local.args = {} />
 														<!--- get a list of all function arguments --->
 														<cfloop from="1" to="#arrayLen(local.functions[local.f].parameters)#" index="local.parm">
-															<cfif not structKeyExists(local.functions[local.f].parameters[local.parm],"type")>
-																<cfset local.args[local.functions[local.f].parameters[local.parm].name] = '' />
-															<cfelseif local.functions[local.f].parameters[local.parm].type eq 'struct'>
-																<cfset local.args[local.functions[local.f].parameters[local.parm].name] = structNew() />
-															<cfelseif local.functions[local.f].parameters[local.parm].type eq 'array'>
-																<cfset local.args[local.functions[local.f].parameters[local.parm].name] = arrayNew(1) />
-															<cfelseif local.functions[local.f].parameters[local.parm].type eq 'numeric'>
-																<cfset local.args[local.functions[local.f].parameters[local.parm].name] = 0 />
-															<cfelseif local.functions[local.f].parameters[local.parm].type eq 'boolean'>
-																<cfset local.args[local.functions[local.f].parameters[local.parm].name] = true />
+															<cfset local.paramAttributes = local.functions[local.f].parameters[local.parm]>
+															<cfif structKeyExists(local.paramAttributes, "taffy_docs_hide") OR structKeyExists(local.paramAttributes, "taffy:docs:hide") OR structKeyExists(local.paramAttributes, "taffy_dashboard_hide") OR structKeyExists(local.paramAttributes, "taffy:dashboard:hide")>
+																<cfscript>continue;</cfscript>
+															</cfif>
+															<cfif not structKeyExists(local.paramAttributes,"type")>
+																<cfset local.args[local.paramAttributes.name] = '' />
+															<cfelseif local.paramAttributes.type eq 'struct'>
+																<cfset local.args[local.paramAttributes.name] = structNew() />
+															<cfelseif local.paramAttributes.type eq 'array'>
+																<cfset local.args[local.paramAttributes.name] = arrayNew(1) />
+															<cfelseif local.paramAttributes.type eq 'numeric'>
+																<cfset local.args[local.paramAttributes.name] = 0 />
+															<cfelseif local.paramAttributes.type eq 'boolean'>
+																<cfset local.args[local.paramAttributes.name] = true />
 															<cfelse>
-																<cfset local.args[local.functions[local.f].parameters[local.parm].name] = '' />
+																<cfset local.args[local.paramAttributes.name] = '' />
 															</cfif>
 														</cfloop>
 														<!--- omit uri tokens --->
@@ -363,6 +368,10 @@
 										<cfloop from="1" to="#arrayLen(local.docData.functions)#" index="local.f">
 											<cfset local.func = local.docData.functions[local.f] />
 											<cfset local.found[local.func.name] = true />
+											<!--- skip methods that are hidden --->
+											<cfif structKeyExists(local.func, "taffy_docs_hide") OR structKeyExists(local.func, "taffy:docs:hide") OR structKeyExists(local.func, "taffy_dashboard_hide") OR structKeyExists(local.func, "taffy:dashboard:hide")>
+												<cfscript>continue;</cfscript>
+											</cfif>
 											<!--- exclude methods that are not exposed as REST verbs --->
 											<cfif listFindNoCase('get,post,put,delete,patch',local.func.name) OR structKeyExists(local.func,'taffy_verb') OR structKeyExists(local.func,'taffy:verb')>
 	 											<div class="col-md-12"><strong>#local.func.name#</strong></div>
@@ -371,26 +380,29 @@
 												</cfif>
 												<cfloop from="1" to="#arrayLen(local.func.parameters)#" index="local.p">
 													<cfset local.param = local.func.parameters[local.p] />
+													<cfif structKeyExists(local.param, "taffy_docs_hide") OR structKeyExists(local.param, "taffy:docs:hide") OR structKeyExists(local.param, "taffy_dashboard_hide") OR structKeyExists(local.param, "taffy:dashboard:hide")>
+														<cfscript>continue;</cfscript>
+													</cfif>
 													<div class="row">
 														<div class="col-md-11 col-md-offset-1">
-																<cfif not structKeyExists(local.param, 'required') or not local.param.required>
-																	optional
+															<cfif not structKeyExists(local.param, 'required') or not local.param.required>
+																optional
+															<cfelse>
+																required
+															</cfif>
+															<cfif structKeyExists(local.param, "type")>
+																#local.param.type#
+															</cfif>
+															<strong>#local.param.name#</strong>
+															<cfif structKeyExists(local.param, "default")>
+																<cfif local.param.default eq "">
+																	(default: "")
 																<cfelse>
-																	required
+																	(default: #local.param.default#)
 																</cfif>
-																<cfif structKeyExists(local.param, "type")>
-																	#local.param.type#
-																</cfif>
-																<strong>#local.param.name#</strong>
-																<cfif structKeyExists(local.param, "default")>
-																	<cfif local.param.default eq "">
-																		(default: "")
-																	<cfelse>
-																		(default: #local.param.default#)
-																	</cfif>
-																<cfelse>
-																	<!--- no default value --->
-																</cfif>
+															<cfelse>
+																<!--- no default value --->
+															</cfif>
 															<cfif structKeyExists(local.param, "hint")>
 																<br/><span class="doc">#local.param.hint#</span>
 															</cfif>
