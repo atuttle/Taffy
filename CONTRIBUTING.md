@@ -8,7 +8,7 @@ For all contributions, you'll need a [free GitHub account](https://github.com/si
 
 Please include all of the following information in your ticket:
 
-* CFML Platform and version (e.g. Adobe ColdFusion 9.0.2, Railo 4.0.2)
+* CFML Platform and version (e.g. Adobe ColdFusion 9.0.2, Lucee 4.5.0)
 * Java version (look it up in CF Administrator, or do `java -version` at the command line)
 * Taffy version (for bugs)
 

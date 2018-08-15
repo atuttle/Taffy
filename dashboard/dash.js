@@ -12,12 +12,12 @@ $(function(){
 		var method = resource.find('.reqMethod option:checked').html();
 		if (method === 'GET' || method === 'DELETE'){
 			resource.find('.reqBody').hide('fast');
-			resource.find('.queryParams').show('fast');
+			resource.find('.queryParams').addClass('active');
 		}else{
 			var args = window.taffy.resources[resource.data('beanName')][method.toLowerCase()];
 			var ta = resource.find('.reqBody').show('fast').find('textarea');
 			ta.val(JSON.stringify(args, null, 3));
-			resource.find('.queryParams').hide('fast');
+			resource.find('.queryParams').removeClass('active');
 		}
 	});
 	//hide request body form field for GET/DELETE on method change
@@ -26,7 +26,6 @@ $(function(){
 		var method = resource.find('.reqMethod option:checked').html();
 		if (method === 'GET' || method === 'DELETE' || method == 'OPTIONS'){
 			resource.find('.reqBody').hide('fast');
-			resource.find('.queryParams');
 		}else{
 			var args = window.taffy.resources[resource.data('beanName')][method.toLowerCase()];
 			var ta = resource.find('.reqBody').show('fast').find('textarea');
@@ -60,7 +59,7 @@ $(function(){
 				delete tokens[t];
 		}
 		var result = uri.supplant(tokens);
-		result += (q.length) ? '?' + decodeURIComponent(q) : '';
+		result += (q.length) ? '?' + q : '';
 		resource.find('.resourceUri').val(result);
 	});
 
@@ -134,7 +133,7 @@ $(function(){
 			reset.show();
 			headers = parseHeaders(headers);
 
-			if (headers['Content-Type'].indexOf('application/json') > -1 || headers['Content-Type'].indexOf('text/json') > -1){
+			if (headers['content-type'].indexOf('application/json') > -1 || headers['content-type'].indexOf('text/json') > -1 || headers['content-type'].indexOf('application/vnd.api+json') > -1){
 				//indentation!
 				if (body.length){
 					body = JSON.stringify(JSON.parse(body), null, 3);
@@ -231,11 +230,11 @@ function params(query){
 
 function parseHeaders(h){
 	var out = {};
-	var chunks = h.split('\n');
+	var chunks = h.toLowerCase().split('\n');
 	for (var i=0,j=chunks.length; i<j; i++){
 		var bits = chunks[i].split(': ');
 		if (bits[0].length)
-			out[bits[0]] = bits[1];
+			out[bits[0].toLowerCase()] = bits[1];
 	}
 	return out;
 }

@@ -10,6 +10,9 @@ examples/api_hoth/hoth/logs/*.hoth
 examples/api_hoth/hoth/logs/*.log
 css/*
 
+#testbox
+tests/testbox
+
 ### Intellij ###
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm
 

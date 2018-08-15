@@ -1,9 +1,7 @@
 <cfcomponent extends="base">
 
 	<cffunction name="setup">
-		<cfset local.apiRootURL	= getDirectoryFromPath(cgi.script_name) />
-		<cfset local.apiRootURL	= listDeleteAt(local.apiRootURL,listLen(local.apiRootURL,'/'),'/') />
-		<cfhttp method="GET" url="http://#CGI.SERVER_NAME#:#CGI.SERVER_PORT##local.apiRootURL#/index.cfm?#application._taffy.settings.reloadkey#=#application._taffy.settings.reloadPassword#" />
+		<cfset reloadFramework()>
 	</cffunction>
 
 	<cfscript>
@@ -14,14 +12,14 @@
 			variables.factory.loadBeansFromPath( expandPath('/taffy/tests/resources'), 'taffy.tests.resources', expandPath('/taffy/tests/resources'), true );
 		}
 
-		function properly_notifies_unimplemented_mimes(){
+		function test_properly_notifies_unimplemented_mimes(){
 			makePublic(variables.taffy, "mimeSupported");
 			// debug(variables.taffy);
 			// debug(application);
 			assertFalse(taffy.mimeSupported("DoesNotExist"), "When given a mime type that should not exist, Taffy reported that it did.");
 		}
 
-		function properly_notifies_implemented_mimes(){
+		function test_properly_notifies_implemented_mimes(){
 			makePublic(variables.taffy, "mimeSupported");
 			makePublic(variables.taffy, "inspectMimeTypes");
 			variables.taffy.inspectMimeTypes('taffy.core.nativeJsonSerializer', variables.taffy.getBeanFactory());
@@ -30,52 +28,53 @@
 			assertTrue(taffy.mimeSupported("application/json"));
 		}
 
-		function returns_etag_header(){
+		function test_returns_etag_header(){
+			//both requests should yeild the same etag header
 			local.result = apiCall("get", "/echo/foo.json", "");
-			// debug(local.result);
-			local.testStruct = StructNew();
-			local.testStruct.ID = "foo";
-			local.expectedValue = local.testStruct.hashCode();
+			local.result2 = apiCall("get", "/echo/foo.json", "");
+
 			assertTrue(structKeyExists(local.result.responseHeader, "Etag"));
-			assertEquals(local.expectedValue, local.result.responseHeader.etag);
+			assertTrue(structKeyExists(local.result2.responseHeader, "Etag"));
+			assertEquals(local.result2.responseHeader.etag, local.result.responseHeader.etag);
 		}
 
-		function returns_304_when_not_modified(){
-			local.testStruct = StructNew();
-			local.testStruct.ID = "foo";
+		function test_returns_304_when_not_modified(){
+			local.result = apiCall("get", "/echo/foo.json", "");
+			assertTrue(structKeyExists(local.result.responseHeader, "Etag"));
+
 			local.h = {};
-			local.h['if-none-match'] = local.testStruct.hashCode();
+			local.h['if-none-match'] = local.result.responseHeader.etag;
 			local.result = apiCall("get", "/echo/foo.json", "", local.h);
-			// debug(local.result);
+			debug(local.result);
 			assertEquals(304, val(local.result.responseHeader.status_code));
 		}
 
-		function json_result_is_json(){
+		function test_json_result_is_json(){
 			local.result = apiCall ("get","/echo/2.json","bar=foo");
 			// debug(local.result);
 			assertTrue(isJson(local.result.fileContent), "Expected JSON content back but was not able to identify it as such.");
 		}
 
-		function custom_status_is_returned(){
+		function test_custom_status_is_returned(){
 			local.result = apiCall("get", "/echo/1.json?foo=bar", "");
 			// debug(local.result);
 			// debug(application);
 			assertEquals(999, local.result.responseHeader.status_code, "Expected status code 999 but got something else.");
 		}
 
-		function custom_headers_work(){
+		function test_custom_headers_work(){
 			local.result = apiCall("get", "/echo/-1.json", "");
 			// debug(local.result);
 			assertTrue(structKeyExists(local.result.responseHeader, "x-dude"), "Expected response header `x-dude` but it was not included.");
 		}
 
-		function global_headers_work(){
+		function test_global_headers_work(){
 			local.result = apiCall("get", "/echo/1.json", "");
 			// debug(local.result);
 			assertTrue(structKeyExists(local.result.responseHeader, "x-foo-globalheader"), "Expected response header `x-foo-globalheader` but it was not included.");
 		}
 
-		function deserializer_inspection_finds_all_content_types(){
+		function test_deserializer_inspection_finds_all_content_types(){
 			makePublic(variables.taffy, "getSupportedContentTypes");
 			local.result = variables.taffy.getSupportedContentTypes("taffy.core.baseDeserializer");
 			// debug(local.result);
@@ -87,7 +86,7 @@
 			assertTrue(structKeyExists(local.result, "application/x-www-form-urlencoded"));
 		}
 
-		function deserializer_support_detection_works(){
+		function test_deserializer_support_detection_works(){
 			makePublic(variables.taffy, "contentTypeIsSupported");
 			// debug(application._taffy.contentTypes);
 			assertTrue(variables.taffy.contentTypeIsSupported("application/json"));
@@ -95,7 +94,7 @@
 			assertFalse(variables.taffy.contentTypeIsSupported("application/does-not-exist"));
 		}
 
-		function uri_regexes_are_correct(){
+		function test_uri_regexes_are_correct(){
 			makePublic(variables.taffy, "convertURItoRegex");
 
 			local.result = taffy.convertURItoRegex("/a/{abc}/b");
@@ -125,35 +124,35 @@
 			assertEquals( "d", local.result4["tokens"][2], "assert 13" );
 		}
 
-		function uri_matching_works_with_extension(){
+		function test_uri_matching_works_with_extension(){
 			makePublic(variables.taffy, "matchURI");
 			local.result = variables.taffy.matchURI("/echo/3.json");
 			// debug(local.result);
 			assertEquals('^/echo/(?:(?:([^\/\.]+)(?:\.)([a-za-z0-9]+))\/?|([^\/\.]+))((?:\.)[^\.\?\/]+)?\/?$', local.result);
 		}
 
-		function uri_matching_works_without_extension(){
+		function test_uri_matching_works_without_extension(){
 			makePublic(variables.taffy, "matchURI");
 			local.result = variables.taffy.matchURI("/echo/3");
 			// debug(local.result);
 			assertEquals('^/echo/(?:(?:([^\/\.]+)(?:\.)([a-za-z0-9]+))\/?|([^\/\.]+))((?:\.)[^\.\?\/]+)?\/?$', local.result);
 		}
 
-		function uri_matching_works_with_trailing_slash_with_extension(){
+		function test_uri_matching_works_with_trailing_slash_with_extension(){
 			makePublic(variables.taffy, "matchURI");
 			local.result = variables.taffy.matchURI("/echo/3.json/");
 			// debug(local.result);
 			assertEquals('^/echo/(?:(?:([^\/\.]+)(?:\.)([a-za-z0-9]+))\/?|([^\/\.]+))((?:\.)[^\.\?\/]+)?\/?$', local.result);
 		}
 
-		function uri_matching_works_with_trailing_slash_without_extension(){
+		function test_uri_matching_works_with_trailing_slash_without_extension(){
 			makePublic(variables.taffy, "matchURI");
 			local.result = variables.taffy.matchURI("/echo/3/");
 			// debug(local.result);
 			assertEquals('^/echo/(?:(?:([^\/\.]+)(?:\.)([a-za-z0-9]+))\/?|([^\/\.]+))((?:\.)[^\.\?\/]+)?\/?$', local.result);
 		}
 
-		function uri_matching_is_sorted_so_static_URIs_take_priority_over_tokens(){
+		function test_uri_matching_is_sorted_so_static_URIs_take_priority_over_tokens(){
 			makePublic(variables.taffy, "matchURI");
 			local.result = variables.taffy.matchURI("/echo/3");
 			// debug(local.result);
@@ -163,7 +162,7 @@
 			assertEquals('^/echo/towel((?:\.)[^\.\?\/]+)?\/?$', local.result);
 		}
 
-		function request_parsing_works(){
+		function test_request_parsing_works(){
 			makePublic(variables.taffy,"buildRequestArguments");
 			local.result = variables.taffy.buildRequestArguments(
 				regex = '/echo/([^\/\.]+)$',
@@ -178,7 +177,7 @@
 			assertTrue(structKeyExists(local.result, "id") && local.result.id == 16, "Missing or incorrect value for key `id`.");
 		}
 
-		function properly_decodes_urlEncoded_put_request_body(){
+		function test_properly_decodes_urlEncoded_put_request_body(){
 			local.result = apiCall("put", "/echo/99.json", "foo=bar&check=mate");
 			// debug(local.result);
 			if (!isJson(local.result.fileContent)){
@@ -191,7 +190,7 @@
 			assertTrue(structKeyExists(local.result, "check") && local.result.check == "mate", "Missing or incorrect value for key `check`.");
 		}
 
-		function properly_decodes_json_put_request_body(){
+		function test_properly_decodes_json_put_request_body(){
 			local.result = apiCall("put", "/echo/99.json", '{"foo":"bar"}');
 			// debug(local.result);
 			if (!isJson(local.result.fileContent)){
@@ -203,7 +202,7 @@
 			assertTrue(structKeyExists(local.result, "foo") && local.result.foo == "bar", "Missing or incorrect value for key `foo`.");
 		}
 
-		function properly_decodes_json_post_request_body(){
+		function test_properly_decodes_json_post_request_body(){
 			local.result = apiCall("post", "/echo/99.json", '{"foo":"bar"}');
 			// debug(local.result);
 			if (!isJson(local.result.fileContent)){
@@ -215,7 +214,7 @@
 			assertTrue(structKeyExists(local.result, "foo") && local.result.foo == "bar", "Missing or incorrect value for key `foo`.");
 		}
 
-		function returns_error_when_requested_mime_not_supported(){
+		function test_returns_error_when_requested_mime_not_supported(){
 			local.h = structNew();
 			local.h['Accept'] = "application/NOPE";
 			local.result = apiCall ("get","/echo/2","foo=bar", local.h);
@@ -224,7 +223,7 @@
 			assertEquals("Requested mime type is not supported (application/NOPE)", local.result.responseHeader.explanation);
 		}
 
-		function extension_takes_precedence_over_accept_header(){
+		function test_extension_takes_precedence_over_accept_header(){
 			local.headers = structNew();
 			local.headers["Accept"] = "text/xml";
 			local.result = apiCall("get","/echo/2.json","foo=bar",local.headers);
@@ -233,7 +232,7 @@
 			assertTrue(isJson(local.result.fileContent));
 		}
 
-		function allows_regex_as_final_url_value(){
+		function test_allows_regex_as_final_url_value(){
 			makePublic(variables.taffy, "buildRequestArguments");
 			local.headers = structNew();
 			local.headers.Accept = "application/json";
@@ -264,13 +263,13 @@
 			assertEquals("12345", local.response.id);
 		}
 
-		function returns_405_for_unimplemented_verbs(){
+		function test_returns_405_for_unimplemented_verbs(){
 			local.result = apiCall("delete", "/echo/2.json", "foo=bar");
 			// debug(local.result);
 			assertEquals(405, local.result.responseHeader.status_code);
 		}
 
-		function test_onTaffyRequest_allow(){
+		function test_test_onTaffyRequest_allow(){
 			local.result = apiCall("get","/echo/12.json","refuse=false");
 			// debug(local.result);
 			assertEquals(999,local.result.responseHeader.status_code);
@@ -282,13 +281,13 @@
 			assertEquals(405,local.result.responseHeader.status_code);
 		}
 
-		function external_file_request_passes_through(){
-			local.result = getUrl('http://#CGI.SERVER_NAME#:#CGI.SERVER_PORT#/taffy/tests/someFolder/someOtherFile.cfm');
-			// debug(local.result);
+		function test_external_file_request_passes_through(){
+			local.result = getUrl('http://#CGI.SERVER_NAME#:#CGI.SERVER_PORT##replace(cgi.script_name, "/tests/tests/run.cfm", "/tests/someFolder/someOtherFile.cfm")#');
+			debug(local.result);
 			assertTrue(findNoCase('woot', local.result.fileContent), "Was not able to get the DMZ file.");
 		}
 
-		function tunnel_PUT_through_POST(){
+		function test_tunnel_PUT_through_POST(){
 			var local = {};
 
 			local.headers["X-HTTP-Method-Override"] = "PUT";
@@ -301,7 +300,7 @@
 			assertEquals("put", local.deserializedContent.actualMethod);
 		}
 
-		function tunnel_DELETE_through_POST(){
+		function test_tunnel_DELETE_through_POST(){
 			var local = {};
 
 			local.headers["X-HTTP-Method-Override"] = "DELETE";
@@ -314,7 +313,7 @@
 			assertEquals("delete", local.deserializedContent.actualMethod);
 		}
 
-		function put_body_is_mime_content(){
+		function test_put_body_is_mime_content(){
 			var local = {};
 
 			local.result = apiCall(
@@ -334,7 +333,7 @@
 			assertEquals("The quick brown fox jumped over the lazy dog.", local.deserializedContent["foo"]);
 		}
 
-		function put_body_is_url_encoded_params(){
+		function test_put_body_is_url_encoded_params(){
 			var local = {};
 			local.result = apiCall(
 				"put",
@@ -357,7 +356,7 @@
 			assertEquals("foxtrot", local.deserializedContent["baz"]);
 		}
 
-		function get_queryString_keys_without_values_returns_empty_string() {
+		function test_get_queryString_keys_without_values_returns_empty_string() {
 			makePublic(variables.taffy, "buildRequestArguments");
 
 			var returnedArguments = variables.taffy.buildRequestArguments(
@@ -371,42 +370,42 @@
 			assertEquals("", returnedArguments["keyTwo"]);
 		}
 
-		function returns_allow_header_for_405(){
+		function test_returns_allow_header_for_405(){
 			local.result = apiCall("delete","/echo/12.json","");
 			// debug(local.result);
 			assertEquals(405,local.result.responseHeader.status_code);
 			assertTrue(structKeyExists(local.result.responseHeader, "allow"),"Expected ALLOW header, but couldn't find it");
 		}
 
-		function returns_allow_header_for_get_200(){
+		function test_returns_allow_header_for_get_200(){
 			local.result = apiCall("get","/echo/tunnel/12.json","");
 			// debug(local.result);
 			assertEquals(200,local.result.responseHeader.status_code);
 			assertTrue(structKeyExists(local.result.responseHeader, "allow"),"Expected ALLOW header, but couldn't find it");
 		}
 
-		function returns_allow_header_for_post_201(){
+		function test_returns_allow_header_for_post_201(){
 			local.result = apiCall("post","/echo/tunnel/12.json","");
 			// debug(local.result);
 			assertEquals(201,local.result.responseHeader.status_code);
 			assertTrue(structKeyExists(local.result.responseHeader, "allow"),"Expected ALLOW header, but couldn't find it");
 		}
 
-		function returns_allow_header_for_put_200(){
+		function test_returns_allow_header_for_put_200(){
 			local.result = apiCall("put","/echo/tunnel/12.json","");
 			// debug(local.result);
 			assertEquals(200,local.result.responseHeader.status_code);
 			assertTrue(structKeyExists(local.result.responseHeader, "allow"),"Expected ALLOW header, but couldn't find it");
 		}
 
-		function returns_allow_header_for_delete_200(){
+		function test_returns_allow_header_for_delete_200(){
 			local.result = apiCall("delete","/echo/tunnel/12.json","");
 			// debug(local.result);
 			assertEquals(200,local.result.responseHeader.status_code);
 			assertTrue(structKeyExists(local.result.responseHeader, "allow"),"Expected ALLOW header, but couldn't find it");
 		}
 
-		function can_pass_data_from_onTaffyRequest_to_resource(){
+		function test_can_pass_data_from_onTaffyRequest_to_resource(){
 			local.result = apiCall("get", "/echo/dude.json", "hulk=smash");
 			// debug(local.result);
 			local.body = deserializeJSON(local.result.fileContent);
@@ -414,7 +413,7 @@
 			assertTrue(local.body.dataFromOTR eq "who let the hulk out?!");
 		}
 
-		function reload_on_every_request_setting_works(){
+		function test_reload_on_every_request_setting_works(){
 			application._taffy.settings.reloadOnEveryRequest = false;
 			local.result = apiCall("get", "/echo/dude.json", "");
 			// debug(local.result);
@@ -425,14 +424,14 @@
 			assertTrue(structKeyExists(local.result2.responseheader, "X-TAFFY-RELOADED"), "Expected reload header to be sent, but it was missing.");
 		}
 
-		function returns_error_when_resource_throws_exception(){
+		function test_returns_error_when_resource_throws_exception(){
 			local.result = apiCall("get", "/throwException.json", "");
 			// debug(local.result);
 			assertEquals(500, local.result.responseHeader.status_code);
 			assertTrue( isJson( local.result.fileContent ), "Response body was not json" );
 		}
 
-		function basic_auth_credentials_found(){
+		function test_basic_auth_credentials_found(){
 			local.result = apiCall("get", "/basicauth.json", "", {}, "Towel:42");
 			// debug(local.result);
 			assertTrue(isJson(local.result.fileContent));
@@ -443,46 +442,46 @@
 			assertEquals("42", local.data.password);
 		}
 
-		function getHostname_returns_not_blank(){
+		function test_getHostname_returns_not_blank(){
 			local.hostname = variables.taffy.getHostname();
 			// debug(local.hostname);
 			assertNotEquals( "", local.hostname );
 		}
 
-		function envConfig_is_applied(){
+		function test_envConfig_is_applied(){
 			// debug( application._taffy.settings.reloadPassword );
 			assertEquals( "dontpanic", application._taffy.settings.reloadPassword );
 		}
 
-		function use_endpointURLParam_in_GET(){
+		function test_use_endpointURLParam_in_GET(){
 			local.result = apiCall('get','?#application._taffy.settings.endpointURLParam#=/echo/2606.json','');
 
 			// debug(local.result);
 			assertEquals(999,val(local.result.statusCode));
 		}
 
-		function use_endpointURLParam_in_POST(){
+		function test_use_endpointURLParam_in_POST(){
 			local.result = apiCall('post','?#application._taffy.settings.endpointURLParam#=/echo/2606.json','bar=foo');
 
 			// debug(local.result);
 			assertEquals(200,val(local.result.statusCode));
 		}
 
-		function use_endpointURLParam_in_PUT(){
+		function test_use_endpointURLParam_in_PUT(){
 			local.result = apiCall('put','?#application._taffy.settings.endpointURLParam#=/echo/2606.json','bar=foo');
 
 			// debug(local.result);
 			assertEquals(200,val(local.result.statusCode));
 		}
 
-		function use_endpointURLParam_in_DELETE(){
+		function test_use_endpointURLParam_in_DELETE(){
 			local.result = apiCall('delete','?#application._taffy.settings.endpointURLParam#=/echo/tunnel/2606.json','');
 
 			// debug(local.result);
 			assertEquals(200,val(local.result.statusCode));
 		}
 
-		function allows_dashboard_when_enabled(){
+		function test_allows_dashboard_when_enabled(){
 			var restore = application._taffy.settings.disableDashboard;
 			application._taffy.settings.disableDashboard = false;
 			local.result = apiCall("get", "/", "");
@@ -492,7 +491,7 @@
 			application._taffy.settings.disableDashboard = restore;
 		}
 
-		function returns_403_at_root_when_dashboard_disabled_with_no_redirect(){
+		function test_returns_403_at_root_when_dashboard_disabled_with_no_redirect(){
 			var restore = application._taffy.settings.disableDashboard;
 			application._taffy.settings.disableDashboard = true;
 			local.result = apiCall("get", "/", "");
@@ -502,7 +501,7 @@
 			application._taffy.settings.disableDashboard = restore;
 		}
 
-		function returns_302_at_root_when_dashboard_disabled_with_redirect(){
+		function test_returns_302_at_root_when_dashboard_disabled_with_redirect(){
 			var restore1 = application._taffy.settings.disableDashboard;
 			var restore2 = application._taffy.settings.disabledDashboardRedirect;
 			application._taffy.settings.disableDashboard = true;
@@ -517,7 +516,7 @@
 			application._taffy.settings.disabledDashboardRedirect = restore2;
 		}
 
-		function properly_returns_wrapped_jsonp(){
+		function test_properly_returns_wrapped_jsonp(){
 			application._taffy.settings.jsonp = "callback";
 			local.result = apiCall("get", "/echo/dude.json?callback=zomg", '');
 			// debug(local.result);
@@ -525,21 +524,21 @@
 			assertEquals(");", right(local.result.fileContent, 2), "Does not end with `);`");
 		}
 
-		function properly_handles_arbitrary_cors_headers(){
+		function test_properly_handles_arbitrary_cors_headers(){
 			//see: https://github.com/atuttle/Taffy/issues/144
 			application._taffy.settings.allowCrossDomain = true;
-			local.h = { "Access-Control-Request-Headers" = "goat, pigeon, man-bear-pig"};
+			local.h = { "Access-Control-Request-Headers" = "goat, pigeon, man-bear-pig", "Origin":"http://#cgi.server_name#/"};
 			local.result = apiCall("get", "/echo/dude.json", "", local.h);
-			// debug(local.result);
+			//debug(local.result);
 			assertTrue(local.result.responseHeader["Access-Control-Allow-Headers"] contains "goat");
 			assertTrue(local.result.responseHeader["Access-Control-Allow-Headers"] contains "pigeon");
 			assertTrue(local.result.responseHeader["Access-Control-Allow-Headers"] contains "man-bear-pig");
 		}
 
-		function properly_handles_arbitrary_cors_headers_on_error(){
+		function test_properly_handles_arbitrary_cors_headers_on_error(){
 			//see: https://github.com/atuttle/Taffy/issues/159
 			application._taffy.settings.allowCrossDomain = true;
-			local.h = { "Access-Control-Request-Headers" = "goat, pigeon, man-bear-pig"};
+			local.h = { "Access-Control-Request-Headers" = "goat, pigeon, man-bear-pig", "Origin":"http://#cgi.server_name#/"};
 			local.result = apiCall("get", "/throwException.json", "", local.h);
 			// debug(local.result);
 			assertTrue(structKeyExists(local.result.responseHeader, "Access-Control-Allow-Origin"));
@@ -550,7 +549,7 @@
 			assertTrue(local.result.responseHeader["Access-Control-Allow-Headers"] contains "man-bear-pig");
 		}
 
-		function non_struct_json_body_sent_to_resource_as_underscore_body(){
+		function test_non_struct_json_body_sent_to_resource_as_underscore_body(){
 			//see: https://github.com/atuttle/Taffy/issues/169
 			local.result = apiCall("post", "/echo/5", "[1,2,3]");
 			// debug(local.result);
@@ -560,36 +559,37 @@
 			assertTrue(arrayLen(local.response._body) == 3);
 		}
 
-		function comma_delim_list_of_uris_for_alias(){
+		function test_comma_delim_list_of_uris_for_alias(){
 
 			//works with /echo_alias/{ID}
 			local.result = apiCall("get", "/echo_alias/4", "");
-			// debug(local.result);
+			//debug(local.result);
+
 			assertEquals(200, val(local.result.statusCode));
-			assertEquals(serializeJSON({ID=4}), local.result.fileContent);
+			assertEquals(serializeJSON({ID="4"}), local.result.fileContent);
 
 			//works with /echo_alias
 			local.result = apiCall("get", "/echo_alias", "");
 			// debug(local.result);
 			assertEquals(200, val(local.result.statusCode));
-			assertEquals(serializeJSON({ID=0}), local.result.fileContent);
+			assertEquals(serializeJSON({ID="0"}), local.result.fileContent);
 
 			//works with /echo_alias/ (trailing slash)
 			local.result = apiCall("get", "/echo_alias/", "");
 			// debug(local.result);
 			assertEquals(200, val(local.result.statusCode));
-			assertEquals(serializeJSON({ID=0}), local.result.fileContent);
+			assertEquals(serializeJSON({ID="0"}), local.result.fileContent);
 
 			//works with /echo_alias?ID=x
 			local.result = apiCall("get", "/echo_alias", "ID=2");
 			// debug(local.result);
 			assertEquals(200, val(local.result.statusCode));
-			assertEquals(serializeJSON({ID=2}), local.result.fileContent);
+			assertEquals(serializeJSON({ID="2"}), local.result.fileContent);
 		}
 	</cfscript>
 
 
-	<cffunction name="can_upload_a_file">
+	<cffunction name="test_can_upload_a_file">
 		<cfset var local = structNew() />
 		<cfset local.apiRootURL	= getDirectoryFromPath(cgi.script_name) />
 		<cfset local.apiRootURL	= listDeleteAt(local.apiRootURL,listLen(local.apiRootURL,'/'),'/') />
@@ -603,11 +603,11 @@
 		<cfset assertTrue(local.uploadResult.statusCode eq "200 OK", "Did not return status 200") />
 	</cffunction>
 
-	<cffunction name="throws_exception_when_ressource_uri_doesnt_begin_with_forward_slash">
+	<cffunction name="test_throws_exception_when_ressource_uri_doesnt_begin_with_forward_slash">
 		<cfset assertTrue(checkIfOneSkippedRessourceContainsExpectedException("detail", "The URI (uriWithoutForwardSlash) for `uriDoesntBeginWithForwardSlash` should begin with a forward slash."), "Uri without forward slash not showing in errors")>
 	</cffunction>
 
-	<cffunction name="throws_exception_when_alias_ressource_uri_doesnt_begin_with_forward_slash">
+	<cffunction name="test_throws_exception_when_alias_ressource_uri_doesnt_begin_with_forward_slash">
 		<cfset assertTrue(checkIfOneSkippedRessourceContainsExpectedException("detail", "The URI (uriAliasWithoutFowardSlash) for `uriAliasDoesntBeginWithForwardSlash` should begin with a forward slash."), "Uri alias without forward slash not showing in errors")>
 	</cffunction>
 

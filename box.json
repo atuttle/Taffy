@@ -1,0 +1,25 @@
+{
+    "name":"Taffy",
+    "shortDescription":"REST Web Service framework for ColdFusion and Lucee",
+    "slug":"Taffy",
+    "author":"Adam Tuttle",
+    "location":"https://github.com/atuttle/taffy",
+    "Homepage":"http://taffy.io/",
+    "Documentation":"http://docs.taffy.io/",
+    "type":"mvc",
+    "Repository":{
+        "type":"git",
+        "URL":"https://github.com/atuttle/taffy.git"
+    },
+    "devDependencies":{
+        "testbox":"^2.5.0+107",
+        "commandbox-cfconfig":"be",
+        "di1":"git+https://github.com/framework-one/di1.git",
+        "hoth":"git+https://github.com/aarongreenlee/Hoth.git"
+    },
+    "installPaths":{
+        "testbox":"tests/testbox/",
+        "di1":"tests/di1",
+        "Hoth":"tests/Hoth/"
+    }
+}

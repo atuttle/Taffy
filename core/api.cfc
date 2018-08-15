@@ -34,6 +34,7 @@
 		<cfargument name="matchedURI" />
 		<cfargument name="parsedResponse" />
 		<cfargument name="originalResponse" />
+		<cfargument name="statusCode" />
 		<cfreturn true />
 	</cffunction>
 
@@ -83,7 +84,7 @@
 			(
 				application._taffy.settings.reloadOnEveryRequest eq true
 			)>
-			<cfif !local.reloadedInThisRequest><!--- prevent double reloads --->
+			<cfif !local.reloadedInThisRequest and !isUnhandledPathRequest(arguments.targetPath)><!--- prevent double reloads --->
 				<cfset onApplicationStart() />
 			</cfif>
 		</cfif>
@@ -186,6 +187,8 @@
 		<cfset var _taffyRequest = {} />
 		<cfset var local = {} />
 		<cfset var m = '' />
+		<cfset request._taffyRequest = _taffyRequest />
+		<cfset local.debug = false />
 
 		<cfset _taffyRequest.metrics = {} />
 		<cfset m = _taffyRequest.metrics />
@@ -401,7 +404,7 @@
 			<cfheader name="X-TIME-IN-CACHE-CHECK" value="#m.cacheCheckTime#" />
 		</cfif>
 		<cfif structKeyExists(m, "cacheGetTime")>
-			<cfheader name="X-TIME-IN-CACHE-GET" value="#m.cacheSaveTime#" />
+			<cfheader name="X-TIME-IN-CACHE-GET" value="#m.cacheGetTime#" />
 		</cfif>
 		<cfif structKeyExists(m, "cacheSaveTime")>
 			<cfheader name="X-TIME-IN-CACHE-SAVE" value="#m.cacheSaveTime#" />
@@ -410,6 +413,7 @@
 		<!--- result data --->
 		<cfif structKeyExists(_taffyRequest,'result')>
 			<cfset _taffyRequest.resultType = _taffyRequest.result.getType() />
+			<cfset local.resultSerialized = '' />
 
 			<cfif _taffyRequest.resultType eq "textual">
 				<!--- serialize the representation's data into the requested mime type --->
@@ -446,16 +450,19 @@
 				</cfif>
 
 				<cfset m.done = getTickCount() />
-				<cfset m.taffyTime = m.done - m.init - m.parseTime - m.otrTime - m.resourceTime - m.serializeTime />
+				<cfset m.taffyTime = m.done - m.init - m.parseTime - m.otrTime - m.serializeTime />
+				<cfif structKeyExists(m, "resourceTime")>
+					<cfset m.taffyTime -= m.resourceTime />
+				</cfif>
 				<cfheader name="X-TIME-IN-TAFFY" value="#m.taffyTime#" />
 
 				<cfcontent reset="true" type="#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#; charset=utf-8" />
 				<cfif _taffyRequest.resultSerialized neq ('"' & '"')>
-					<cfoutput>#_taffyRequest.resultSerialized#</cfoutput>
+					<cfset local.resultSerialized = _taffyRequest.resultSerialized />
 				</cfif>
 				<!--- debug output --->
 				<cfif structKeyExists(url, application._taffy.settings.debugKey)>
-					<cfoutput><h3>Request Details:</h3><cfdump var="#_taffyRequest#"></cfoutput>
+					<cfset local.debug = true />
 				</cfif>
 
 			<cfelseif _taffyRequest.resultType eq "filename">
@@ -479,6 +486,16 @@
 			</cfif>
 		</cfif>
 
+		<cfset local.resultSerialized = "" />
+		<cfif structKeyExists( _taffyRequest, "resultSerialized" )>
+			<cfset local.resultSerialized = _taffyRequest.resultSerialized />
+		</cfif>
+
+		<cfset local.result = StructNew() />
+		<cfif structKeyExists( _taffyRequest, "result" )>
+			<cfset local.result = _taffyRequest.result.getData() />
+		</cfif>
+
 		<!--- ...after the service has finished... --->
 		<cfset m.beforeOnTaffyRequestEnd = getTickCount() />
 		<cfset onTaffyRequestEnd(
@@ -489,11 +506,20 @@
 			,_taffyRequest.headers
 			,_taffyRequest.methodMetadata
 			,local.parsed.matchDetails.srcUri
-			,structKeyExists( _taffyRequest, 'resultSerialized' ) ? _taffyRequest.resultSerialized : ''
-			,structKeyExists( _taffyRequest, 'result' ) ? _taffyRequest.result.getData() : {}
+			,local.resultSerialized
+			,local.result
+			,_taffyRequest.statusArgs.statusCode
 			) />
 		<cfset m.otreTime = getTickCount() - m.beforeOnTaffyRequestEnd />
 		<cfheader name="X-TIME-IN-ONTAFFYREQUESTEND" value="#m.otreTime#" />
+
+		<cfif len(trim(local.resultSerialized))>
+			<cfoutput>#local.resultSerialized#</cfoutput>
+		</cfif>
+		<!--- debug output --->
+		<cfif local.debug>
+			<cfoutput><h3>Request Details:</h3><cfdump var="#_taffyRequest#"></cfoutput>
+		</cfif>
 
 		<cfreturn true />
 	</cffunction>
@@ -508,7 +534,7 @@
 		<cfheader name="X-TAFFY-RELOADED" value="true" />
 		<cfset request.taffyReloaded = true />
 		<cfset local._taffy = structNew() />
-		<cfset local._taffy.version = "3.1.0" />
+		<cfset local._taffy.version = "3.2.0" />
 		<cfset local._taffy.endpoints = structNew() />
 		<!--- default settings --->
 		<cfset local.defaultConfig = structNew() />
@@ -537,6 +563,9 @@
 		<cfset local.defaultConfig.returnExceptionsAsJson = true />
 		<cfset local.defaultConfig.exceptionLogAdapter = "taffy.bonus.LogToDevNull" />
 		<cfset local.defaultConfig.exceptionLogAdapterConfig = StructNew() />
+		<cfset local.defaultConfig.csrfToken = structNew() />
+		<cfset local.defaultConfig.csrfToken.cookieName = "" />
+		<cfset local.defaultConfig.csrfToken.headerName = "" />
 		<!--- status --->
 		<cfset local._taffy.status = structNew() />
 		<cfset local._taffy.status.internalBeanFactoryUsed = false />
@@ -659,7 +688,7 @@
 
 		<cfset requestObj.body = getRequestBody() />
 		<cfset requestObj.contentType = cgi.content_type />
-		<cfif len(requestObj.body)>
+		<cfif len(requestObj.body) AND requestObj.body neq "null">
 			<cfif findNoCase("multipart/form-data", requestObj.contentType)>
 				<!--- do nothing, to support the way railo handles multipart requests (just avoids the error condition below) --->
 				<cfset requestObj.queryString = cgi.query_string />
@@ -857,8 +886,9 @@
 		<cfset var ct = listFirst(arguments.contentType,';') />
 		<cfset var fn = application._taffy.contentTypes[ct] />
 		<cfset var args = {} />
+		<cfset var result = {} />
 		<cfset args.body = arguments.body />
-		<cfset result = {} />
+
 		<cfinvoke
 			component="#application._taffy.settings.deserializer#"
 			method="#fn#"
@@ -1374,6 +1404,9 @@
 		<cfargument name="metadata" type="struct" required="true" />
 		<cfset var result = StructNew() />
 		<cfset var func = '' />
+		<cfset var f = 0 />
+		<cfset var g = 0 />
+		<cfset var foundFunc = false />
 		<cfset result.functions = arrayNew(1) />
 		<!--- don't recurse if we've reached the base component --->
 		<cfif structKeyExists(metadata, "extends") and not metadata.extends.fullname eq "taffy.core.resource">
@@ -1399,7 +1432,18 @@
 			<cfset func = metadata.functions[f] />
 			<!--- ignore hidden methods, if access is not set, assume public --->
 			<cfif not structKeyExists(func, "access") or (func.access neq "private" and func.access neq "package")>
-				<cfset arrayAppend(result.functions, func) />
+				<!--- check to see if this function is already in the list. If so, overwrite, otherwise append --->
+				<cfset foundFunc = False />
+				<cfloop from="1" to="#arrayLen( result.functions )#" index="g">
+					<cfif result.functions[g].NAME EQ func.NAME>
+						<cfset result.functions[g] = func />
+						<cfset foundFunc = True />
+						<cfbreak />
+					</cfif>
+				</cfloop>
+				<cfif NOT foundFunc>
+					<cfset arrayAppend(result.functions, func) />
+				</cfif>
 			</cfif>
 		</cfloop>
 		<cfreturn result />

@@ -24,11 +24,21 @@
 				<cfoutput>
 					<cfloop from="1" to="#arrayLen(application._taffy.uriMatchOrder)#" index="local.resource">
 						<cfset local.currentResource = application._taffy.endpoints[application._taffy.uriMatchOrder[local.resource]] />
+						<cfset local.beanMeta = getMetaData(application._taffy.factory.getBean(local.currentResource.beanName)) />
+						<cfif structKeyExists(local.beanMeta, "taffy_docs_hide") OR structKeyExists(local.beanMeta, "taffy:docs:hide")>
+							<cfscript>continue;</cfscript>
+						</cfif>
 						<div class="panel panel-default">
 							<div class="panel-heading">
 								<h4 class="panel-title">
 									<a href="###local.currentResource.beanName#" class="accordion-toggle" data-toggle="collapse" data-parent="##resourcesAccordion">
-										#local.currentResource.beanName#
+										<cfif structKeyExists(local.beanMeta, "taffy:docs:name")>
+											#local.beanMeta['taffy:docs:name']#
+										<cfelseif structKeyExists(local.beanMeta, "taffy_docs_name")>
+											#local.beanMeta['taffy_docs_name']#
+										<cfelse>
+											#local.currentResource.beanName#
+										</cfif>
 									</a>
 									<cfloop list="DELETE|warning,PATCH|warning,PUT|warning,POST|danger,GET|primary" index="local.verb">
 										<cfif structKeyExists(local.currentResource.methods, listFirst(local.verb,'|'))>
@@ -38,7 +48,7 @@
 									<code style="float:right; margin-top: -15px; display: inline-block;">#local.currentResource.srcUri#</code>
 								</h4>
 							</div>
-							<div id="#local.currentResource.beanName#">
+							<div id="#local.currentResource.beanName#" class="in">
 								<div class="panel-body resourceWrapper">
 									<div class="col-md-12 docs">
 										<cfset local.metadata = getMetaData(application._taffy.factory.getBean(local.currentResource.beanName)) />
@@ -47,14 +57,16 @@
 										<cfset local.found = { get=false, post=false, put=false, patch=false, delete=false } />
 										<cfloop from="1" to="#arrayLen(local.docData.functions)#" index="local.f">
 											<cfset local.func = local.docData.functions[local.f] />
-											<cfset verbs = "GET,POST,PUT,DELETE,OPTIONS,HEAD" />
+											<cfset verbs = "GET,POST,PUT,PATCH,DELETE,OPTIONS,HEAD" />
 											<cfset thisVerb = local.func.name />
 											<cfif structKeyExists(local.func,"taffy_verb")>
 												<cfset thisVerb = local.func.taffy_verb />
 											<cfelseif structKeyExists(local.func,"taffy:verb")>
 												<cfset thisVerb = local.func['taffy:verb'] />
 											</cfif>
-											<cfif listFindNoCase(verbs, thisVerb) eq 0>
+											<cfif listFindNoCase(verbs, thisVerb) eq 0
+													OR structKeyExists(local.func, "taffy_docs_hide")
+													OR structKeyExists(local.func, "taffy:docs:hide")>
 												<cfscript>continue;</cfscript><!--- this has to be script for CF8 compat --->
 											</cfif>
 											<cfset local.found[local.func.name] = true />
@@ -64,6 +76,10 @@
 											</cfif>
 											<cfloop from="1" to="#arrayLen(local.func.parameters)#" index="local.p">
 												<cfset local.param = local.func.parameters[local.p] />
+												<cfif structKeyExists(local.param, "taffy_docs_hide")
+														OR structKeyExists(local.param, "taffy:docs:hide")>
+													<cfscript>continue;</cfscript>
+												</cfif>
 												<div class="row">
 													<div class="col-md-11 col-md-offset-1">
 															<cfif not structKeyExists(local.param, 'required') or not local.param.required>

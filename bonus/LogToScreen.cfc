@@ -11,6 +11,9 @@
 		<cfcontent type="text/html" />
 		<cfheader statuscode="500" statustext="Unhandled API Error" />
 		<cfdump var="#arguments#" />
+		<cfif isDefined('request.debugData')>
+			<cfdump var="#request.debugData#" label="debug data" />
+		</cfif>
 		<cfabort />
 	</cffunction>
 

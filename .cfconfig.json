@@ -1,0 +1,7 @@
+{
+	"CFMappings":{
+	        "/Taffy":{
+	            "PHYSICAL":"${PWD}"
+	        }
+	}
+}

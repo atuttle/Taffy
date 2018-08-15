@@ -41,7 +41,17 @@
 			<cfset msg = variables.message />
 		</cfif>
 
-		<cfset variables.blhq.notifyService(msg, arguments.exception) />
+		<cfset var reqHeaders = getHTTPRequestData().headers />
+		<cfset var reqBody = getHTTPRequestData().content />
+		<!--- on input with content-type "application/json" CF seems to expose it as binary data. Here we convert it back to plain text --->
+		<cfif isBinary(reqBody)>
+			<cfset reqBody = charsetEncode(reqBody, "UTF-8") />
+		</cfif>
+		<cfif isJson(reqBody)>
+			<cfset reqBody = deserializeJson( reqBody ) />
+		</cfif>
+
+		<cfset variables.blhq.notifyService(msg, arguments.exception, { request_body: reqBody, request_headers: reqHeaders }) />
 	</cffunction>
 
 </cfcomponent>

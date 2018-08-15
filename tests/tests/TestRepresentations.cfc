@@ -9,7 +9,7 @@
 		assertEquals(10, variables.serializer.getData());
 	}
 
-	function noData_returns_empty_rep_obj(){
+	function test_noData_returns_empty_rep_obj(){
 		local.result = variables.serializer.noData();
 		local.meta = getMetaData(local.result);
 		// debug(local.meta);
@@ -21,6 +21,13 @@
 	function test_withStatus_getStatus(){
 		variables.serializer.withStatus(42);
 		assertEquals(42, variables.serializer.getStatus());
+	}
+
+	function test_withStatus_getStatusText(){
+		variables.serializer.withStatus(404, "Not Found");
+		assertEquals("Not Found", variables.serializer.getStatusText());
+		variables.serializer.withStatus(418);
+		assertEquals("I'm a teapot", variables.serializer.getStatusText());
 	}
 
 	function test_withHeaders_getHeaders(){
