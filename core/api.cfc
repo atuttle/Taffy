@@ -558,6 +558,7 @@
 		<cfset local.defaultConfig.allowCrossDomain = false />
 		<cfset local.defaultConfig.useEtags = false />
 		<cfset local.defaultConfig.jsonp = false />
+		<cfset local.defaultConfig.noDataSends204NoContent = false />
 		<cfset local.defaultConfig.globalHeaders = structNew() />
 		<cfset local.defaultConfig.mimeTypes = structNew() />
 		<cfset local.defaultConfig.returnExceptionsAsJson = true />
@@ -1336,6 +1337,10 @@
 
 	<cffunction name="noData" access="public" output="false">
 		<cfreturn newRepresentation().noData() />
+	</cffunction>
+
+	<cffunction name="noContent" access="public" output="false">
+		<cfreturn newRepresentation().noContent() />
 	</cffunction>
 
 	<cffunction name="representationOf" access="public" output="false">
