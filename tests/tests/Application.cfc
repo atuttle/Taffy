@@ -2,11 +2,12 @@
 
 	<cfset this.name = 'Taffy_testSuite' />	<!---uses the same application name as the api Application.cfc for scope sharing --->
 
+
 	<cfset this.mappings["/mxunit"] = expandPath("../testbox/system/compat/")>
 	<cfset this.mappings["/testbox"] = expandPath("../testbox/")>
-	<cfset this.mappings["/Hoth"] = expandPath("./lib/Hoth/")>
-	<cfset this.mappings["/di1"] = expandPath("./lib/di1/")>
-	<cfset this.mappings["/buglog"] = expandPath("./lib/buglog/")>
+	<cfset this.mappings["/Hoth"] = expandPath("../Hoth/")>
+	<cfset this.mappings["/di1"] = expandPath("../di1/")>
+	<cfset this.mappings["/bugLog"] = expandPath("../BugLogHQ/")>
 
 
 	<cffunction name="onRequestStart" returnType="void" access="public" output="false">

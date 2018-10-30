@@ -29,16 +29,23 @@
 		}
 
 		function test_BugLogHQ(){
-			var mockBLHQ = getMockBox().createMock(className="bugLog.buglogListener", callLogging=true);
+			var blhqSettings = { bugLogListener = "http://#cgi.server_name#:#cgi.server_port#/tests/BugLogHQ/listeners/bugLogListenerREST.cfm" };
+			var mockBLHQ = new bugLog.client.bugLogService(argumentCollection=blhqSettings);
 			var blhqAdapter = '';
-			var blhqSettings = { bugLogListener = "http://localhost/bugLog/listeners/bugLogListenerREST.cfm" };
 			var fakeError = {};
+			fakeError.message = "This is a test error";
+			fakeError.detail = "Rubber Baby Buggy Bumper";
 
-			mockBLHQ.notifyService('{string}', '{struct}');
+			//remove bugLogHQ Application.cfc so we can override datasource definition
+			if (fileExists("/bugLog/Application.cfc")) {
+				fileDelete("/bugLog/Application.cfc");
+			}
+
+			mockBLHQ.init(argumentCollection=blhqSettings);
 
 			blhqAdapter = createObject("component", "taffy.bonus.LogToBugLogHQ").init(
-				blhqSettings,
-				mockBLHQ
+				config=blhqSettings,
+				tracker=mockBLHQ
 			);
 
 			//fake error
@@ -46,7 +53,7 @@
 			fakeError.detail = "Rubber Baby Buggy Bumper";
 			blhqAdapter.saveLog(fakeError);
 
-			mockBLHQ.verify().notifyService('{string}', '{struct}');
+
 		}
 
 	</cfscript>
