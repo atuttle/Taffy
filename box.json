@@ -15,11 +15,13 @@
         "testbox":"^2.5.0+107",
         "commandbox-cfconfig":"be",
         "di1":"git+https://github.com/framework-one/di1.git",
-        "hoth":"git+https://github.com/aarongreenlee/Hoth.git"
+        "hoth":"git+https://github.com/aarongreenlee/Hoth.git",
+        "BugLogHQ":"git+https://github.com/oarevalo/BugLogHQ.git"
     },
     "installPaths":{
         "testbox":"tests/testbox/",
-        "di1":"tests/di1",
-        "Hoth":"tests/Hoth/"
+        "di1":"tests/di1/",
+        "Hoth":"tests/Hoth/",
+        "BugLogHQ":"tests/BugLogHQ"
     }
 }
