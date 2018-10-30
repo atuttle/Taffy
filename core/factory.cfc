@@ -4,12 +4,19 @@
 		this.beans = structNew();
 		this.transients = structNew();
 		//functionality
-		function init(externalBeanFactory){
+	</cfscript>
+
+	<cffunction name="init" output="false">
+		<cfargument name="externalBeanFactory">
+	<cfscript>
 			if (structKeyExists(arguments, "externalBeanFactory")) {
 				this.externalBeanFactory = arguments.externalBeanFactory;
 			}
 			return this;
-		}
+	</cfscript>
+	</cffunction>
+
+	<cfscript>
 		// Proxy to beanExists to provide similar interface to ColdSpring
 		function containsBean(beanName){
 			return beanExists(arguments.beanName);

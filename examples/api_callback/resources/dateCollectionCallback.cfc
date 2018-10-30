@@ -1,16 +1,14 @@
 <cfcomponent extends="taffy.core.resource" taffy:uri="/dateCalback" hint="Collection of dates">
 
-<cffunction name="formatDate" access="private" output="false" hint="Format dates in ISO 8601 format">
-	<cfargument name="item" type="any" required="yes" />
+	<cffunction name="formatDate" access="private" output="false" hint="Format dates in ISO 8601 format">
+		<cfargument name="row" type="any" required="yes" />
 
-	<cfif isDate(item)>
-		<cfset item = dateFormat(item,'yyyy-mm-dd')&'T'&timeFormat(item, 'HH:mm:ss.lZ')>
-	<cfelse>
-		<cfset item = item>
-	</cfif>
+		<cfif isDate(row.foo)>
+			<cfset row.foo = dateFormat(row.foo,'yyyy-mm-dd')&'T'&timeFormat(row.foo, 'HH:mm:ss.lZ')>
+		</cfif>
 
-	<cfreturn item>
-</cffunction>
+		<cfreturn row>
+	</cffunction>
 
 	<cffunction name="get" access="public" output="false" hint="Get some collection of dates">
 

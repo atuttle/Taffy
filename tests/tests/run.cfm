@@ -31,8 +31,6 @@
 	</cfif>
 </cfloop>
 <cfset r = new testbox.system.TestBox(reporter=url.reporter, bundles=bundles)>
-<!---
-<cfset r = new testbox.system.TestBox( directory="tests", reporter=url.reporter ) >--->
 <cfsavecontent variable="resultOutput"><cfoutput>#r.run()#</cfoutput></cfsavecontent>
 <cfoutput>#trim(resultOutput)#</cfoutput>
 <cfset resultObject = r.getResult()>

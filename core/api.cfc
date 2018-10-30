@@ -185,9 +185,9 @@
 		<cfargument name="targetPage" type="string" required="true" />
 
 		<cfset var _taffyRequest = {} />
-		<cfset request._taffyRequest = _taffyRequest />
 		<cfset var local = {} />
 		<cfset var m = '' />
+		<cfset request._taffyRequest = _taffyRequest />
 		<cfset local.debug = false />
 
 		<cfset _taffyRequest.metrics = {} />
@@ -534,7 +534,7 @@
 		<cfheader name="X-TAFFY-RELOADED" value="true" />
 		<cfset request.taffyReloaded = true />
 		<cfset local._taffy = structNew() />
-		<cfset local._taffy.version = "3.1.0" />
+		<cfset local._taffy.version = "3.2.0" />
 		<cfset local._taffy.endpoints = structNew() />
 		<!--- default settings --->
 		<cfset local.defaultConfig = structNew() />
@@ -558,11 +558,15 @@
 		<cfset local.defaultConfig.allowCrossDomain = false />
 		<cfset local.defaultConfig.useEtags = false />
 		<cfset local.defaultConfig.jsonp = false />
+		<cfset local.defaultConfig.noDataSends204NoContent = false />
 		<cfset local.defaultConfig.globalHeaders = structNew() />
 		<cfset local.defaultConfig.mimeTypes = structNew() />
 		<cfset local.defaultConfig.returnExceptionsAsJson = true />
 		<cfset local.defaultConfig.exceptionLogAdapter = "taffy.bonus.LogToDevNull" />
 		<cfset local.defaultConfig.exceptionLogAdapterConfig = StructNew() />
+		<cfset local.defaultConfig.csrfToken = structNew() />
+		<cfset local.defaultConfig.csrfToken.cookieName = "" />
+		<cfset local.defaultConfig.csrfToken.headerName = "" />
 		<!--- status --->
 		<cfset local._taffy.status = structNew() />
 		<cfset local._taffy.status.internalBeanFactoryUsed = false />
@@ -1333,6 +1337,10 @@
 
 	<cffunction name="noData" access="public" output="false">
 		<cfreturn newRepresentation().noData() />
+	</cffunction>
+
+	<cffunction name="noContent" access="public" output="false">
+		<cfreturn newRepresentation().noContent() />
 	</cffunction>
 
 	<cffunction name="representationOf" access="public" output="false">

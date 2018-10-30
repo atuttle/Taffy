@@ -31,8 +31,8 @@
 		function test_returns_etag_header(){
 			//both requests should yeild the same etag header
 			local.result = apiCall("get", "/echo/foo.json", "");
-			local.result2 = apiCall("get", "/echo/foo.json", "")
-			
+			local.result2 = apiCall("get", "/echo/foo.json", "");
+
 			assertTrue(structKeyExists(local.result.responseHeader, "Etag"));
 			assertTrue(structKeyExists(local.result2.responseHeader, "Etag"));
 			assertEquals(local.result2.responseHeader.etag, local.result.responseHeader.etag);
@@ -564,7 +564,7 @@
 			//works with /echo_alias/{ID}
 			local.result = apiCall("get", "/echo_alias/4", "");
 			//debug(local.result);
-			 
+
 			assertEquals(200, val(local.result.statusCode));
 			assertEquals(serializeJSON({ID="4"}), local.result.fileContent);
 

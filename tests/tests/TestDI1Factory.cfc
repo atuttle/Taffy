@@ -1,7 +1,7 @@
-component extends="base" { 
-	
+component extends="base" {
 
-		function setup(){ 
+
+		function setup(){
 			reloadFramework();
 		}
 
@@ -41,7 +41,7 @@ component extends="base" {
 			local.resourceList = local.taffy.getBeanListFromExternalFactory(local.taffy.getExternalBeanFactory());
 
 			structDelete(local.vars.framework, "beanFactory");
-			
+
 			local.taffy.onApplicationStart();
 
 			debug("Available resources from external factory: '" & replace(local.resourceList, ",", ", ", "all") & "'");
