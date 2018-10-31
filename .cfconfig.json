@@ -2,6 +2,9 @@
 	"CFMappings":{
 	        "/Taffy":{
 	            "PHYSICAL":"${PWD}"
-	        }
+	        },
+			"/Hoth": {
+				"PHYSICAL":"${PWD}/tests/Hoth/"
+			}
 	}
 }
