@@ -6,6 +6,8 @@
 		this.mappings["/mxunit"] = this.dirPath & "testbox/system/compat/";
 		this.mappings["/testbox"] = this.dirPath & "testbox/";
 		this.mappings["/bugLog"] = this.dirPath & "BugLogHQ/";
+		this.mappings["/Hoth"] = this.dirPath & "Hoth/";
+		this.mappings["/di1"] = this.dirPath & "di1/";
 
 		this.system = createObject("java", "java.lang.System");
 		this.datasources["bugLog"] = {
@@ -35,7 +37,13 @@
 			return "test";
 		}
 
-
+		function onRequest(string target) {
+			if (arguments.target contains "/BugLogHQ/") {
+				return true;
+			} else {
+				super.onRequest(arguments.target);
+			}
+		}
 
 		function onTaffyRequest(verb, cfc, requestArguments, mimeExt, headers, methodMetadata, matchedURI) {
 			var local = {};
