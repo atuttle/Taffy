@@ -11,7 +11,7 @@
 			mockHoth.$('track', true);
 			//create hoth adapter to test
 			hothAdapter = createObject("component", "taffy.bonus.LogToHoth").init(
-				"taffy.examples.api_hoth.resources.HothConfig",
+				"Taffy.examples.api_hoth.resources.HothConfig",
 				mockHoth
 			);
 
@@ -35,6 +35,13 @@
 			var fakeError = {};
 			fakeError.message = "This is a test error";
 			fakeError.detail = "Rubber Baby Buggy Bumper";
+
+			if (structKeyExists(server, "coldfusion") && structKeyExists(server.coldfusion, "productversion")) {
+				if (val(listFirst(server.coldfusion.productversion)) < 11) {
+					//datasource definition will only work on CF11+
+					return;
+				}
+			}
 
 			//remove bugLogHQ Application.cfc so we can override datasource definition
 			if (fileExists("/bugLog/Application.cfc")) {
