@@ -9,7 +9,7 @@
 
 		this.system = createObject("java", "java.lang.System");
 		this.datasources["bugLog"] = {
-		  		class: (server.keyExists("lucee")) ? 'org.gjt.mm.mysql.Driver' : 'com.mysql.jdbc.Driver',
+		  		class: (structKeyExists(server, "lucee")) ? 'org.gjt.mm.mysql.Driver' : 'com.mysql.jdbc.Driver',
 		  		connectionString: 'jdbc:mysql://localhost:3306/buglog?useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT&useLegacyDatetimeCode=false',
 		  		url: 'jdbc:mysql://localhost:3306/buglog?useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT&useLegacyDatetimeCode=false',
 		  		username: this.system.getenv("DB_USER"),
@@ -35,14 +35,7 @@
 			return "test";
 		}
 
-		function onRequest(string target) {
-			
-			if (arguments.target contains "/BugLogHQ/") {
-				return true;
-			} else {
-				super.onRequest(arguments.target);
-			}
-		}
+
 
 		function onTaffyRequest(verb, cfc, requestArguments, mimeExt, headers, methodMetadata, matchedURI) {
 			var local = {};
