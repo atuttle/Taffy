@@ -11,7 +11,7 @@
 			mockHoth.$('track', true);
 			//create hoth adapter to test
 			hothAdapter = createObject("component", "taffy.bonus.LogToHoth").init(
-				"Taffy.examples.api_hoth.resources.HothConfig",
+				"Taffy.examples.api_Hoth.resources.HothConfig",
 				mockHoth
 			);
 
