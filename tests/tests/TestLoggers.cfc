@@ -43,10 +43,6 @@
 				}
 			}
 
-			//remove bugLogHQ Application.cfc so we can override datasource definition
-			if (fileExists("/bugLog/Application.cfc")) {
-				fileDelete("/bugLog/Application.cfc");
-			}
 
 			mockBLHQ.init(argumentCollection=blhqSettings);
 

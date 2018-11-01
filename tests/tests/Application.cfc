@@ -11,7 +11,12 @@
 	<cfset this.mappings["/di1"] = this.parentDirectory & "di1/">
 	<cfset this.mappings["/bugLog"] = this.parentDirectory & "BugLogHQ/">
 
-
+	<cfscript>
+		//remove bugLogHQ Application.cfc so we can override datasource definition
+		if (fileExists("#this.parentDirectory#/BugLogHQ/Application.cfc")) {
+			fileDelete("#this.parentDirectory#/BugLogHQ/Application.cfc");
+		}
+	</cfscript>
 
 	<cffunction name="onRequestStart" returnType="void" access="public" output="false">
 		<cfif NOT isDefined('application._taffy')>
