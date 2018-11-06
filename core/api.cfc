@@ -434,9 +434,15 @@
 
 				<!--- don't return data if etags are enabled and the data hasn't changed --->
 				<cfif application._taffy.settings.useEtags and _taffyRequest.verb eq "GET">
+					<cfif structKeyExists(server, "lucee")>
+						<!--- hashCode() will not work for lucee, see issue #354 --->
+						<cfset _taffyRequest.serverEtag = hash(_taffyRequest.resultSerialized) />
+					<cfelse>
+						<cfset _taffyRequest.serverEtag = _taffyRequest.result.getData().hashCode() />
+					</cfif>
 					<cfif structKeyExists(_taffyRequest.headers, "If-None-Match")>
 						<cfset _taffyRequest.clientEtag = _taffyRequest.headers['If-None-Match'] />
-						<cfset _taffyRequest.serverEtag = _taffyRequest.result.getData().hashCode() />
+
 						<cfif len(_taffyRequest.clientEtag) gt 0 and _taffyRequest.clientEtag eq _taffyRequest.serverEtag>
 							<cfheader statuscode="304" statustext="Not Modified" />
 							<cfcontent reset="true" type="#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#; charset=utf-8" />
@@ -445,7 +451,7 @@
 							<cfheader name="Etag" value="#_taffyRequest.serverEtag#" />
 						</cfif>
 					<cfelse>
-						<cfheader name="Etag" value="#_taffyRequest.result.getData().hashCode()#" />
+						<cfheader name="Etag" value="#_taffyRequest.serverEtag#" />
 					</cfif>
 				</cfif>
 
