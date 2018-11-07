@@ -1,5 +1,8 @@
 [![Taffy: The REST framework for ColdFusion and Lucee](https://raw.github.com/atuttle/Taffy/master/dashboard/logo-lg.png)](http://taffy.io)
 
+[![Build Status](https://travis-ci.org/atuttle/Taffy.svg?branch=master)](https://travis-ci.org/atuttle/Taffy)
+
+
 You're here because creating REST APIs with the native functionality in ColdFusion 10+, Railo, and Lucee is verbose, complex, and developer-hostile. Or maybe you're still on an older version of ColdFusion.
 
 **You've come to the right place.**
