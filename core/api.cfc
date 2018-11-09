@@ -410,6 +410,23 @@
 			<cfheader name="X-TIME-IN-CACHE-SAVE" value="#m.cacheSaveTime#" />
 		</cfif>
 
+		<cfif application._taffy.settings.exposeHeaders>
+			<cfset local.exposeHeaderList = structKeyList(_taffyRequest.resultHeaders) />
+			<cfset local.exposeHeaderValue = "" />
+			<cfif application._taffy.settings.useEtags and _taffyRequest.verb eq "GET" and _taffyRequest.result.getType() eq "textual">
+				<cfset local.exposeHeaderList = listAppend(local.exposeHeaderList, "Etag") />
+			</cfif>
+			<cfloop list="#local.exposeHeaderList#" index="local.exposeHeader">
+				<!--- filter out default simple response headers: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Expose-Headers --->
+				<cfif not listFindNoCase("Cache-Control,Content-Language,Content-Type,Expires,Last-Modified,Pragma", local.exposeHeader)>
+					<cfset local.exposeHeaderValue = listAppend(local.exposeHeaderValue, local.exposeHeader) />
+				</cfif>
+			</cfloop>
+			<cfif listLen(local.exposeHeaderValue) gt 0>
+				<cfheader name="Access-Control-Expose-Headers" value="#local.exposeHeaderValue#" />
+			</cfif>
+		</cfif>
+
 		<!--- result data --->
 		<cfif structKeyExists(_taffyRequest,'result')>
 			<cfset _taffyRequest.resultType = _taffyRequest.result.getType() />
@@ -563,6 +580,7 @@
 		<cfset local.defaultConfig.unhandledPaths = "/flex2gateway" />
 		<cfset local.defaultConfig.allowCrossDomain = false />
 		<cfset local.defaultConfig.useEtags = false />
+		<cfset local.defaultConfig.exposeHeaders = false />
 		<cfset local.defaultConfig.jsonp = false />
 		<cfset local.defaultConfig.noDataSends204NoContent = false />
 		<cfset local.defaultConfig.globalHeaders = structNew() />
