@@ -2,9 +2,13 @@ language: java
 sudo: false
 jdk:
 - oraclejdk8
+services:
+  - mysql
 env:
   global:
     - TEST_RUNNER_URI=/tests/tests/run.cfm?reporter=text
+    - DB_USER=travis
+    - DB_PASS=
   matrix:
     - CFENGINE=lucee@4.5
     - CFENGINE=lucee@5
@@ -13,9 +17,11 @@ env:
     - CFENGINE=adobe@2016
 before_install:
 - git clone https://github.com/foundeo/cfmatrix.git cfmatrix
+- mysql -e 'CREATE DATABASE IF NOT EXISTS buglog;'
 install:
-- cfmatrix/bin/box install commandbox-cfconfig  
+- cfmatrix/bin/box install commandbox-cfconfig
 - cfmatrix/bin/box recipe recipeFile=cfmatrix/ci.boxr CFENGINE=$CFENGINE
+- mysql buglog < tests/BugLogHQ/install/mysql.sql
 before_script:
 - cfmatrix/bin/box cfconfig cfmapping list
 - chmod +x cfmatrix/run.sh
