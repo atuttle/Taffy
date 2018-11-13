@@ -50,6 +50,13 @@
 	<cffunction name="getCachedResponse" output="false">
 		<cfargument name="cacheKey" />
 	</cffunction>
+	<cffunction name="getCacheKey" output="false">
+		<cfargument name="cfc" />
+		<cfargument name="requestArguments" />
+		<cfargument name="matchedURI" />
+
+		<cfreturn arguments.matchedURI & "_" & arguments.requestArguments.hashCode() />
+	</cffunction>
 
 	<!--- Your Application.cfc should override this method AND call super.onApplicationStart() --->
 	<cffunction name="onApplicationStart">
@@ -318,7 +325,11 @@
 			<cfif structKeyExists(_taffyRequest.matchDetails.methods, _taffyRequest.verb)>
 				<!--- check the cache before we call the resource --->
 				<cfset m.cacheCheckTime = getTickCount() />
-				<cfset local.cacheKey = local.parsed.uri & "_" & _taffyRequest.requestArguments.hashCode() />
+				<cfset local.cacheKey = getCacheKey(
+					_taffyRequest.matchDetails.beanName
+					,_taffyRequest.requestArguments
+					,local.parsed.matchDetails.srcUri
+				) />
 				<cfif ucase(_taffyRequest.verb) eq "GET" and validCacheExists(local.cacheKey)>
 					<cfset m.cacheCheckTime = getTickCount() - m.cacheCheckTime />
 					<cfset m.cacheGetTime = getTickCount() />

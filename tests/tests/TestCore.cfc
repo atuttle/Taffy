@@ -281,6 +281,26 @@
 			assertEquals(405,local.result.responseHeader.status_code);
 		}
 
+		function test_getCacheKey_custom() {
+			local.result = variables.taffy.getCacheKey(
+				"EchoMember",
+				{ "foo": "bar" },
+				"/echo/12.json"
+			);
+
+			assertEquals("echomember_foo", local.result);
+		}
+
+		function test_getCacheKey_default() {
+			local.result = variables.taffy.getCacheKey(
+				"EchoMember",
+				{ "foo": "bar" },
+				"/default"
+			);
+
+			assertEquals("/default_27829", local.result);
+		}
+
 		function test_external_file_request_passes_through(){
 			local.result = getUrl('http://#CGI.SERVER_NAME#:#CGI.SERVER_PORT##replace(cgi.script_name, "/tests/tests/run.cfm", "/tests/someFolder/someOtherFile.cfm")#');
 			debug(local.result);
