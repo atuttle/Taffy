@@ -358,9 +358,9 @@
 							errorcode="taffy.resources.ResourceReturnsNothing"
 						/>
 					</cfif>
-					<cfif ucase(_taffyRequest.verb) eq "GET">
+					<cfif ucase(_taffyRequest.verb) eq "GET" and structKeyExists(local, "cacheKey")>
 						<cfset m.cacheSaveStart = getTickCount() />
-						<cfset setCachedResponse(local.cacheKey, _taffyRequest.result.getData()) />
+						<cfset setCachedResponse(local.cacheKey, _taffyRequest.result) />
 						<cfset m.cacheSaveTime = getTickCount() - m.cacheSaveStart />
 					</cfif>
 				</cfif>
