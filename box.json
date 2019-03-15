@@ -1,7 +1,7 @@
 {
     "name": "Taffy",
     "shortDescription": "REST Web Service framework for ColdFusion and Lucee",
-    "slug": "Taffy",
+    "slug": "taffy",
     "author": "Adam Tuttle",
     "version": "3.2.0",
     "homepage": "http://taffy.io/",
