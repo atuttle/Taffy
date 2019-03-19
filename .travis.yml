@@ -23,7 +23,6 @@ install:
 - cfmatrix/bin/box recipe recipeFile=cfmatrix/ci.boxr CFENGINE=$CFENGINE
 - mysql buglog < tests/BugLogHQ/install/mysql.sql
 before_script:
-- cfmatrix/bin/box cfconfig cfmapping list
 - chmod +x cfmatrix/run.sh
 script:
 - "./cfmatrix/run.sh"
