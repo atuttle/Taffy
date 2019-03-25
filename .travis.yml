@@ -16,15 +16,13 @@ env:
     - CFENGINE=adobe@11
     - CFENGINE=adobe@2016
 before_install:
-- git clone https://github.com/foundeo/cfmatrix.git cfmatrix
+- git clone --depth 1 https://github.com/foundeo/cfmatrix.git cfmatrix
 - mysql -e 'CREATE DATABASE IF NOT EXISTS buglog;'
 install:
-- cfmatrix/bin/box install commandbox-cfconfig
-- cfmatrix/bin/box recipe recipeFile=cfmatrix/ci.boxr CFENGINE=$CFENGINE
+- bash ./cfmatrix/install.sh
 - mysql buglog < tests/BugLogHQ/install/mysql.sql
 before_script:
 - cfmatrix/bin/box cfconfig cfmapping list
-- chmod +x cfmatrix/run.sh
 script:
-- "./cfmatrix/run.sh"
+- bash ./cfmatrix/run.sh
 - cfmatrix/bin/box server log
