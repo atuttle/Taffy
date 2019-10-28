@@ -1,6 +1,6 @@
 <cfcomponent extends="taffy.core.baseDeserializer">
 
-	<cffunction name="getFromJson" output="false" taffy:mime="application/json,text/json" hint="get data from json">
+	<cffunction name="getFromJson" output="false" taffy:mime="application/json,text/json,application/scim+json" hint="get data from json">
 		<cfargument name="body" hint="the textual request body" />
 		<cfset var data = 0 />
 		<cfset var response = {} />
