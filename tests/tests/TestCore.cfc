@@ -28,8 +28,16 @@
 			assertTrue(taffy.mimeSupported("application/json"));
 		}
 
+		function test_returns_access_control_expose_headers_header(){
+			local.result = apiCall("get", "/echo/foo.json", "");
+
+			assertTrue(structKeyExists(local.result.responseHeader, "Access-Control-Expose-Headers"));
+			debug(local.result.responseHeader["Access-Control-Expose-Headers"]);
+			assertTrue(findNoCase(local.result.responseHeader["Access-Control-Expose-Headers"], "Etag"));
+		}
+
 		function test_returns_etag_header(){
-			//both requests should yeild the same etag header
+			//both requests should yield the same etag header
 			local.result = apiCall("get", "/echo/foo.json", "");
 			local.result2 = apiCall("get", "/echo/foo.json", "");
 
