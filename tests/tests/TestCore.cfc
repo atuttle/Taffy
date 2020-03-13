@@ -301,7 +301,7 @@
 			local.result = variables.taffy.getCacheKey(argumentCollection = local.args);
 
 			// ACF and Lucee generate hash code differently
-			assertEquals("/default_#local.args.requestArguments.hashCode()#", local.result);
+			assertEquals("/echo_alias/11_#local.args.requestArguments.hashCode()#", local.result);
 		}
 
 		function test_external_file_request_passes_through(){
