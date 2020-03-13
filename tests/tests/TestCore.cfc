@@ -33,7 +33,7 @@
 
 			assertTrue(structKeyExists(local.result.responseHeader, "Access-Control-Expose-Headers"));
 			debug(local.result.responseHeader["Access-Control-Expose-Headers"]);
-			assertTrue(findNoCase(local.result.responseHeader["Access-Control-Expose-Headers"], "Etag"));
+			assertTrue(findNoCase("Etag", local.result.responseHeader["Access-Control-Expose-Headers"]));
 		}
 
 		function test_returns_etag_header(){
