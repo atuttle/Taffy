@@ -34,7 +34,7 @@
 		variables.framework.environments.test.reloadPassword = 'dontpanic';
 
 		function getCacheKey(cfc, requestArguments, matchedURI) {
-			if(arguments.matchedURI contains "/default") {
+			if(findNoCase("default", arguments.matchedURI)) {
 				return super.getCacheKey(argumentCollection = arguments);
 			}
 
