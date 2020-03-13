@@ -293,7 +293,7 @@
 
 		function test_getCacheKey_defaultBehavior() {
 			local.args = {
-				cfc: "EchoMember",
+				cfc: "EchoURIAlias",
 				requestArguments: { "foo": "bar" },
 				matchURI: "/echo_alias/11"
 			};
