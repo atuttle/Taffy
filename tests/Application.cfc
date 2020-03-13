@@ -34,7 +34,7 @@
 		variables.framework.environments.test.reloadPassword = 'dontpanic';
 
 		function getCacheKey(cfc, requestArguments, matchedURI) {
-			if(findNoCase("echo_alias", arguments.matchedURI)) {
+			if(structKeyExists(requestArguments, "default")) {
 				return super.getCacheKey(argumentCollection = arguments);
 			}
 

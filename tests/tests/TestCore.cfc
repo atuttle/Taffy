@@ -293,15 +293,15 @@
 
 		function test_getCacheKey_defaultBehavior() {
 			local.args = {
-				cfc: "EchoURIAlias",
-				requestArguments: { "foo": "bar" },
-				matchURI: "/echo_alias/11"
+				cfc: "EchoMember",
+				requestArguments: { "default": true },
+				matchedURI: "/echo/12.json"
 			};
 
 			local.result = variables.taffy.getCacheKey(argumentCollection = local.args);
 
 			// ACF and Lucee generate hash code differently
-			assertEquals("/echo_alias/11_#local.args.requestArguments.hashCode()#", local.result);
+			assertEquals("/echo/12.json_#local.args.requestArguments.hashCode()#", local.result);
 		}
 
 		function test_external_file_request_passes_through(){
