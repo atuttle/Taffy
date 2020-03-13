@@ -281,7 +281,7 @@
 			assertEquals(405,local.result.responseHeader.status_code);
 		}
 
-		function test_getCacheKey_custom() {
+		function test_getCacheKey_customBehavior() {
 			local.result = variables.taffy.getCacheKey(
 				"EchoMember",
 				{ "foo": "bar" },
@@ -291,11 +291,11 @@
 			assertEquals("echomember_foo", local.result);
 		}
 
-		function test_getCacheKey_default() {
+		function test_getCacheKey_defaultBehavior() {
 			local.args = {
 				cfc: "EchoMember",
 				requestArguments: { "foo": "bar" },
-				matchURI: "/default"
+				matchURI: "/echo_alias/11"
 			};
 
 			local.result = variables.taffy.getCacheKey(argumentCollection = local.args);
