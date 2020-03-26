@@ -189,17 +189,7 @@
 							<div class="panel-heading">
 								<h4 class="panel-title">
 									<a href="###local.resourceHTTPID#" class="accordion-toggle" data-toggle="collapse" data-parent="##resourcesAccordion">
-										<cfif structKeyExists(local.md, "taffy:dashboard:name")>
-											#local.md['taffy:dashboard:name']#
-										<cfelseif structKeyExists(local.md, "taffy_dashboard_name")>
-											#local.md['taffy_dashboard_name']#
-										<cfelseif structKeyExists(local.md, "taffy:docs:name")>
-											#local.md['taffy:docs:name']#
-										<cfelseif structKeyExists(local.md, "taffy_docs_name")>
-											#local.md['taffy_docs_name']#
-										<cfelse>
-											#local.currentResource.beanName#
-										</cfif>
+										<code>#local.currentResource.srcUri#</code>
 									</a>
 									<cfloop list="DELETE|warning,PATCH|warning,PUT|warning,POST|danger,GET|primary" index="local.verb">
 										<cfif structKeyExists(local.currentResource.methods, listFirst(local.verb,'|'))>
@@ -208,7 +198,6 @@
 											<span class="verb label label-default">#ucase(listFirst(local.verb,'|'))#</span>
 										</cfif>
 									</cfloop>
-									<code style="float:right; margin-top: -15px; display: inline-block;">#local.currentResource.srcUri#</code>
 								</h4>
 							</div>
 							<div class="panel-collapse collapse" id="#local.resourceHTTPID#">
@@ -307,7 +296,7 @@
 												<cfelse>
 													<cfset local.functions = arrayNew(1) />
 												</cfif>
-												
+
 												<!--- only save body templates for POST & PUT --->
 												<cfloop from="1" to="#arrayLen(local.functions)#" index="local.f">
 													<cfif local.functions[local.f].name eq "POST" or local.functions[local.f].name eq "PUT" or local.functions[local.f].name eq "PATCH">
@@ -361,6 +350,17 @@
 									</div><!-- /col-md-8 -->
 									<div class="col-md-4 docs">
 										<div class="row"><div class="col-md-12"><button class="btn btn-default hideDocs">Hide Docs</button></div></div>
+										<strong><cfif structKeyExists(local.md, "taffy:dashboard:name")>
+											#lcase(local.md['taffy:dashboard:name'])#
+										<cfelseif structKeyExists(local.md, "taffy_dashboard_name")>
+											#lcase(local.md['taffy_dashboard_name'])#
+										<cfelseif structKeyExists(local.md, "taffy:docs:name")>
+											#lcase(local.md['taffy:docs:name'])#
+										<cfelseif structKeyExists(local.md, "taffy_docs_name")>
+											#lcase(local.md['taffy_docs_name'])#
+										<cfelse>
+											#lcase(local.currentResource.beanName)#
+										</cfif></strong><br />
 										<cfset local.metadata = getMetaData(application._taffy.factory.getBean(local.currentResource.beanName)) />
 										<cfset local.docData = getHintsFromMetadata(local.metadata) />
 										<cfif structKeyExists(local.docData, 'hint')><div class="doc">#local.docData.hint#</div><hr/></cfif>

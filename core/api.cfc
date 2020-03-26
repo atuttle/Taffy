@@ -852,7 +852,7 @@
 	<cffunction name="sortURIMatchOrder" access="private" output="false">
 		<cfargument name="endpoints" />
 		<cfset var URIMatchOrder = listToArray( structKeyList(arguments.endpoints, chr(10)), chr(10) ) />
-		<cfset arraySort(URIMatchOrder, "text", "desc") />
+		<cfset arraySort(URIMatchOrder, "textnocase", "desc") />
 		<cfreturn URIMatchOrder />
 	</cffunction>
 
