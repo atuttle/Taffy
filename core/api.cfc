@@ -695,6 +695,12 @@
 
 		<cfset requestObj.body = getRequestBody() />
 		<cfset requestObj.contentType = cgi.content_type />
+		<cfif requestObj.contentType is "application/csp-report">
+			<cfset requestObj.contentType = "application/json">
+		<cfelseif requestObj.contentType is "application/x-ndjson">
+			<cfset requestObj.contentType = "application/json">
+			<cfset requestObj.body = "[" & javacast("string", requestObj.body).replace("\n", ",") & "]">
+		</cfif>
 		<cfif len(requestObj.body) AND requestObj.body neq "null">
 			<cfif findNoCase("multipart/form-data", requestObj.contentType)>
 				<!--- do nothing, to support the way railo handles multipart requests (just avoids the error condition below) --->
