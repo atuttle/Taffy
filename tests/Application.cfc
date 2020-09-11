@@ -33,6 +33,14 @@
 		variables.framework.environments.test = {};
 		variables.framework.environments.test.reloadPassword = 'dontpanic';
 
+		function getCacheKey(cfc, requestArguments, matchedURI) {
+			if(structKeyExists(requestArguments, "default")) {
+				return super.getCacheKey(argumentCollection = arguments);
+			}
+
+			return lCase(arguments.cfc & "_" & listSort(structKeyList(arguments.requestArguments), "textnocase"));
+		}
+
 		function getEnvironment(){
 			return "test";
 		}
