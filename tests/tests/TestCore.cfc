@@ -28,8 +28,16 @@
 			assertTrue(taffy.mimeSupported("application/json"));
 		}
 
+		function test_returns_access_control_expose_headers_header(){
+			local.result = apiCall("get", "/echo/foo.json", "");
+
+			assertTrue(structKeyExists(local.result.responseHeader, "Access-Control-Expose-Headers"));
+			debug(local.result.responseHeader["Access-Control-Expose-Headers"]);
+			assertTrue(findNoCase("Etag", local.result.responseHeader["Access-Control-Expose-Headers"]));
+		}
+
 		function test_returns_etag_header(){
-			//both requests should yeild the same etag header
+			//both requests should yield the same etag header
 			local.result = apiCall("get", "/echo/foo.json", "");
 			local.result2 = apiCall("get", "/echo/foo.json", "");
 
@@ -279,6 +287,29 @@
 			local.result = apiCall("get","/echo/12.json","refuse=true");
 			// debug(local.result);
 			assertEquals(405,local.result.responseHeader.status_code);
+		}
+
+		function test_getCacheKey_customBehavior() {
+			local.result = variables.taffy.getCacheKey(
+				"EchoMember",
+				{ "foo": "bar" },
+				"/echo/12.json"
+			);
+
+			assertEquals("echomember_foo", local.result);
+		}
+
+		function test_getCacheKey_defaultBehavior() {
+			local.args = {
+				cfc: "EchoMember",
+				requestArguments: { "default": true },
+				matchedURI: "/echo/12.json"
+			};
+
+			local.result = variables.taffy.getCacheKey(argumentCollection = local.args);
+
+			// ACF and Lucee generate hash code differently
+			assertEquals("/echo/12.json_#local.args.requestArguments.hashCode()#", local.result);
 		}
 
 		function test_external_file_request_passes_through(){

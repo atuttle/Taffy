@@ -50,6 +50,13 @@
 	<cffunction name="getCachedResponse" output="false">
 		<cfargument name="cacheKey" />
 	</cffunction>
+	<cffunction name="getCacheKey" output="false">
+		<cfargument name="cfc" />
+		<cfargument name="requestArguments" />
+		<cfargument name="matchedURI" />
+
+		<cfreturn arguments.matchedURI & "_" & arguments.requestArguments.hashCode() />
+	</cffunction>
 
 	<!--- Your Application.cfc should override this method AND call super.onApplicationStart() --->
 	<cffunction name="onApplicationStart">
@@ -318,7 +325,11 @@
 			<cfif structKeyExists(_taffyRequest.matchDetails.methods, _taffyRequest.verb)>
 				<!--- check the cache before we call the resource --->
 				<cfset m.cacheCheckTime = getTickCount() />
-				<cfset local.cacheKey = local.parsed.uri & "_" & _taffyRequest.requestArguments.hashCode() />
+				<cfset local.cacheKey = getCacheKey(
+					_taffyRequest.matchDetails.beanName
+					,_taffyRequest.requestArguments
+					,local.parsed.matchDetails.srcUri
+				) />
 				<cfif ucase(_taffyRequest.verb) eq "GET" and validCacheExists(local.cacheKey)>
 					<cfset m.cacheCheckTime = getTickCount() - m.cacheCheckTime />
 					<cfset m.cacheGetTime = getTickCount() />
@@ -347,9 +358,9 @@
 							errorcode="taffy.resources.ResourceReturnsNothing"
 						/>
 					</cfif>
-					<cfif ucase(_taffyRequest.verb) eq "GET">
+					<cfif ucase(_taffyRequest.verb) eq "GET" and structKeyExists(local, "cacheKey")>
 						<cfset m.cacheSaveStart = getTickCount() />
-						<cfset setCachedResponse(local.cacheKey, _taffyRequest.result.getData()) />
+						<cfset setCachedResponse(local.cacheKey, _taffyRequest.result) />
 						<cfset m.cacheSaveTime = getTickCount() - m.cacheSaveStart />
 					</cfif>
 				</cfif>
@@ -410,6 +421,23 @@
 			<cfheader name="X-TIME-IN-CACHE-SAVE" value="#m.cacheSaveTime#" />
 		</cfif>
 
+		<cfif application._taffy.settings.exposeHeaders>
+			<cfset local.exposeHeaderList = structKeyList(_taffyRequest.resultHeaders) />
+			<cfset local.exposeHeaderValue = "" />
+			<cfif application._taffy.settings.useEtags and _taffyRequest.verb eq "GET" and _taffyRequest.result.getType() eq "textual">
+				<cfset local.exposeHeaderList = listAppend(local.exposeHeaderList, "Etag") />
+			</cfif>
+			<cfloop list="#local.exposeHeaderList#" index="local.exposeHeader">
+				<!--- filter out default simple response headers: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Expose-Headers --->
+				<cfif not listFindNoCase("Cache-Control,Content-Language,Content-Type,Expires,Last-Modified,Pragma", local.exposeHeader)>
+					<cfset local.exposeHeaderValue = listAppend(local.exposeHeaderValue, local.exposeHeader) />
+				</cfif>
+			</cfloop>
+			<cfif listLen(local.exposeHeaderValue) gt 0>
+				<cfheader name="Access-Control-Expose-Headers" value="#local.exposeHeaderValue#" />
+			</cfif>
+		</cfif>
+
 		<!--- result data --->
 		<cfif structKeyExists(_taffyRequest,'result')>
 			<cfset _taffyRequest.resultType = _taffyRequest.result.getType() />
@@ -434,9 +462,15 @@
 
 				<!--- don't return data if etags are enabled and the data hasn't changed --->
 				<cfif application._taffy.settings.useEtags and _taffyRequest.verb eq "GET">
+					<cfif structKeyExists(server, "lucee")>
+						<!--- hashCode() will not work for lucee, see issue #354 --->
+						<cfset _taffyRequest.serverEtag = hash(_taffyRequest.resultSerialized) />
+					<cfelse>
+						<cfset _taffyRequest.serverEtag = _taffyRequest.result.getData().hashCode() />
+					</cfif>
 					<cfif structKeyExists(_taffyRequest.headers, "If-None-Match")>
 						<cfset _taffyRequest.clientEtag = _taffyRequest.headers['If-None-Match'] />
-						<cfset _taffyRequest.serverEtag = _taffyRequest.result.getData().hashCode() />
+
 						<cfif len(_taffyRequest.clientEtag) gt 0 and _taffyRequest.clientEtag eq _taffyRequest.serverEtag>
 							<cfheader statuscode="304" statustext="Not Modified" />
 							<cfcontent reset="true" type="#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#; charset=utf-8" />
@@ -445,7 +479,7 @@
 							<cfheader name="Etag" value="#_taffyRequest.serverEtag#" />
 						</cfif>
 					<cfelse>
-						<cfheader name="Etag" value="#_taffyRequest.result.getData().hashCode()#" />
+						<cfheader name="Etag" value="#_taffyRequest.serverEtag#" />
 					</cfif>
 				</cfif>
 
@@ -557,7 +591,9 @@
 		<cfset local.defaultConfig.unhandledPaths = "/flex2gateway" />
 		<cfset local.defaultConfig.allowCrossDomain = false />
 		<cfset local.defaultConfig.useEtags = false />
+		<cfset local.defaultConfig.exposeHeaders = false />
 		<cfset local.defaultConfig.jsonp = false />
+		<cfset local.defaultConfig.noDataSends204NoContent = false />
 		<cfset local.defaultConfig.globalHeaders = structNew() />
 		<cfset local.defaultConfig.mimeTypes = structNew() />
 		<cfset local.defaultConfig.returnExceptionsAsJson = true />
@@ -845,7 +881,7 @@
 	<cffunction name="sortURIMatchOrder" access="private" output="false">
 		<cfargument name="endpoints" />
 		<cfset var URIMatchOrder = listToArray( structKeyList(arguments.endpoints, chr(10)), chr(10) ) />
-		<cfset arraySort(URIMatchOrder, "text", "desc") />
+		<cfset arraySort(URIMatchOrder, "textnocase", "desc") />
 		<cfreturn URIMatchOrder />
 	</cffunction>
 
@@ -1336,6 +1372,10 @@
 
 	<cffunction name="noData" access="public" output="false">
 		<cfreturn newRepresentation().noData() />
+	</cffunction>
+
+	<cffunction name="noContent" access="public" output="false">
+		<cfreturn newRepresentation().noContent() />
 	</cffunction>
 
 	<cffunction name="representationOf" access="public" output="false">
