@@ -476,10 +476,10 @@
 							<cfcontent reset="true" type="#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#; charset=utf-8" />
 							<cfreturn true />
 						<cfelse>
-							<cfheader name="Etag" value="#_taffyRequest.serverEtag#" />
+							<cfheader name="Etag" value='"#_taffyRequest.serverEtag#"' />
 						</cfif>
 					<cfelse>
-						<cfheader name="Etag" value="#_taffyRequest.serverEtag#" />
+						<cfheader name="Etag" value='"#_taffyRequest.serverEtag#"' />
 					</cfif>
 				</cfif>
 
