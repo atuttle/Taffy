@@ -175,7 +175,10 @@
 		</div><!-- /#alerts -->
 
 		<div class="row" id="resources">
-			<h3>Resources: <input type="text" id="resourceSearch" placeholder="Filter... (ESC to clear)" autocomplete="off"></h3>
+			<h3>
+				Resources:
+				<input type="text" id="resourceSearch" placeholder="Filter... (ESC to clear)" class="form-control" autocomplete="off" style="width:50%; display: inline-block;" />
+			</h3>
 			<div class="panel-group" id="resourcesAccordion">
 				<cfoutput>
 					<cfloop from="1" to="#arrayLen(application._taffy.uriMatchOrder)#" index="local.resource">
