@@ -175,7 +175,7 @@
 		</div><!-- /#alerts -->
 
 		<div class="row" id="resources">
-			<h3>Resources:</h3>
+			<h3>Resources: <input type="text" id="resourceSearch" placeholder="Filter... (ESC to clear)" autocomplete="off"></h3>
 			<div class="panel-group" id="resourcesAccordion">
 				<cfoutput>
 					<cfloop from="1" to="#arrayLen(application._taffy.uriMatchOrder)#" index="local.resource">
@@ -571,6 +571,31 @@
 				}
 			return null;
 		}
+		function filterResources(){
+			var input, filter, ul, li, a, i;
+			input = document.getElementById('resourceSearch');
+			filter = input.value.toUpperCase();
+			ul = document.getElementById("resourcesAccordion");
+			li = ul.getElementsByClassName('panel');
+			console.log('filter', filter, ul, li, new Date);
+			for (i = 0; i < li.length; i++) {
+				a = li[i].getElementsByTagName("a")[0];
+				console.log('a.innerHTML', a.innerHTML, new Date);
+				if (a.innerHTML.toUpperCase().indexOf(filter) > -1) {
+					li[i].style.display = "";
+				} else {
+					li[i].style.display = "none";
+				}
+			}
+		}
+		function clearSearch(evt, input) {
+			var code = evt.charCode || evt.keyCode;
+			if (code == 27) { input.value = '';}
+		}
+		document.getElementById("resourceSearch").addEventListener("keyup", filterResources);
+		document.getElementById("resourceSearch").addEventListener("keydown", function(e){
+			clearSearch(e, this);
+		});
 	</script>
 </body>
 </html>
