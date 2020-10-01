@@ -580,10 +580,8 @@
 			filter = input.value.toUpperCase();
 			ul = document.getElementById("resourcesAccordion");
 			li = ul.getElementsByClassName('panel');
-			console.log('filter', filter, ul, li, new Date);
 			for (i = 0; i < li.length; i++) {
 				a = li[i].getElementsByTagName("a")[0];
-				console.log('a.innerHTML', a.innerHTML, new Date);
 				if (a.innerHTML.toUpperCase().indexOf(filter) > -1) {
 					li[i].style.display = "";
 				} else {
