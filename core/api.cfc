@@ -462,11 +462,12 @@
 
 				<!--- don't return data if etags are enabled and the data hasn't changed --->
 				<cfif application._taffy.settings.useEtags and _taffyRequest.verb eq "GET">
+					<!--- etag values are quoted per: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/ETag --->
 					<cfif structKeyExists(server, "lucee")>
 						<!--- hashCode() will not work for lucee, see issue #354 --->
-						<cfset _taffyRequest.serverEtag = hash(_taffyRequest.resultSerialized) />
+						<cfset _taffyRequest.serverEtag = '"' & hash(_taffyRequest.resultSerialized) & '"' />
 					<cfelse>
-						<cfset _taffyRequest.serverEtag = _taffyRequest.result.getData().hashCode() />
+						<cfset _taffyRequest.serverEtag = '"' & _taffyRequest.result.getData().hashCode() & '"' />
 					</cfif>
 					<cfif structKeyExists(_taffyRequest.headers, "If-None-Match")>
 						<cfset _taffyRequest.clientEtag = _taffyRequest.headers['If-None-Match'] />
