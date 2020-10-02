@@ -358,6 +358,11 @@
 							errorcode="taffy.resources.ResourceReturnsNothing"
 						/>
 					</cfif>
+					<!--- If the type returned is not an instance of baseSerializer, wrap it with a call to rep().
+					This way we can directly return the object instead of a serializer from resource actions. --->
+					<cfif !isInstanceOf(_taffyRequest.result, "taffy.core.baseSerializer")>
+						<cfset _taffyRequest.result = rep(_taffyRequest.result) />
+					</cfif>
 					<cfif ucase(_taffyRequest.verb) eq "GET" and structKeyExists(local, "cacheKey")>
 						<cfset m.cacheSaveStart = getTickCount() />
 						<cfset setCachedResponse(local.cacheKey, _taffyRequest.result) />
