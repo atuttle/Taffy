@@ -695,11 +695,14 @@
 
 		<cfset requestObj.body = getRequestBody() />
 		<cfset requestObj.contentType = cgi.content_type />
-		<cfif requestObj.contentType is "application/csp-report">
-			<cfset requestObj.contentType = "application/json">
-		<cfelseif requestObj.contentType is "application/x-ndjson">
+		
+		<cfif isSimpleValue(requestObj.body) and listlen(requestObj.Body,chr(10)) GT 1 and not isJSON(requestObj.body) and isJSON("[" & javacast("string", requestObj.body).replace("\n", ",") & "]")>
 			<cfset requestObj.contentType = "application/json">
 			<cfset requestObj.body = "[" & javacast("string", requestObj.body).replace("\n", ",") & "]">
+		</cfif>
+		
+		<cfif requestObj.contentType is "application/csp-report">
+			<cfset requestObj.contentType = "application/json">
 		</cfif>
 		<cfif len(requestObj.body) AND requestObj.body neq "null">
 			<cfif findNoCase("multipart/form-data", requestObj.contentType)>
