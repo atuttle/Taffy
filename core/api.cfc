@@ -696,7 +696,9 @@
 		<cfset requestObj.body = getRequestBody() />
 		<cfset requestObj.contentType = cgi.content_type />
 		
-		<cfif isSimpleValue(requestObj.body) and listlen(requestObj.Body,chr(10)) GT 1 and not isJSON(requestObj.body) and isJSON("[" & javacast("string", requestObj.body).replace("\n", ",") & "]")>
+		<cfif not len(requestObj.contentType) and isSimpleValue(requestObj.body) and isJSON(requestObj.body)>
+			<cfset requestObj.contentType = "application/json">
+		<cfelseif isSimpleValue(requestObj.body) and listlen(requestObj.Body,chr(10)) GT 1 and not isJSON(requestObj.body) and isJSON("[" & javacast("string", requestObj.body).replace("\n", ",") & "]")>
 			<cfset requestObj.contentType = "application/json">
 			<cfset requestObj.body = "[" & javacast("string", requestObj.body).replace("\n", ",") & "]">
 		</cfif>
