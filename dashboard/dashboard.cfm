@@ -353,11 +353,7 @@
 									</div><!-- /col-md-8 -->
 									<div class="col-md-4 docs">
 										<div class="row"><div class="col-md-12"><button class="btn btn-default hideDocs">Hide Docs</button></div></div>
-										<strong><cfif structKeyExists(local.md, "taffy:dashboard:name")>
-											#lcase(local.md['taffy:dashboard:name'])#
-										<cfelseif structKeyExists(local.md, "taffy_dashboard_name")>
-											#lcase(local.md['taffy_dashboard_name'])#
-										<cfelseif structKeyExists(local.md, "taffy:docs:name")>
+										<strong><cfif structKeyExists(local.md, "taffy:docs:name")>
 											#lcase(local.md['taffy:docs:name'])#
 										<cfelseif structKeyExists(local.md, "taffy_docs_name")>
 											#lcase(local.md['taffy_docs_name'])#
