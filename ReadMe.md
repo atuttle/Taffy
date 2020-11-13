@@ -13,6 +13,16 @@ It's terse because it uses convention over configuration, and doesn't require wr
 
 It's easy to debug because error messages are returned as JSON by default and it optionally integrates with your favorite IoC libraries like **ColdSpring** and **DI/1**.
 
+## Installation
+
+Use Git or checkout with SVN using the web URL.
+
+`git clone https://github.com/atuttle/Taffy.git`
+
+Use Commandbox.
+
+`cmd> box install Taffy`
+
 ## Currently Supported Versions
 
 * Taffy 3.1.x
