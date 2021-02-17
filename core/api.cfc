@@ -244,7 +244,7 @@
 		<cfif (application._taffy.settings.allowCrossDomain eq true or len(application._taffy.settings.allowCrossDomain) gt 0)
 				AND listFindNoCase('PUT,PATCH,DELETE,OPTIONS',_taffyRequest.verb)
 				AND NOT listFind(local.allowVerbs,'OPTIONS')>
-		    <cfset local.allowVerbs = listAppend(local.allowVerbs,'OPTIONS') />
+			<cfset local.allowVerbs = listAppend(local.allowVerbs,'OPTIONS') />
 		</cfif>
 		<cfif structKeyExists(_taffyRequest.headers, "origin") AND (application._taffy.settings.allowCrossDomain eq true or len(application._taffy.settings.allowCrossDomain) gt 0)>
 			<cfif application._taffy.settings.allowCrossDomain eq true>
@@ -574,13 +574,13 @@
 		<cfheader name="X-TAFFY-RELOADED" value="true" />
 		<cfset request.taffyReloaded = true />
 		<cfset local._taffy = structNew() />
-		<cfset local._taffy.version = "3.2.0" />
+		<cfset local._taffy.version = "3.2.2" />
 		<cfset local._taffy.endpoints = structNew() />
 		<!--- default settings --->
 		<cfset local.defaultConfig = structNew() />
 		<cfset local.defaultConfig.docs = structNew() />
-		<cfset local.defaultConfig.docs.APIName = "Your API Name (variables.framework.docs.APIName)" />
-		<cfset local.defaultConfig.docs.APIVersion = "0.0.0 (variables.framework.docs.APIVersion)" />
+		<cfset local.defaultConfig.docs.APIName = Application.ApplicationName />
+		<cfset local.defaultConfig.docs.APIVersion = Application.appVersion />
 		<cfset local.defaultConfig.docsPath = "../dashboard/docs.cfm" />
 		<cfset local.defaultConfig.defaultMime = "" />
 		<cfset local.defaultConfig.debugKey = "debug" />
@@ -661,8 +661,8 @@
 			<!--- since external factory is only factory, check it for taffy resources --->
 			<cfset local.beanList = getBeanListFromExternalFactory( local._taffy.externalBeanFactory ) />
 			<cfset local._taffy.endpoints = cacheBeanMetaData(local._taffy.externalBeanFactory, local.beanList, local._taffy) />
- 		<cfelse>
- 			<cfset local.noResources = true />
+		<cfelse>
+			<cfset local.noResources = true />
 		</cfif>
 		<cfif not local.noResources>
 			<!--- sort URIs --->
@@ -688,7 +688,7 @@
 
 		<!--- Check for method tunnelling by clients unable to send PUT/DELETE requests (e.g. Flash Player);
 					Actual desired method will be contained in a special header --->
- 		<cfset var httpMethodOverride = GetPageContext().getRequest().getHeader("X-HTTP-Method-Override") />
+		<cfset var httpMethodOverride = GetPageContext().getRequest().getHeader("X-HTTP-Method-Override") />
 
 		<cfset requestObj.uri = getPath() />
 		<cfif NOT len(requestObj.uri)>
@@ -700,8 +700,8 @@
 			</cfif>
 		</cfif>
 
- 		<!--- check for format in the URI --->
- 		<cfset requestObj.uriFormat = formatFromURI(requestObj.uri) />
+		<!--- check for format in the URI --->
+		<cfset requestObj.uriFormat = formatFromURI(requestObj.uri) />
 
 		<!--- attempt to find the cfc for the requested uri --->
 		<cfset requestObj.matchingRegex = matchURI(requestObj.uri) />
@@ -719,7 +719,7 @@
 
 		<!--- Should we override the actual method based on method tunnelling? --->
 		<cfif isDefined("httpMethodOverride") AND not isNull(httpMethodOverride)>
-		    <cfset requestObj.verb = httpMethodOverride />
+			<cfset requestObj.verb = httpMethodOverride />
 		</cfif>
 
 		<cfif structKeyExists(application._taffy.endpoints[requestObj.matchingRegex].methods, requestObj.verb)>

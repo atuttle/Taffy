@@ -180,9 +180,19 @@
 				<input type="text" id="resourceSearch" placeholder="Filter... (ESC to clear)" class="form-control" autocomplete="off" style="width:50%; display: inline-block;" />
 			</h3>
 			<div class="panel-group" id="resourcesAccordion">
+				<cfscript>
+					// Custom order by endpoint name, not URI.
+					theOrder = application._taffy.endpoints.reduce( (ret, key, value ) => {
+						ret.append( { bean: value.beanName, uri: key } );
+						return ret;
+					}, [] );
+					theOrder.sort( (item1, item2) => {
+						return compare( item1.bean, item2.bean );
+					} );
+				</cfscript>
 				<cfoutput>
 					<cfloop from="1" to="#arrayLen(application._taffy.uriMatchOrder)#" index="local.resource">
-						<cfset local.currentResource = application._taffy.endpoints[application._taffy.uriMatchOrder[local.resource]] />
+						<cfset local.currentResource = application._taffy.endpoints[ theOrder[local.resource].uri ] />
 						<cfset local.resourceHTTPID = rereplace(local.currentResource.beanName & "_" & hash(local.currentResource.srcURI), "[^0-9a-zA-Z_]", "_", "all") />
 						<cfset local.md = getMetaData(application._taffy.factory.getBean(local.currentResource.beanName)) />
 						<cfif structKeyExists(local.md, "taffy_dashboard_hide") OR structKeyExists(local.md, "taffy:dashboard:hide")>
@@ -192,7 +202,17 @@
 							<div class="panel-heading">
 								<h4 class="panel-title">
 									<a href="###local.resourceHTTPID#" class="accordion-toggle" data-toggle="collapse" data-parent="##resourcesAccordion">
-										<code>#local.currentResource.srcUri#</code>
+										<cfif structKeyExists(local.md, "taffy:dashboard:name")>
+											#local.md['taffy:dashboard:name']#
+										<cfelseif structKeyExists(local.md, "taffy_dashboard_name")>
+											#local.md['taffy_dashboard_name']#
+										<cfelseif structKeyExists(local.md, "taffy:docs:name")>
+											#local.md['taffy:docs:name']#
+										<cfelseif structKeyExists(local.md, "taffy_docs_name")>
+											#local.md['taffy_docs_name']#
+										<cfelse>
+											#local.currentResource.beanName#
+										</cfif>
 									</a>
 									<cfloop list="DELETE|warning,PATCH|warning,PUT|warning,POST|danger,GET|primary" index="local.verb">
 										<cfif structKeyExists(local.currentResource.methods, listFirst(local.verb,'|'))>
@@ -201,6 +221,7 @@
 											<span class="verb label label-default">#ucase(listFirst(local.verb,'|'))#</span>
 										</cfif>
 									</cfloop>
+									<code style="float:right; margin-top: -15px; display: inline-block;">#local.currentResource.srcUri#</code>
 								</h4>
 							</div>
 							<div class="panel-collapse collapse" id="#local.resourceHTTPID#">

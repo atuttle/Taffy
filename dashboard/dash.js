@@ -12,7 +12,7 @@ $(function(){
 		var method = resource.find('.reqMethod option:checked').html();
 		if (method === 'GET' || method === 'DELETE'){
 			resource.find('.reqBody').hide('fast');
-			resource.find('.queryParams').addClass('active');
+			resource.find('.queryParams');
 		}else{
 			var args = window.taffy.resources[resource.data('beanName')][method.toLowerCase()];
 			var ta = resource.find('.reqBody').show('fast').find('textarea');
