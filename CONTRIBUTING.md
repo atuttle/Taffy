@@ -14,21 +14,21 @@ Please include all of the following information in your ticket:
 
 ## Documentation
 
-Documentation is managed [in its own repository](https://github.com/atuttle/TaffyDocs) and changes are automatically published once they are merged into the master branch.
+Documentation is managed [in its own repository](https://github.com/atuttle/TaffyDocs) and changes are automatically published once they are merged into the `main` branch.
 
 There's no such thing as perfect documentation. It can never be thorough enough, never perfectly organized. If you find something confusing or outdated, please be so kind as to file a bug report for it, if you can't or won't fix it. (Yes, documentation bugs!)
 
 ## Code
 
-Starting with the development of Taffy 1.4, all new development will be done against the **master** branch. When you want to make a change and submit it for the Bleeding Edge Release (BER), do the following:
+Starting with the development of Taffy 1.4, all new development will be done against the `main` branch. When you want to make a change and submit it for the Bleeding Edge Release (BER), do the following:
 
 1. [Fork the project](https://github.com/atuttle/Taffy/fork_select)
 1. Clone to your local machine: `git clone https://github.com/YOUR-GITHUB-USERNAME/Taffy.git`
 1. Create a topic branch for your changes: `git checkout -b BRANCH_NAME`
 1. Make your changes and commit them.
 1. Push your changes back to your fork. `git push -u origin BRANCH_NAME`
-1. Send a pull request ([help with pull requests](https://help.github.com/articles/using-pull-requests))
-  * Please make sure you select **master** as the destination branch
+1. Send a pull request ([Learn how here!](http://makeapullrequest.com))
+  * Please make sure you select `main` as the destination branch
 
 ### Tests
 

@@ -1,56 +1,56 @@
 {
-    "name": "Taffy",
-    "shortDescription": "REST Web Service framework for ColdFusion and Lucee",
-    "slug": "taffy",
-    "author": "Adam Tuttle",
-    "version": "3.2.0",
-    "homepage": "http://taffy.io/",
-    "documentation": "http://docs.taffy.io/",
-    "type": "mvc",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/atuttle/taffy.git"
+  "name": "Taffy",
+  "shortDescription": "REST Web Service framework for ColdFusion and Lucee",
+  "slug": "taffy",
+  "author": "Adam Tuttle",
+  "version": "3.2.0",
+  "homepage": "http://taffy.io/",
+  "documentation": "http://docs.taffy.io/",
+  "type": "mvc",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/atuttle/taffy.git"
+  },
+  "bugs": "https://github.com/atuttle/Taffy/issues",
+  "license": [
+    {
+      "type": "MIT",
+      "url": "https://raw.githubusercontent.com/atuttle/Taffy/main/LICENSE.TXT"
+    }
+  ],
+  "devDependencies": {
+    "testbox": "^2.5.0+107",
+    "commandbox-cfconfig": "^1.0.2",
+    "di1": "git+https://github.com/framework-one/di1.git",
+    "hoth": "git+https://github.com/aarongreenlee/Hoth.git",
+    "BugLogHQ": "git+https://github.com/oarevalo/BugLogHQ.git"
+  },
+  "installPaths": {
+    "testbox": "tests/testbox/",
+    "di1": "tests/di1/",
+    "Hoth": "tests/Hoth/",
+    "BugLogHQ": "tests/BugLogHQ"
+  },
+  "engines": [
+    {
+      "type": "lucee",
+      "version": ">=4.5.x"
     },
-    "bugs": "https://github.com/atuttle/Taffy/issues",
-    "license": [
-        {
-            "type": "MIT",
-            "url": "https://raw.githubusercontent.com/atuttle/Taffy/master/LICENSE.TXT"
-        }
-    ],
-    "devDependencies": {
-        "testbox": "^2.5.0+107",
-        "commandbox-cfconfig": "^1.0.2",
-        "di1": "git+https://github.com/framework-one/di1.git",
-        "hoth": "git+https://github.com/aarongreenlee/Hoth.git",
-        "BugLogHQ": "git+https://github.com/oarevalo/BugLogHQ.git"
-    },
-    "installPaths": {
-        "testbox": "tests/testbox/",
-        "di1": "tests/di1/",
-        "Hoth": "tests/Hoth/",
-        "BugLogHQ": "tests/BugLogHQ"
-    },
-    "engines": [
-        {
-            "type": "lucee",
-            "version": ">=4.5.x"
-        },
-        {
-            "type": "adobe",
-            "version": ">=8.0.0"
-        }
-    ],
-    "ignore": [
-        "examples/",
-        "lib/",
-        "snippets/",
-        "tests/",
-        ".cfconfig.json",
-        ".gitignore",
-        ".travis.yml",
-        "CONTRIBUTING.md",
-        "build.xml",
-        "server.json"
-    ]
+    {
+      "type": "adobe",
+      "version": ">=8.0.0"
+    }
+  ],
+  "ignore": [
+    "examples/",
+    "lib/",
+    "snippets/",
+    "tests/",
+    ".cfconfig.json",
+    ".gitignore",
+    ".travis.yml",
+    "CONTRIBUTING.md",
+    "build.xml",
+    "server.json"
+  ]
 }
