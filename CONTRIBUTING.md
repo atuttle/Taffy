@@ -1,6 +1,6 @@
 # Guidelines for Contributing to Taffy
 
-Contributions of all shapes and sizes are welcome, encouraged, and greatly appreciated!
+Contributions of all shapes and sizes are welcome, encouraged, and greatly appreciated! Not sure where to start? [Learn how here!](http://makeapullrequest.com)
 
 For all contributions, you'll need a [free GitHub account](https://github.com/signup/free).
 
@@ -16,7 +16,7 @@ Please include all of the following information in your ticket:
 
 Documentation is managed [in its own repository](https://github.com/atuttle/TaffyDocs) and changes are automatically published once they are merged into the master branch.
 
-There's no such thing as perfect documentation. It can never be thorough enough, never perfectly organized. If you find something confusing or outdated, please at least be so kind as to file a bug report for it, if you can't or won't fix it.
+There's no such thing as perfect documentation. It can never be thorough enough, never perfectly organized. If you find something confusing or outdated, please be so kind as to file a bug report for it, if you can't or won't fix it. (Yes, documentation bugs!)
 
 ## Code
 
