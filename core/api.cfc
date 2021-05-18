@@ -64,7 +64,7 @@
 		<cfset var after = 0 />
 		<cfset setupFramework() />
 		<cfset after = getTickCount() />
-		<cfheader name="X-TIME-TO-RELOAD" value="#(after-before)#" />
+		<cfset addHeader(name="X-TIME-TO-RELOAD", value="#(after-before)#") />
 		<cfreturn true />
 	</cffunction>
 
@@ -248,7 +248,7 @@
 		</cfif>
 		<cfif structKeyExists(_taffyRequest.headers, "origin") AND (application._taffy.settings.allowCrossDomain eq true or len(application._taffy.settings.allowCrossDomain) gt 0)>
 			<cfif application._taffy.settings.allowCrossDomain eq true>
-				<cfheader name="Access-Control-Allow-Origin" value="*" />
+				<cfset addHeader(name="Access-Control-Allow-Origin", value="*") />
 			<cfelse>
 				<!---
 					The Access-Control-Allow-Origin header can only have 1 value so we check to see if the Origin header is
@@ -259,17 +259,17 @@
 				<cfif structKeyExists(_taffyRequest.headers, "origin")>
 					<cfloop from="1" to="#arrayLen( local.domains )#" index="local.i">
 						<cfif lcase( rereplace( _taffyRequest.headers.origin, "(http|https):\/\/", "", "all" ) ) EQ lcase( rereplace( local.domains[ local.i ], "(http|https):\/\/", "", "all" ) ) >
-							<cfheader name="Access-Control-Allow-Origin" value="#_taffyRequest.headers.origin#" />
-							<cfheader name="Access-Control-Allow-Credentials" value="true" />
+							<cfset addHeader(name="Access-Control-Allow-Origin", value="#_taffyRequest.headers.origin#") />
+							<cfset addHeader(name="Access-Control-Allow-Credentials", value="true") />
 							<cfbreak>
 						</cfif>
 					</cfloop>
 				</cfif>
 			</cfif>
-			<cfheader name="Access-Control-Allow-Methods" value="#local.allowVerbs#" />
+			<cfset addHeader(name="Access-Control-Allow-Methods", value="#local.allowVerbs#") />
 			<!--- Why do we parrot back these headers? See: https://github.com/atuttle/Taffy/issues/144 --->
 			<cfif not structKeyExists(_taffyRequest.headers, "Access-Control-Request-Headers")>
-				<cfheader name="Access-Control-Allow-Headers" value="Origin, Authorization, X-CSRF-Token, X-Requested-With, Content-Type, X-HTTP-Method-Override, Accept, Referrer, User-Agent" />
+				<cfset addHeader(name="Access-Control-Allow-Headers", value="Origin, Authorization, X-CSRF-Token, X-Requested-With, Content-Type, X-HTTP-Method-Override, Accept, Referrer, User-Agent") />
 			<cfelse>
 				<!--- parrot back all of the request headers to allow the request to continue (can we improve on this?) --->
 				<cfset local.allowedHeaders = {} />
@@ -280,7 +280,7 @@
 				<cfloop list="#local.requestedHeaders#" index="local.i">
 					<cfset local.allowedHeaders[ local.i ] = 1 />
 				</cfloop>
-				<cfheader name="Access-Control-Allow-Headers" value="#structKeyList(local.allowedHeaders)#" />
+				<cfset addHeader(name="Access-Control-Allow-Headers", value="#structKeyList(local.allowedHeaders)#") />
 			</cfif>
 		</cfif>
 
@@ -371,7 +371,7 @@
 				</cfif>
 			<cfelseif NOT listFind(local.allowVerbs,_taffyRequest.verb)>
 				<!--- if the verb is not implemented, refuse the request --->
-				<cfheader name="ALLOW" value="#local.allowVerbs#" />
+				<cfset addHeader(name="ALLOW", value="#local.allowVerbs#") />
 				<cfset throwError(405, "Method Not Allowed") />
 			<cfelse>
 				<!--- create dummy response for cross domain OPTIONS request --->
@@ -408,22 +408,22 @@
 		<cfset addHeaders(_taffyRequest.resultHeaders) />
 
 		<!--- add ALLOW header for current resource, which describes available verbs --->
-		<cfheader name="ALLOW" value="#local.allowVerbs#" />
+		<cfset addHeader(name="ALLOW", value="#local.allowVerbs#") />
 
 		<!--- metrics headers that should always apply --->
-		<cfheader name="X-TIME-IN-PARSE" value="#m.parseTime#" />
-		<cfheader name="X-TIME-IN-ONTAFFYREQUEST" value="#m.otrTime#" />
+		<cfset addHeader(name="X-TIME-IN-PARSE", value="#m.parseTime#") />
+		<cfset addHeader(name="X-TIME-IN-ONTAFFYREQUEST", value="#m.otrTime#") />
 		<cfif structKeyExists(m, "resourceTime")>
-			<cfheader name="X-TIME-IN-RESOURCE" value="#m.resourceTime#" />
+			<cfset addHeader(name="X-TIME-IN-RESOURCE", value="#m.resourceTime#") />
 		</cfif>
 		<cfif structKeyExists(m, "cacheCheckTime")>
-			<cfheader name="X-TIME-IN-CACHE-CHECK" value="#m.cacheCheckTime#" />
+			<cfset addHeader(name="X-TIME-IN-CACHE-CHECK", value="#m.cacheCheckTime#") />
 		</cfif>
 		<cfif structKeyExists(m, "cacheGetTime")>
-			<cfheader name="X-TIME-IN-CACHE-GET" value="#m.cacheGetTime#" />
+			<cfset addHeader(name="X-TIME-IN-CACHE-GET", value="#m.cacheGetTime#") />
 		</cfif>
 		<cfif structKeyExists(m, "cacheSaveTime")>
-			<cfheader name="X-TIME-IN-CACHE-SAVE" value="#m.cacheSaveTime#" />
+			<cfset addHeader(name="X-TIME-IN-CACHE-SAVE", value="#m.cacheSaveTime#") />
 		</cfif>
 
 		<cfif application._taffy.settings.exposeHeaders>
@@ -439,7 +439,7 @@
 				</cfif>
 			</cfloop>
 			<cfif listLen(local.exposeHeaderValue) gt 0>
-				<cfheader name="Access-Control-Expose-Headers" value="#local.exposeHeaderValue#" />
+				<cfcfset addHeader(name="Access-Control-Expose-Headers", value="#local.exposeHeaderValue#") />
 			</cfif>
 		</cfif>
 
@@ -458,7 +458,7 @@
 				/>
 				<cfset _taffyRequest.metrics.afterSerialize = getTickCount() />
 				<cfset m.serializeTime = m.afterSerialize - m.beforeSerialize />
-				<cfheader name="X-TIME-IN-SERIALIZE" value="#m.serializeTime#" />
+				<cfset addHeader(name="X-TIME-IN-SERIALIZE", value="#m.serializeTime#") />
 
 				<!--- apply jsonp wrapper if requested --->
 				<cfif structKeyExists(_taffyRequest, "jsonpCallback")>
@@ -482,10 +482,10 @@
 							<cfcontent reset="true" type="#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#; charset=utf-8" />
 							<cfreturn true />
 						<cfelse>
-							<cfheader name="Etag" value="#_taffyRequest.serverEtag#" />
+							<cfset addHeader(name="Etag", value="#_taffyRequest.serverEtag#") />
 						</cfif>
 					<cfelse>
-						<cfheader name="Etag" value="#_taffyRequest.serverEtag#" />
+						cfset addHeader(name="Etag", value="#_taffyRequest.serverEtag#") />
 					</cfif>
 				</cfif>
 
@@ -494,7 +494,7 @@
 				<cfif structKeyExists(m, "resourceTime")>
 					<cfset m.taffyTime -= m.resourceTime />
 				</cfif>
-				<cfheader name="X-TIME-IN-TAFFY" value="#m.taffyTime#" />
+				<cfset addHeader(name="X-TIME-IN-TAFFY", value="#m.taffyTime#") />
 
 				<cfcontent reset="true" type="#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#; charset=utf-8" />
 				<cfif _taffyRequest.resultSerialized neq ('"' & '"')>
@@ -508,19 +508,19 @@
 			<cfelseif _taffyRequest.resultType eq "filename">
 				<cfset m.done = getTickCount() />
 				<cfset m.taffyTime = m.done - m.init - m.parseTime - m.otrTime - m.resourceTime />
-				<cfheader name="X-TIME-IN-TAFFY" value="#m.taffyTime#" />
+				<cfset addHeader(name="X-TIME-IN-TAFFY", value="#m.taffyTime#") />
 				<cfcontent reset="true" file="#_taffyRequest.result.getFileName()#" type="#_taffyRequest.result.getFileMime()#" deletefile="#_taffyRequest.result.getDeleteFile()#" />
 
 			<cfelseif _taffyRequest.resultType eq "filedata">
 				<cfset m.done = getTickCount() />
 				<cfset m.taffyTime = m.done - m.init - m.parseTime - m.otrTime - m.resourceTime />
-				<cfheader name="X-TIME-IN-TAFFY" value="#m.taffyTime#" />
+				<cfset addHeader(name="X-TIME-IN-TAFFY", value="#m.taffyTime#") />
 				<cfcontent reset="true" variable="#_taffyRequest.result.getFileData()#" type="#_taffyRequest.result.getFileMime()#" />
 
 			<cfelseif _taffyRequest.resultType eq "imagedata">
 				<cfset m.done = getTickCount() />
 				<cfset m.taffyTime = m.done - m.init - m.parseTime - m.otrTime - m.resourceTime />
-				<cfheader name="X-TIME-IN-TAFFY" value="#m.taffyTime#" />
+				<cfset addHeader(name="X-TIME-IN-TAFFY", value="#m.taffyTime#") />
 				<cfcontent reset="true" variable="#_taffyRequest.result.getImageData()#" type="#_taffyRequest.result.getFileMime()#" />
 
 			</cfif>
@@ -551,7 +551,7 @@
 			,_taffyRequest.statusArgs.statusCode
 			) />
 		<cfset m.otreTime = getTickCount() - m.beforeOnTaffyRequestEnd />
-		<cfheader name="X-TIME-IN-ONTAFFYREQUESTEND" value="#m.otreTime#" />
+		<cfset addHeader(name="X-TIME-IN-ONTAFFYREQUESTEND", value="#m.otreTime#") />
 
 		<cfif len(trim(local.resultSerialized))>
 			<cfoutput>#local.resultSerialized#</cfoutput>
@@ -571,7 +571,7 @@
 	<cffunction name="setupFramework" access="private" output="false" returntype="void">
 		<cfset var local = structNew() />
 		<cfparam name="variables.framework" default="#structNew()#" />
-		<cfheader name="X-TAFFY-RELOADED" value="true" />
+		<cfset addHeader(name="X-TAFFY-RELOADED", value="true") />
 		<cfset request.taffyReloaded = true />
 		<cfset local._taffy = structNew() />
 		<cfset local._taffy.version = "3.2.0" />
@@ -1417,12 +1417,46 @@
 		<cfreturn cgi.path_info />
 	</cffunction>
 
+	<cffunction name="isFlushed" output="false" access="private" returntype="boolean" hint="I determine whether the request buffer has been flushed">
+		<cfset var response = false />
+		<cfset var headers = structNew() />
+		<cfif StructKeyExists(request, "isFlushedAlready") and isValid("boolean", request.isFlushedAlready) and request.isFlushedAlready>
+			<cfreturn true />
+		</cfif>
+		<cfset headers = GetHttpRequestData(false).headers />
+		<cfif StructKeyExists(headers, "Expect") or not len(CGI.HTTP_Connection)>
+			<cfset response = true />
+		<cfelseif StructKeyExists(Server, "lucee")>
+			<cfset response = getPageContext().getHttpServletResponse().isCommitted() />
+		<cfelse>
+			<cfset response = getPageContext().getResponse().isCommitted() />
+		</cfif>
+		<cfset request.isFlushedAlready = response />
+		<cfreturn response />
+	</cffunction>
+
+	<cffunction name="addHeader" output="false" access="public" hint="I add a header if the request hasn't been flushed">
+		<cfset var paramsIn = ["name", "value", "statusCode", "charset", "statusText"]>
+		<cfset var paramsOut = structNew() />
+		<cfset var param = "" />
+		<cfif not isFlushed()>
+			<cfloop array="#paramsIn#" item="param">
+				<cfif StructKeyExists(arguments, param) and isSimpleValue(arguments["#param#"])>
+					<cfset paramsOut["#param#"] = arguments["#param#"] />
+				</cfif>
+			</cfloop>
+			<cfif structcount(paramsOut)>
+				<cfheader attributeCollection="#paramsOut#" />
+			</cfif>
+		</cfif>
+	</cffunction>
+
 	<cffunction name="addHeaders" access="public" output="false" returntype="void">
 		<cfargument name="headers" type="struct" required="true" />
 		<cfset var h = '' />
 		<cfif !structIsEmpty(arguments.headers)>
 			<cfloop list="#structKeyList(arguments.headers)#" index="h">
-				<cfheader name="#h#" value="#arguments.headers[h]#" />
+				<cfset addHeader(name="#h#", value="#arguments.headers[h]#") />
 			</cfloop>
 		</cfif>
 	</cffunction>
