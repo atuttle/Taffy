@@ -19,9 +19,9 @@ It's easy to debug because error messages are returned as JSON by default and it
 
 If you file a bug or ask for support please indicate which version of Taffy you're using. If it's an older release, we usually ask you to upgrade. Officially, we promise to support the current and previous **minor** releases and the last **minor** release of the previous **major** release. To the best of our abilities Taffy follows the versioning guidelines defined in [semver](https://semver.org/).
 
-Supported versions get priority for bug fixes. No promises are made to fix bugs filed against **unsupported** versions. If your version is supported and your bug is reproducible and isolable, we'll do everything within our power to address it.
+Supported versions get priority for bug fixes. No promises are made to fix bugs filed against **unsupported** versions. If your version is supported and your bug is reproducible and isolatable, we'll do everything within our power to address it.
 
-If you're on an unsupported version, upgrade is not an option in your case, and you still have an isolable and reproducible bug, [contact me][5] to discuss further options.
+If you're on an unsupported version, upgrade is not an option in your case, and you still have an isolatable and reproducible bug, [contact me][5] to discuss further options.
 
 ## Running the Tests
 
