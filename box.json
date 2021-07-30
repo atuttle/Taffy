@@ -4,12 +4,12 @@
   "slug": "taffy",
   "author": "Adam Tuttle",
   "version": "3.2.0",
-  "homepage": "http://taffy.io/",
-  "documentation": "http://docs.taffy.io/",
+  "homepage": "https://taffy.io/",
+  "documentation": "https://docs.taffy.io/",
   "type": "mvc",
   "repository": {
     "type": "git",
-    "url": "https://github.com/atuttle/taffy.git"
+    "url": "https://github.com/atuttle/Taffy.git"
   },
   "bugs": "https://github.com/atuttle/Taffy/issues",
   "license": [

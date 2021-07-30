@@ -536,7 +536,7 @@
 			var restore1 = application._taffy.settings.disableDashboard;
 			var restore2 = application._taffy.settings.disabledDashboardRedirect;
 			application._taffy.settings.disableDashboard = true;
-			application._taffy.settings.disabledDashboardRedirect = 'http://google.com';
+			application._taffy.settings.disabledDashboardRedirect = 'https://google.com';
 			local.result = apiCall("get", "/", "");
 			// debug(local.result);
 			assertEquals(302, val(local.result.statusCode));
