@@ -2,15 +2,15 @@
 
 Contributions of all shapes and sizes are welcome, encouraged, and greatly appreciated! Not sure where to start? [Learn how here!](https://makeapullrequest.com)
 
-For all contributions, you'll need a [free GitHub account](https://github.com/signup/free).
+For all contributions, you'll need a [free GitHub account](https://github.com/join).
 
 ## Bug Reports / Feature Requests
 
 Please include all of the following information in your ticket:
 
-* CFML Platform and version (e.g. Adobe ColdFusion 9.0.2, Lucee 4.5.0)
-* Java version (look it up in CF Administrator, or do `java -version` at the command line)
-* Taffy version (for bugs)
+- CFML Platform and version (e.g. Adobe ColdFusion 9.0.2, Lucee 4.5.0)
+- Java version (look it up in CF Administrator, or do `java -version` at the command line)
+- Taffy version (for bugs)
 
 ## Documentation
 
@@ -28,7 +28,15 @@ Starting with the development of Taffy 1.4, all new development will be done aga
 1. Make your changes and commit them.
 1. Push your changes back to your fork. `git push -u origin BRANCH_NAME`
 1. Send a pull request ([Learn how here!](https://makeapullrequest.com))
-  * Please make sure you select `main` as the destination branch
+
+- Please make sure you select `main` as the destination branch
+
+### Styling changes
+
+Taffy uses LessCSS to style the dashboard and documentation. To compile changes to `dash.less`, you'll need to have Node.js/npm installed.
+
+1. From the root of your Taffy clone, run `npm ci` to install the dependencies for compiling LessCSS to CSS.
+1. Then run `npm run less`. This will compile the latest `dash.less` and update `dash.css`.
 
 ### Tests
 

@@ -1,0 +1,20 @@
+{
+  "name": "taffy",
+  "scripts": {
+    "less": "lessc dashboard/dash.less --clean-css=\"--s1 --advanced\" > dashboard/dash.css"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/atuttle/Taffy.git"
+  },
+  "author": "Adam Tuttle <adamtuttlecodes@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/atuttle/Taffy/issues"
+  },
+  "homepage": "https://taffy.io",
+  "devDependencies": {
+    "less": "^4.1.1",
+    "less-plugin-clean-css": "^1.5.1"
+  }
+}

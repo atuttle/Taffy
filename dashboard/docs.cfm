@@ -3,8 +3,10 @@
 <head>
 	<title><cfoutput>#application._taffy.settings.docs.APIName# Documentation - #application._taffy.settings.docs.APIversion#</cfoutput></title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<link rel="icon" href="https://fav.farm/🍬" />
 	<style>
 		<cfinclude template="dash.css" />
+		<cfinclude template="highlight-github.min.css" />
 	</style>
 </head>
 <body>
@@ -24,7 +26,8 @@
 				<cfoutput>
 					<cfloop from="1" to="#arrayLen(application._taffy.uriMatchOrder)#" index="local.resource">
 						<cfset local.currentResource = application._taffy.endpoints[application._taffy.uriMatchOrder[local.resource]] />
-						<cfset local.beanMeta = getMetaData(application._taffy.factory.getBean(local.currentResource.beanName)) />
+						<cfset local.bean = application._taffy.factory.getBean(local.currentResource.beanName) />
+						<cfset local.beanMeta = getMetaData(local.bean) />
 						<cfif structKeyExists(local.beanMeta, "taffy_docs_hide") OR structKeyExists(local.beanMeta, "taffy:docs:hide")>
 							<cfscript>continue;</cfscript>
 						</cfif>
@@ -70,42 +73,104 @@
 												<cfscript>continue;</cfscript><!--- this has to be script for CF8 compat --->
 											</cfif>
 											<cfset local.found[local.func.name] = true />
-											<div class="col-md-12"><strong>#thisVerb#</strong></div>
+											<div class="col-md-12"><h5 class="verbHeading">#thisVerb#</h5></div>
 											<cfif structKeyExists(local.func, "hint")>
 												<div class="col-md-12 doc">#local.func.hint#</div>
 											</cfif>
-											<cfloop from="1" to="#arrayLen(local.func.parameters)#" index="local.p">
-												<cfset local.param = local.func.parameters[local.p] />
-												<cfif structKeyExists(local.param, "taffy_docs_hide")
-														OR structKeyExists(local.param, "taffy:docs:hide")>
-													<cfscript>continue;</cfscript>
-												</cfif>
-												<div class="row">
-													<div class="col-md-11 col-md-offset-1">
-															<cfif not structKeyExists(local.param, 'required') or not local.param.required>
-																optional
-															<cfelse>
-																required
-															</cfif>
-															<cfif structKeyExists(local.param, "type")>
-																#local.param.type#
-															</cfif>
-															<strong>#local.param.name#</strong>
-															<cfif structKeyExists(local.param, "default")>
-																<cfif local.param.default eq "">
-																	(default: "")
-																<cfelse>
-																	(default: #local.param.default#)
-																</cfif>
-															<cfelse>
-																<!--- no default value --->
-															</cfif>
-														<cfif structKeyExists(local.param, "hint")>
-															<br/><span class="doc">#local.param.hint#</span>
-														</cfif>
+											<div class="inputs-wrapper">
+												<!--- begin inputs panel --->
+												<cfset inputsCount = 0 />
+												<cfloop from="1" to="#arrayLen(local.func.parameters)#" index="local.p">
+													<cfset local.param = local.func.parameters[local.p] />
+													<cfif structKeyExists(local.param, "taffy_docs_hide") OR structKeyExists(local.param, "taffy:docs:hide")>
+														<cfscript>continue;</cfscript>
+													</cfif>
+													<cfset inputsCount++ />
+												</cfloop>
+												<cfif inputsCount gt 0>
+													<div class="panel panel-default">
+														<div class="panel-heading">
+															<h6 class="panel-title"><a href="###local.currentResource.beanName#_#local.func.name#_inputs" class="accordion-toggle" data-toggle="collapse" data-parent="###local.currentResource.beanName#_docs">Inputs</a></h6>
+														</div>
+														<div class="panel-collapse collapse" id="#local.currentResource.beanName#_#local.func.name#_inputs">
+															<div class="panel-body">
+																<cfloop from="1" to="#arrayLen(local.func.parameters)#" index="local.p">
+																	<cfset local.param = local.func.parameters[local.p] />
+																	<cfif structKeyExists(local.param, "taffy_docs_hide") OR structKeyExists(local.param, "taffy:docs:hide")>
+																		<cfscript>continue;</cfscript>
+																	</cfif>
+																	<div class="row">
+																		<div class="col-md-12">
+																			<strong>#local.param.name#</strong>
+																			<cfif not structKeyExists(local.param, 'required') or not local.param.required>
+																				optional
+																			<cfelse>
+																				required
+																			</cfif>
+																			<cfif structKeyExists(local.param, "type")>
+																				#local.param.type#
+																			</cfif>
+																			<cfif structKeyExists(local.param, "default")>
+																				<cfif local.param.default eq "">
+																					(default: "")
+																				<cfelse>
+																					(default: #local.param.default#)
+																				</cfif>
+																			<cfelse>
+																				<!--- no default value --->
+																			</cfif>
+																			<cfif structKeyExists(local.param, "hint")>
+																				<br/><p class="doc hint">#local.param.hint#</p>
+																			</cfif>
+																		</div>
+																	</div>
+																</cfloop>
+															</div>
+														</div>
 													</div>
-												</div>
-											</cfloop>
+												</cfif>
+												<!--- end inputs panel --->
+												<!--- begin sample response --->
+												<cfset hasSample = false />
+												<cfset sample = 'sample goes here' />
+												<cfloop from="1" to="#arrayLen(local.beanMeta.functions)#" index="functionIndex">
+													<cfif  local.beanMeta.functions[functionIndex].name eq 'sample#local.func.name#Response'>
+														<cfset hasSample = true />
+														<cfinvoke
+															component="#local.bean#"
+															method="sample#local.func.name#Response"
+															argumentcollection={}
+															returnvariable="sample"
+														/>
+														<cfbreak />
+													</cfif>
+												</cfloop>
+												<cfif hasSample>
+													<div class="row">
+														<div class="col-md-12">
+															<div class="panel panel-default">
+																<div class="panel-heading">
+																	<h6 class="panel-title">
+																		<a href="###local.currentResource.beanName#_#local.func.name#_sample" class="accordion-toggle" data-toggle="collapse" data-parent="###local.currentResource.beanName#_docs">Sample Response</a>
+																	</h6>
+																</div>
+																<div class="panel-collapse collapse" id="#local.currentResource.beanName#_#local.func.name#_sample">
+																	<div class="panel-body">
+																		<div class="col-md-12">
+																			<script type="text/javascript" defer>
+																				document.write("<pre><code>");
+																				document.write(JSON.stringify(#serializeJson(sample)#, null, '  '));
+																				document.write("</code></pre>");
+																			</script>
+																		</div>
+																	</div>
+																</div>
+															</div>
+														</div>
+													</div>
+												</cfif>
+												<!--- end sample response --->
+											</div>
 										</cfloop>
 									</div><!-- /col-md-6 (docs) -->
 								</div>
@@ -144,7 +209,12 @@
 	<script type="text/javascript">
 		<cfinclude template="jquery.min.js" />
 		<cfinclude template="bootstrap.min.js" />
+		<cfinclude template="highlight.min.js" />
 		<cfinclude template="dash.js" />
+
+		$(function(){
+			hljs.initHighlighting();
+		});
 	</script>
 </body>
 </html>

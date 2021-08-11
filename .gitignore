@@ -9,6 +9,7 @@ examples/api_hoth/hoth/exceptions/incidents/*.log
 examples/api_hoth/hoth/logs/*.hoth
 examples/api_hoth/hoth/logs/*.log
 css/*
+node_modules/*
 
 #testbox
 tests/testbox
