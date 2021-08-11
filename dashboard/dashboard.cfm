@@ -400,7 +400,7 @@
 															<div class="col-md-12 doc">#local.func.hint#</div>
 														</cfif>
 														<div class="inputs-wrapper">
-															<div class="panel panel-default">
+															<div class="panel panel-default resource-docs">
 																<div class="panel-heading">
 																	<h6 class="panel-title"><a href="###local.resourceHTTPID#_#local.func.name#_inputs" class="accordion-toggle" data-toggle="collapse" data-parent="###local.resourceHTTPID#_docs">Inputs</a></h6>
 																</div>
@@ -455,24 +455,20 @@
 																</cfif>
 															</cfloop>
 															<cfif hasSample>
-																<div class="row">
-																	<div class="col-md-12">
-																		<div class="panel panel-default">
-																			<div class="panel-heading">
-																				<h6 class="panel-title">
-																					<a href="###local.resourceHTTPID#_#local.func.name#_sample" class="accordion-toggle" data-toggle="collapse" data-parent="###local.resourceHTTPID#_docs">Sample Response</a>
-																				</h6>
-																			</div>
-																			<div class="panel-collapse collapse" id="#local.resourceHTTPID#_#local.func.name#_sample">
-																				<div class="panel-body">
-																					<div class="col-md-12">
-																						<script type="text/javascript" defer>
-																							document.write("<pre><code>");
-																							document.write(JSON.stringify(#serializeJson(sample)#, null, '  '));
-																							document.write("</code></pre>");
-																						</script>
-																					</div>
-																				</div>
+																<div class="panel panel-default resource-docs">
+																	<div class="panel-heading">
+																		<h6 class="panel-title">
+																			<a href="###local.resourceHTTPID#_#local.func.name#_sample" class="accordion-toggle" data-toggle="collapse" data-parent="###local.resourceHTTPID#_docs">Sample Response</a>
+																		</h6>
+																	</div>
+																	<div class="panel-collapse collapse" id="#local.resourceHTTPID#_#local.func.name#_sample">
+																		<div class="panel-body">
+																			<div class="col-md-12">
+																				<script type="text/javascript" defer>
+																					document.write("<pre><code>");
+																					document.write(JSON.stringify(#serializeJson(sample)#, null, '  '));
+																					document.write("</code></pre>");
+																				</script>
 																			</div>
 																		</div>
 																	</div>
@@ -579,6 +575,7 @@
 				$(this).click();
 			});
 		});
+
 		function submitRequest( verb, resource, headers, body, callback ){
 			var url = window.location.protocol + '//' +  window.location.host;
 			var endpointURLParam = '<cfoutput>#jsStringFormat(application._taffy.settings.endpointURLParam)#</cfoutput>';
@@ -645,19 +642,18 @@
 			return null;
 		}
 		function filterResources(){
-			var input, filter, ul, li, a, i;
-			input = document.getElementById('resourceSearch');
-			filter = input.value.toUpperCase();
-			ul = document.getElementById("resourcesAccordion");
-			li = ul.getElementsByClassName('panel');
-			for (i = 0; i < li.length; i++) {
-				a = li[i].getElementsByTagName("a")[0];
-				if (a.innerHTML.toUpperCase().indexOf(filter) > -1) {
-					li[i].style.display = "";
-				} else {
-					li[i].style.display = "none";
+			var filter = $('#resourceSearch').val().toUpperCase();
+			var ul = $('#resourcesAccordion');
+			var li = ul.find('.panel').not('.resource-docs');
+			li.each(function(){
+				var row = $(this);
+				var rowText = $(row.find('a')[0]).text();
+				if ( rowText.toUpperCase().indexOf(filter) > -1 ){
+					row.css({ display: '' });
+				}else{
+					row.css({ display: 'none' });
 				}
-			}
+			});
 		}
 		function clearSearch(evt, input) {
 			var code = evt.charCode || evt.keyCode;
