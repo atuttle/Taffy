@@ -132,7 +132,7 @@
 												<!--- end inputs panel --->
 												<!--- begin sample response --->
 												<cfset hasSample = false />
-												<cfset sample = 'sample goes here' />
+												<cfset sample = '' />
 												<cfloop from="1" to="#arrayLen(local.beanMeta.functions)#" index="functionIndex">
 													<cfif  local.beanMeta.functions[functionIndex].name eq 'sample#local.func.name#Response'>
 														<cfset hasSample = true />

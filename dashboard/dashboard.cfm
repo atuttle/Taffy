@@ -442,7 +442,7 @@
 															</div>
 															<!--- begin sample response --->
 															<cfset hasSample = false />
-															<cfset sample = 'sample goes here' />
+															<cfset sample = '' />
 															<cfloop from="1" to="#arrayLen(local.md.functions)#" index="functionIndex">
 																<cfif  local.md.functions[functionIndex].name eq 'sample#local.func.name#Response'>
 																	<cfset hasSample = true />
