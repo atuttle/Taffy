@@ -444,12 +444,11 @@
 															<cfset hasSample = false />
 															<cfset sample = '' />
 															<cfloop from="1" to="#arrayLen(local.md.functions)#" index="functionIndex">
-																<cfif  local.md.functions[functionIndex].name eq 'sample#local.func.name#Response'>
+																<cfif local.md.functions[functionIndex].name eq 'sample#local.func.name#Response'>
 																	<cfset hasSample = true />
 																	<cfinvoke
 																		component="#local.bean#"
-																		method="sample#local.func.name#Response"
-																		argumentcollection={}
+																		method="#local.md.functions[functionIndex].name#"
 																		returnvariable="sample"
 																	/>
 																	<cfbreak />
