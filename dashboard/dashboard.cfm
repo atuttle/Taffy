@@ -38,38 +38,38 @@
 								<table class="table table-striped" style="margin-bottom:0">
 									<tr>
 										<td><strong>Reload on every request:</strong></td>
-										<td><a class="label label-default" href="<cfoutput>#getDocUrl('reloadOnEveryRequest')#</cfoutput>">?</a>
+										<td><a class="label label-default" target="_blank" rel="noreferrer noopener" href="<cfoutput>#getDocUrl('reloadOnEveryRequest')#</cfoutput>">?</a>
 										#yesNoFormat(application._taffy.settings.reloadOnEveryRequest)#</td>
 									</tr>
 									<tr>
 										<td><strong>Return Exceptions as JSON:</strong></td>
-										<td><a class="label label-default" href="<cfoutput>#getDocUrl('returnExceptionsAsJson')#</cfoutput>">?</a>
+										<td><a class="label label-default" target="_blank" rel="noreferrer noopener" href="<cfoutput>#getDocUrl('returnExceptionsAsJson')#</cfoutput>">?</a>
 										#yesNoFormat(application._taffy.settings.returnExceptionsAsJson)#</td>
 									</tr>
 									<tr>
 										<td><strong>CORS:</strong></td>
-										<td><a class="label label-default" href="<cfoutput>#getDocUrl('allowCrossDomain')#</cfoutput>">?</a>
+										<td><a class="label label-default" target="_blank" rel="noreferrer noopener" href="<cfoutput>#getDocUrl('allowCrossDomain')#</cfoutput>">?</a>
 										<cfif application._taffy.settings.allowCrossDomain EQ 'false'>No<cfelse>Yes</cfif></td>
 									</tr>
 									<tr>
 										<td><strong>E-Tags:</strong></td>
-										<td><a class="label label-default" href="<cfoutput>#getDocUrl('useEtags')#</cfoutput>">?</a>
+										<td><a class="label label-default" target="_blank" rel="noreferrer noopener" href="<cfoutput>#getDocUrl('useEtags')#</cfoutput>">?</a>
 										#yesNoFormat(application._taffy.settings.useEtags)#</td>
 									</tr>
 									<tr>
 										<td><strong>JSONP:</strong></td>
-										<td><a class="label label-default" href="<cfoutput>#getDocUrl('jsonp')#</cfoutput>">?</a>
+										<td><a class="label label-default" target="_blank" rel="noreferrer noopener" href="<cfoutput>#getDocUrl('jsonp')#</cfoutput>">?</a>
 										<cfif application._taffy.settings.jsonp eq false>No<cfelse>?<strong>#application._taffy.settings.jsonp#=</strong>...
 										</cfif></td>
 									</tr>
 									<tr>
 										<td><strong>Endpoint URL Param:</strong></td>
-										<td><a class="label label-default" href="<cfoutput>#getDocUrl('endpointURLParam')#</cfoutput>">?</a>
+										<td><a class="label label-default" target="_blank" rel="noreferrer noopener" href="<cfoutput>#getDocUrl('endpointURLParam')#</cfoutput>">?</a>
 										#application._taffy.settings.endpointURLParam#</td>
 									</tr>
 									<tr>
 										<td><strong>Serializer:</strong></td>
-										<td><a class="label label-default" href="<cfoutput>#getDocUrl('serializer')#</cfoutput>">?</a>
+										<td><a class="label label-default" target="_blank" rel="noreferrer noopener" href="<cfoutput>#getDocUrl('serializer')#</cfoutput>">?</a>
 										#application._taffy.settings.serializer#</td>
 									</tr>
 									<tr>
@@ -82,7 +82,7 @@
 									</tr>
 									<tr>
 										<td><strong>Global Headers:</strong></td>
-										<td><a class="label label-default" href="<cfoutput>#getDocUrl('globalHeaders')#</cfoutput>">?</a>
+										<td><a class="label label-default" target="_blank" rel="noreferrer noopener" href="<cfoutput>#getDocUrl('globalHeaders')#</cfoutput>">?</a>
 										<dl>
 											<cfloop list="#structKeyList(application._taffy.settings.globalHeaders)#" index="local.h">
 												<dt>#local.h#</dt>
@@ -95,12 +95,12 @@
 									</tr>
 									<tr>
 										<td><strong>Exception Log Adapter:</strong></td>
-										<td><a class="label label-default" href="<cfoutput>#getDocUrl('exceptionLogAdapter')#</cfoutput>">?</a>
+										<td><a class="label label-default" target="_blank" rel="noreferrer noopener" href="<cfoutput>#getDocUrl('exceptionLogAdapter')#</cfoutput>">?</a>
 										#application._taffy.settings.exceptionLogAdapter#</td>
 									</tr>
 									<tr>
 										<td><strong>Exception Log Adapter Config:</strong></td>
-										<td><a class="label label-default" href="<cfoutput>#getDocUrl('exceptionLogAdapterConfig')#</cfoutput>">?</a>
+										<td><a class="label label-default" target="_blank" rel="noreferrer noopener" href="<cfoutput>#getDocUrl('exceptionLogAdapterConfig')#</cfoutput>">?</a>
 										<cfif isSimpleValue(application._taffy.settings.exceptionLogAdapterConfig)>
 											#application._taffy.settings.exceptionLogAdapterConfig#
 										<cfelse>
@@ -512,7 +512,7 @@
 			<cfif application._taffy.settings.reloadKey eq "reload" and application._taffy.settings.reloadPassword eq "true">
 				<div class="alert alert-warning">
 					<strong>Warning:</strong> Your reload key and password are using the framework default settings.
-					It's advised that you <a href="<cfoutput>#getDocUrl('reloadKey')#</cfoutput>">change these in production</a>.
+					It's advised that you <a target="_blank" rel="noreferrer noopener" href="<cfoutput>#getDocUrl('reloadKey')#</cfoutput>">change these in production</a>.
 				</div>
 			</cfif>
 			<div class="alert alert-info">Resources are listed in matching order. From top to bottom, the first URI to match the request is used.</div>
@@ -669,5 +669,5 @@
 
 <cffunction name="getDocUrl">
 	<cfargument name="item" />
-	<cfreturn "https://docs.taffy.io/#listFirst(application._taffy.version,'-')#/##" & item />
+	<cfreturn "https://docs.taffy.io/##/#listFirst(application._taffy.version,'-')#?id=#lCase(item)#" />
 </cffunction>
