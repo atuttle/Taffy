@@ -13,9 +13,9 @@ It's easy to debug because error messages are returned as JSON by default and it
 
 ## Currently Supported Versions
 
-* Taffy 3.2.x
-* Taffy 3.1.x
-* Taffy 2.2.x
+- Taffy 3.3.x
+- Taffy 3.2.x
+- Taffy 2.2.x
 
 If you file a bug or ask for support please indicate which version of Taffy you're using. If it's an older release, we usually ask you to upgrade. Officially, we promise to support the current and previous **minor** releases and the last **minor** release of the previous **major** release. To the best of our abilities Taffy follows the versioning guidelines defined in [semver](https://semver.org/).
 
@@ -31,7 +31,7 @@ To run the tests, you must have [MxUnit](https://mxunit.org/) installed at `/mxu
 1. Point your browser at `http://localhost/taffy/tests/` to initialize the test-harness API that the tests will use
 1. Point your browser at `http://localhost/taffy/tests/tests/` to run the test suite.
 
-If you are on vanilla Tomcat or another app server (most Railo users are), you may find that you need to [add an additional servlet mapping](https://docs.taffy.io/#/3.2.0?id=tomcat-jboss-and-other-app-server-idiosyncrasies) to get the tests to run.
+If you are on vanilla Tomcat or another app server (most Railo users are), you may find that you need to [add an additional servlet mapping](https://docs.taffy.io/#/3.3.0?id=tomcat-jboss-and-other-app-server-idiosyncrasies) to get the tests to run.
 
 Please [report any errors or failures as bugs](https://github.com/atuttle/Taffy/issues), and be sure to include relevant platform information.
 
@@ -57,22 +57,22 @@ If your problem is too big or too private to ask for help in a chat room, [I am 
 
 ## LICENSE
 
->**The MIT License (MIT)**
+> **The MIT License (MIT)**
 >
->Copyright (c) 2011 Adam Tuttle and Contributors
+> Copyright (c) 2011 Adam Tuttle and Contributors
 >
->Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+> Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 >
->The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+> The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 >
->THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **What does that mean?**
 
 It means you can use Taffy pretty much any way you like. You can fork it. You can include it in a proprietary product, sell it, and not give us a dime. Pretty much the only thing you can't do is hold us accountable if anything goes wrong.
 
-[1]:https://groups.google.com/forum/#!forum/taffy-users
-[2]:https://github.com/atuttle/TaffyDocs
-[3]:https://github.com/atuttle/Taffy/wiki
-[4]:https://cfml-slack.herokuapp.com
-[5]:https://adamtuttle.codes/freelance
+[1]: https://groups.google.com/forum/#!forum/taffy-users
+[2]: https://github.com/atuttle/TaffyDocs
+[3]: https://github.com/atuttle/Taffy/wiki
+[4]: https://cfml-slack.herokuapp.com
+[5]: https://adamtuttle.codes/freelance

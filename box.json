@@ -3,7 +3,7 @@
   "shortDescription": "REST Web Service framework for ColdFusion and Lucee",
   "slug": "taffy",
   "author": "Adam Tuttle",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "homepage": "https://taffy.io/",
   "documentation": "https://docs.taffy.io/",
   "type": "mvc",
