@@ -10,6 +10,7 @@
 	<cfset this.mappings["/Hoth"] = this.parentDirectory & "Hoth/">
 	<cfset this.mappings["/di1"] = this.parentDirectory & "di1/">
 	<cfset this.mappings["/bugLog"] = this.parentDirectory & "BugLogHQ/">
+	<cfset this.mappings["/taffy"] = ListDeleteAt(this.parentDirectory, listLen(this.parentDirectory, '/\') , '/\') >
 
 	<cfscript>
 		//remove bugLogHQ Application.cfc so we can override datasource definition

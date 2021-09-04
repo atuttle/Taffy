@@ -25,13 +25,7 @@ If you're on an unsupported version, upgrade is not an option in your case, and 
 
 ## Running the Tests
 
-To run the tests, you must have [MxUnit](https://mxunit.org/) installed at `/mxunit` (not just a global mapping, put the folder in your web-root, as there are CSS/JS/etc assets that will be needed).
-
-1. Clone the Taffy repo to `/taffy` in your web root.
-1. Point your browser at `http://localhost/taffy/tests/` to initialize the test-harness API that the tests will use
-1. Point your browser at `http://localhost/taffy/tests/tests/` to run the test suite.
-
-If you are on vanilla Tomcat or another app server (most Railo users are), you may find that you need to [add an additional servlet mapping](https://docs.taffy.io/#/3.3.0?id=tomcat-jboss-and-other-app-server-idiosyncrasies) to get the tests to run.
+Starting to transition to GitHub Actions. Not sure what goes here yet!
 
 Please [report any errors or failures as bugs](https://github.com/atuttle/Taffy/issues), and be sure to include relevant platform information.
 

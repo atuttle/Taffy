@@ -1,0 +1,27 @@
+name: Run tests for all PRs
+on:
+  push:
+    branches:
+      - feature/github-actions
+
+jobs:
+  test:
+    runs-on: ubuntu-20.04
+    steps:
+
+      - name: Checkout Code
+        id: git-checkout
+        uses: actions/checkout@v2
+
+      # - name: Install BugLogHQ
+      #   run: git clone https://github.com/oarevalo/BugLogHQ.git
+
+      - name: Install dependencies
+        uses: pixl8/github-action-box-install@v2
+
+      - name: Run tests
+        uses: pixl8/github-action-box-test@v3
+        with:
+          verbose: true
+          test_server_json: /server.json
+          output_file: /tests/test-results.txt

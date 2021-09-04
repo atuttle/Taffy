@@ -1,5 +1,18 @@
 {
-    "app":{
-        "cfengine":""
+  "name": "TaffyTests",
+  "profile": "none",
+  "console": false,
+  "openBrowser": false,
+  "trayEnable": false,
+  "app": {
+    "cfengine": "lucee@5.3.8.206"
+  },
+  "web": {
+    "host": "0.0.0.0",
+    "webroot": "./",
+    "HTTP": {
+      "enable": true,
+      "port": 80
     }
+  }
 }

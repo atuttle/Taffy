@@ -9,6 +9,7 @@
 		function beforeTests(){
 			request["_testsRunning"] = true;
 			variables.taffy = createObject("component","taffy.tests.Application");
+			variables.taffy.onApplicationStart(); //initialize taffy
 			makePublic(variables.taffy, "getBeanFactory");
 			variables.factory = variables.taffy.getBeanFactory();
 			//debug(variables.factory);

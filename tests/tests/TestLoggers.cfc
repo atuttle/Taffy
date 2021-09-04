@@ -28,6 +28,7 @@
 
 		}
 
+		/* TODO: rewrite this whole suite using BDD style tests and mocking
 		function test_BugLogHQ(){
 			var blhqSettings = { bugLogListener = "http://#cgi.server_name#:#cgi.server_port#/tests/BugLogHQ/listeners/bugLogListenerREST.cfm" };
 			var mockBLHQ = new bugLog.client.bugLogService(argumentCollection=blhqSettings);
@@ -55,9 +56,8 @@
 			fakeError.message = "This is a test error";
 			fakeError.detail = "Rubber Baby Buggy Bumper";
 			blhqAdapter.saveLog(fakeError);
-
-
 		}
+		*/
 
 	</cfscript>
 </cfcomponent>
