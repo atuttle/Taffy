@@ -1,6 +1,6 @@
 name: Run tests for all PRs
 on:
-  pull_request:
+  push:
     branches:
       - feature/github-actions
 
