@@ -185,6 +185,18 @@
 	<cffunction name="getHeaders" access="public" output="false" returntype="Struct">
 		<cfreturn variables.miscHeaders />
 	</cffunction>
+	
+	<cffunction name="noCache" access="public" output="false" hint="used to add headers to ad in preventing browser caching">
+		<cfset var nowUtc = dateConvert("local2Utc", now()) />
+		<cfset var headers = {
+			"Pragma" = "no-cache",
+			"Cache-Control" = "no-cache, must-revalidate",
+			"Last-Modified" = dateFormat(nowUtc, "ddd, d mmm yyyy") & " " & timeFormat(nowUtc, "HH:mm:ss") & " GMT",
+			"Expires" = "Mon, 26 Jul 1997 05:00:00 EST"
+		}>
+		<cfset addHeaders(headers) />
+		<cfreturn this />
+	</cffunction>
 
 	<cffunction name="andDelete" access="public" output="false" hint="used to delete the streamed file">
 		<cfargument name="doDeleteFile" type="boolean" required="true" />
