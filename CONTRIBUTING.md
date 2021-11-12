@@ -40,10 +40,12 @@ Taffy uses LessCSS to style the dashboard and documentation. To compile changes 
 
 ### Tests
 
-If at all possible, please include test cases for anything you add or change. Taffy uses [MXUnit](https://www.mxunit.org) (not included) for testing.
+If at all possible, please include test cases for anything you add or change. To run the tests, you must have [MxUnit](https://mxunit.org/) installed at `/mxunit` (not just a global mapping, put the folder in your web-root, as there are CSS/JS/etc assets that will be needed).
 
-You can run the test suite from the command line with Apache Ant. It's the default target, so just type `ant` from the root of the project directory and it should run them for you. **Note:** Our Jenkins instance uses the Ant script to run the tests, so if you want to run them via Ant you should either setup `jenkins.local` to point to localhost in your hosts file (and virtualhosts), or change the value for `test.server` in the build.xml file.
+1. Clone the Taffy repo to `/taffy` in your web root.
+1. Point your browser at `http://localhost/taffy/tests/` to initialize the test-harness API that the tests will use
+1. Point your browser at `http://localhost/taffy/tests/tests/` to run the test suite.
 
-You can also run the tests in your browser. Install MXunit to `/mxunit` and Taffy to `/taffy`, and then point your browser to: `http://localhost/taffy/tests` (this will initialize the test api), and then to `http://localhost/taffy/tests/tests/`, which will run the test suite.
+If you are on vanilla Tomcat or another app server (most Lucee users are), you may find that you need to [add an additional servlet mapping](https://docs.taffy.io/#/3.3.0?id=tomcat-jboss-and-other-app-server-idiosyncrasies) to get the tests to run.
 
-Taffy uses Jenkins for continuous integration, and you can see [build status/history here](https://travis-ci.org/github/atuttle/Taffy/builds).
+Please [report any errors or failures as bugs](https://github.com/atuttle/Taffy/issues), and be sure to include relevant platform information.
