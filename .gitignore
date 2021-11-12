@@ -10,6 +10,7 @@ examples/api_hoth/hoth/logs/*.hoth
 examples/api_hoth/hoth/logs/*.log
 css/*
 node_modules/*
+package-lock.json
 
 #testbox
 tests/testbox

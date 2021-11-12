@@ -1,5 +1,5 @@
 {
-  "name": "taffy",
+  "name": "cfml-taffy",
   "scripts": {
     "less": "lessc dashboard/dash.less --clean-css=\"--s1 --advanced\" > dashboard/dash.css"
   },
