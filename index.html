@@ -46,6 +46,7 @@
 
 					<h3>Current Version</h3>
 
+					<p id="version"></p>
 					<p><strong>Version 3.1.0</strong> was released on March 28th, 2016. (<a href="http://docs.taffy.io/3.1.0#whats-new-in-310">changelog</a>)</p>
 
 					<h3>Documentation</h3>
@@ -71,6 +72,14 @@
 					var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
 					document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
 
+					function showVersion(releases){
+						$version = document.getElementById('version');
+						var published = Date.parse(releases[0].published_at);
+						var dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+						var content = `<strong>Version ${releases[0].name}</strong> was released on ${published.toLocaleDateString(undefined, dateOptions)}`;
+						$version.innerHTML = content;
+					}
+					
 					function addContributors(payload){
 						var $contribs = document.getElementById('contributors');
 						payload.data.forEach(function(contrib){
@@ -87,6 +96,7 @@
 					}
 				</script>
 				<script src="https://api.github.com/repos/atuttle/Taffy/stats/contributors?callback=addContributors"></script>
+				<script src="https://api.github.com/repos/atuttle/taffy/releases?per_page=1&callback=showVersion"></script>
 				<script type="text/javascript">
 					try {
 						var pageTracker = _gat._getTracker("UA-2284831-5");
