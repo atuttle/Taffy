@@ -73,11 +73,11 @@
 					document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
 
 					function showVersion(releases){
-						console.log(releases);
+						var release = releases.data[0];
 						$version = document.getElementById('version');
-						var published = Date.parse(releases[0].published_at);
+						var published = Date.parse(release.published_at);
 						var dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-						var content = `<strong>Version ${releases[0].name}</strong> was released on ${published.toLocaleDateString(undefined, dateOptions)}`;
+						var content = `<strong>Version ${release.name}</strong> was released on ${published.toLocaleDateString(undefined, dateOptions)}`;
 						$version.innerHTML = content;
 					}
 					
