@@ -73,6 +73,7 @@
 					document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
 
 					function showVersion(releases){
+						console.log(releases);
 						$version = document.getElementById('version');
 						var published = Date.parse(releases[0].published_at);
 						var dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
