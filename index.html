@@ -77,7 +77,7 @@
 						$version = document.getElementById('version');
 						var published = new Date(release.published_at);
 						var dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-						var content = `<strong>Version ${release.name}</strong> was released on ${published.toLocaleString(undefined, dateOptions)}`;
+						var content = `<strong>Version ${release.name}</strong> was released on ${published.toLocaleString(undefined, dateOptions)}. (<a href="${release.html_url}">changelog</a>)`;
 						$version.innerHTML = content;
 					}
 					
