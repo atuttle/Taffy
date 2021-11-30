@@ -74,11 +74,10 @@
 
 					function showVersion(releases){
 						var release = releases.data[0];
-						window.release = release;
 						$version = document.getElementById('version');
-						var published = Date.parse(release.published_at);
+						var published = new Date(release.published_at);
 						var dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-						var content = `<strong>Version ${release.name}</strong> was released on ${published.toLocaleDateString(undefined, dateOptions)}`;
+						var content = `<strong>Version ${release.name}</strong> was released on ${published.toLocaleString(undefined, dateOptions)}`;
 						$version.innerHTML = content;
 					}
 					
