@@ -361,8 +361,10 @@
 						</cfif>
 						<!--- returns a representation-object --->
 						<cfset m.beforeResource = getTickCount() />
+						<cfset _taffyRequest.resource = application._taffy.factory.getBean(_taffyRequest.matchDetails.beanName) />
+						<cfset _taffyRequest.resource.init( types: application._taffy.types ) />
 						<cfinvoke
-							component="#application._taffy.factory.getBean(_taffyRequest.matchDetails.beanName)#"
+							component="#_taffyRequest.resource#"
 							method="#_taffyRequest.method#"
 							argumentcollection="#_taffyRequest.requestArguments#"
 							returnvariable="_taffyRequest.result"
@@ -661,6 +663,14 @@
 			REReplace(local._taffy.settings.unhandledPaths, '(\+|\*|\?|\.|\[|\^|\$|\(|\)|\{|\||\\)', '\\\1', 'all' ),
 			',', '|', 'all' )
 		/>
+		<!--- load all queued type paths --->
+		<cfif request.keyExists('_typesPathQueue')>
+			<cfscript>
+				for ( var path in request._typesPathQueue ){
+					loadTypes(local._taffy, path);
+				}
+			</cfscript>
+		</cfif>
 		<!--- if resources folder exists, use internal bean factory --->
 		<cfset local.resourcePath = guessResourcesFullPath() />
 		<cfset local.noResources = false />
@@ -831,6 +841,32 @@
 			<cfset requestObj.methodMetadata = StructNew() />
 		</cfif>
 		<cfreturn requestObj />
+	</cffunction>
+
+	<cffunction name="addTypesPath" access="public" output="false">
+		<cfargument name="path" />
+		<cfparam name="request._typesPathQueue" default="#arrayNew(1)#" />
+		<cfset arrayAppend( request._typesPathQueue, arguments.path ) />
+	</cffunction>
+
+	<cffunction name="loadTypes" access="private">
+		<cfargument name="_taffy" />
+		<cfargument name="typesPath" type="string" required="true" />
+		<cfparam name="arguments._taffy.types" default="#{}#" />
+		<cfset var absoluteTypesPath = expandPath(arguments.typesPath) />
+		<cfdirectory action="list" directory="#absoluteTypesPath#" filter="*.cfc" name="local.types" recurse="true" />
+		<cfscript>
+			for ( var f in local.types ){
+				var n = f.name;
+				var ext = listLast(n, '.');
+				if ( ext == 'cfc'){
+					var noExt = rereplace(n, '\.cfc$', '');
+					var clean = replace(noExt, '.', '', 'ALL');
+					var dotted = rereplace('#arguments.typesPath#/#noExt#', '/', '.', 'ALL');
+					arguments._taffy.types[ clean ] = createObject('component', dotted);
+				}
+			}
+		</cfscript>
 	</cffunction>
 
 	<cffunction name="formatFromURI" access="private" output="false">

@@ -1,5 +1,16 @@
 <cfcomponent hint="base class for taffy REST components">
 
+	<cfset variables.types = {} />
+
+	<!---
+		TODO: document that this is a breaking change
+		If someone already has an init method on their resources they'll have to make sure they call super()
+	--->
+	<cffunction name="init">
+		<cfargument name="types" />
+		<cfset variables.types = arguments.types />
+	</cffunction>
+
 	<cffunction name="forceString">
 		<cfargument name="data" required="true" hint="the data that is being forced to serialize as a string" />
 		<cfreturn chr(2) & arguments.data />
@@ -21,10 +32,6 @@
 
 	<cffunction name="noData" access="private" output="false" hint="use this function to return only headers to the consumer, no data">
 		<cfreturn getRepInstance().noData() />
-	</cffunction>
-
-	<cffunction name="noContent" access="private" output="false" hint="use this function to return only headers to the consumer, no data">
-		<cfreturn getRepInstance().noContent() />
 	</cffunction>
 
 	<cffunction name="streamFile" access="private" output="false" hint="Use this function to specify a file name (eg c:\tmp\kitten.jpg) to be streamed to the client. When you use this method it is *required* that you also use .withMime() to specify the mime type.">
@@ -80,6 +87,23 @@
 		</cfscript>
 	</cffunction>
 
+	<cffunction name="queryToArrayOf" access="private" returntype="array" output="false">
+		<cfargument name="q" type="query" required="yes" />
+		<cfargument name="t" type="string" required="yes" />
+		<cfargument name="f" type="array" required="no" default="#arrayNew(1)#" />
+		<cfargument name="cb" type="any" required="no" />
+		<cfscript>
+			//todo: what about `f` (field list override)?
+			// return (application._taffy);abort;
+			var args = { q: arguments.q };
+			if ( structKeyExists( arguments, "cb" ) ) {
+				args.cb = arguments.cb;
+			}
+			var local.data = arguments.t.fromQuery(argumentCollection: args);
+			return local.data;
+		</cfscript>
+	</cffunction>
+
 	<cffunction name="queryToStruct" access="private" returntype="struct" output="false">
 		<cfargument name="q" type="query" required="yes" />
 		<cfargument name="cb" type="any" required="no" />
@@ -132,7 +156,7 @@
 			<cfreturn createObject("component", arguments.repClass) />
 		</cfif>
 	</cffunction>
-	
+
 	<cffunction name="addDebugData" access="package" output="false">
 		<cfargument name="data" type="any" />
 		<cfset request.debugData = arguments.data />
