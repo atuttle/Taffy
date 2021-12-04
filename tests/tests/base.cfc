@@ -49,6 +49,7 @@
 				</cfloop>
 			</cfhttp>
 		</cfif>
+		<cfdump var="#local.result#" abort />
 		<cfreturn local.result />
 	</cffunction>
 
