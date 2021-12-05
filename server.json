@@ -12,7 +12,7 @@
     "webroot": "./",
     "HTTP": {
       "enable": true,
-      "port": 80
+      "port": 5001
     }
   }
 }
