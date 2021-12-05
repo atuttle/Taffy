@@ -26,10 +26,10 @@
     "BugLogHQ": "git+https://github.com/oarevalo/BugLogHQ.git"
   },
   "installPaths": {
-    "testbox": "tests/testbox/",
-    "di1": "tests/di1/",
-    "Hoth": "tests/Hoth/",
-    "BugLogHQ": "tests/BugLogHQ/"
+    "testbox": "testbox/",
+    "di1": "di1/",
+    "Hoth": "Hoth/",
+    "BugLogHQ": "BugLogHQ/"
   },
   "engines": [
     {
@@ -56,7 +56,7 @@
   "testbox": {
     "runner": [
       {
-        "default": "http://localhost/tests/run.cfm"
+        "default": "http://localhost:5001/tests/test.cfm"
       }
     ],
     "directory": "tests"

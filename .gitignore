@@ -14,9 +14,15 @@ node_modules/*
 #testbox
 tests/testbox
 
+#these things get installed as part of a test run
+di1
+Hoth
+BugLogHQ
+testbox
 tests/di1
 tests/Hoth
 tests/BugLogHQ
+tests/testbox
 
 ### Intellij ###
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm
