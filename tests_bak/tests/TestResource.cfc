@@ -1,9 +1,11 @@
 component extends="base" {
 
-
-
 		function beforeTests(){
 			variables.taffy = createObject("component","taffy.tests.Application");
+			variables.taffy.onApplicationStart();
+			makePublic(variables.taffy, "setupFramework");
+			variables.taffy.setupFramework();
+			// writeDump(application);abort;
 			variables.resource = createObject("component", "taffy.core.resource");
 		}
 
@@ -33,7 +35,7 @@ component extends="base" {
 			assertTrue( (local.serialized eq '[{"Foo":42,"Bar":"fubar"}]') or (local.serialized eq '[{"Bar":"fubar","Foo":42}]') );
 		}
 
-	
+
 
 	/* recursive method used to check entire inheritance tree to find that a certain parent class exists somewhere within it */
 	private boolean function eventuallyInherits(required struct md, required string class) {

@@ -9,6 +9,8 @@
 		this.mappings["/Hoth"] = this.dirPath & "Hoth/";
 		this.mappings["/di1"] = this.dirPath & "di1/";
 
+		// writedump(this);abort;
+
 		this.system = createObject("java", "java.lang.System");
 		this.datasources["bugLog"] = {
 		  		class: (structKeyExists(server, "lucee")) ? 'org.gjt.mm.mysql.Driver' : 'com.mysql.jdbc.Driver',

@@ -5,12 +5,14 @@
 	<cfset this.appDirectory = getDirectoryFromPath(getCurrentTemplatePath())>
 	<cfset this.parentDirectory = reReplace(this.appDirectory, "(.+[/\\])tests[/\\]$", "\1")>
 	<cfset this.mappings = structNew()>
-	<cfset this.mappings["/mxunit"] = this.parentDirectory & "testbox/system/compat/">
 	<cfset this.mappings["/testbox"] = this.parentDirectory & "testbox/">
+	<cfset this.mappings["/mxunit"] = this.parentDirectory & "testbox/system/compat/">
 	<cfset this.mappings["/Hoth"] = this.parentDirectory & "Hoth/">
 	<cfset this.mappings["/di1"] = this.parentDirectory & "di1/">
 	<cfset this.mappings["/bugLog"] = this.parentDirectory & "BugLogHQ/">
 	<cfset this.mappings["/taffy"] = ListDeleteAt(this.parentDirectory, listLen(this.parentDirectory, '/\') , '/\') >
+
+	<!--- <cfdump var="#this#" abort /> --->
 
 	<cfscript>
 		//remove bugLogHQ Application.cfc so we can override datasource definition
@@ -21,6 +23,7 @@
 
 	<cffunction name="onRequestStart" returnType="void" access="public" output="false">
 		<cfif NOT isDefined('application._taffy')>
+			<cfdump var="initializing parent api" abort />
 			<cfset local.apiRootURL	= getDirectoryFromPath(cgi.script_name) />
 			<cfset local.apiRootURL	= listDeleteAt(local.apiRootURL,listLen(local.apiRootURL,'/'),'/') />
 			<cfhttp method="GET" url="http://#CGI.SERVER_NAME#:#CGI.SERVER_PORT##local.apiRootURL#/index.cfm" />
