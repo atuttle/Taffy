@@ -23,5 +23,6 @@ jobs:
         uses: pixl8/github-action-box-test@v3
         with:
           verbose: true
+          test_dir: /
           test_server_json: /server.json
           output_file: /tests/test-results.txt

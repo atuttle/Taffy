@@ -56,7 +56,7 @@
   "testbox": {
     "runner": [
       {
-        "default": "http://localhost:5001/test.cfm"
+        "default": "http://localhost:5001/tests/test.cfm"
       }
     ],
     "directory": "tests"
