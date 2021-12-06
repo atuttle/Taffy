@@ -187,26 +187,78 @@
 	<!--- :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: --->
 	<!--- :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: --->
 
-	<!--- short-circuit logic --->
 	<cffunction name="onRequest" output="true" returntype="boolean">
 		<cfargument name="targetPage" type="string" required="true" />
 
-		<cfset var _taffyRequest = {} />
-		<cfset var local = {} />
-		<cfset var m = '' />
-		<cfset request._taffyRequest = _taffyRequest />
-		<cfset local.debug = false />
+		<cfscript>
+			var _taffyRequest = 0;
+			var _taffyResponse = { headers: {} };
 
-		<cfset _taffyRequest.metrics = {} />
-		<cfset m = _taffyRequest.metrics />
-		<cfset m.init = getTickCount() />
+			try {
+				// will output and abort if applicable
+				handleDashboard();
 
+				request._taffyRequest = _taffyRequest; //copied by ref
+				metricsHeader("X-TIME-IN-INITIALIZE", function(){
+					// initialization
+					_taffyRequest = initializeRequest();
+					structAppend(_taffyResponse.headers, application._taffy.settings.globalHeaders);
+				});
+
+				// parse the request
+				metricsHeader("X-TIME-IN-PARSE", function(){
+					var parsed = parseRequest();
+					structAppend(_taffyRequest, parsed);
+				});
+
+				// CORS headers
+				metricsHeader("X-TIME-IN-CORS", function(){
+					var corsHeaders = handleCORS(_taffyRequest);
+					structAppend(_taffyResponse.headers, corsHeaders);
+				});
+
+				// handle requested response mime not available
+				detectUnsupportedResponseFormat(_taffyRequest);
+
+				// service the request
+				serviceRequest(_taffyRequest);
+				_taffyResponse.fromService = _taffyRequest.result;
+
+				// output result
+				respond(_taffyRequest, _taffyResponse);
+
+				return true;
+			}catch(any e){
+				//output any headers we've collected before bubbling up to the exception handler
+				addHeaders(_taffyResponse.headers);
+				rethrow;
+			}
+		</cfscript>
+	</cffunction>
+
+	<cffunction name="metricsHeader">
+		<cfargument name="headerName" required="true" type="string" />
+		<cfargument name="callback" required="true" />
+		<cfscript>
+			var startTime = getTickCount();
+			callback();
+			var stopTime = getTickCount();
+			var duration = stopTime - startTime;
+		</cfscript>
+		<cfheader name="#arguments.headerName#" value="#duration#" />
+	</cffunction>
+
+	<cffunction name="initializeRequest">
 		<!--- enable/disable debug output per settings --->
 		<cfif not structKeyExists(url, application._taffy.settings.debugKey)>
 			<cfsetting showdebugoutput="false" />
 		</cfif>
 
-		<!--- display api dashboard if requested --->
+		<cfset var _taffyRequest = {} />
+		<cfreturn _taffyRequest />
+	</cffunction>
+
+	<cffunction name="handleDashboard" access="private">
 		<cfif
 			NOT structKeyExists(url,application._taffy.settings.endpointURLParam)
 			AND NOT structKeyExists(form,application._taffy.settings.endpointURLParam)
@@ -231,356 +283,378 @@
 				</cfif>
 			</cfif>
 		</cfif>
+	</cffunction>
 
-		<!--- get request details --->
-		<cfset m.beforeParse = getTickCount() />
-		<cfset local.parsed = parseRequest() />
-		<cfset m.afterParse = getTickCount() />
-		<cfset structAppend(_taffyRequest, local.parsed) />
-		<cfset m.parseTime = m.afterParse - m.beforeParse />
-
-		<!--- CORS headers (so that CORS can pass even if the resource throws an exception) --->
-		<cfset local.allowVerbs = uCase(structKeyList(_taffyRequest.matchDetails.methods)) />
+	<cffunction name="handleCORS">
+		<cfargument name="_taffyRequest" required="true" />
+		<cfset headers = {} />
+		<cfset var allowVerbs = uCase(structKeyList(_taffyRequest.matchDetails.methods)) />
 		<cfif (application._taffy.settings.allowCrossDomain eq true or len(application._taffy.settings.allowCrossDomain) gt 0)
 				AND listFindNoCase('PUT,PATCH,DELETE,OPTIONS',_taffyRequest.verb)
-				AND NOT listFind(local.allowVerbs,'OPTIONS')>
-		    <cfset local.allowVerbs = listAppend(local.allowVerbs,'OPTIONS') />
+				AND NOT listFind(allowVerbs,'OPTIONS')>
+			<cfset allowVerbs = listAppend(allowVerbs,'OPTIONS') />
 		</cfif>
 		<cfif structKeyExists(_taffyRequest.headers, "origin") AND (application._taffy.settings.allowCrossDomain eq true or len(application._taffy.settings.allowCrossDomain) gt 0)>
 			<cfif application._taffy.settings.allowCrossDomain eq true>
-				<cfheader name="Access-Control-Allow-Origin" value="*" />
+				<cfset headers['Access-Control-Allow-Origin'] = '*' />
 			<cfelse>
 				<!---
 					The Access-Control-Allow-Origin header can only have 1 value so we check to see if the Origin header is
 					in the list of origins specified in the config setting and parrot back the Origin header if so.
 					We also need to add the Access-Control-Allow-Credentials header and set it to true for those type requests
 				--->
-				<cfset local.domains = listToArray( application._taffy.settings.allowCrossDomain, ', ;' )>
+				<cfset var domains = listToArray( application._taffy.settings.allowCrossDomain, ', ;' )>
 				<cfif structKeyExists(_taffyRequest.headers, "origin")>
-					<cfloop from="1" to="#arrayLen( local.domains )#" index="local.i">
-						<cfif lcase( rereplace( _taffyRequest.headers.origin, "(http|https):\/\/", "", "all" ) ) EQ lcase( rereplace( local.domains[ local.i ], "(http|https):\/\/", "", "all" ) ) >
-							<cfheader name="Access-Control-Allow-Origin" value="#_taffyRequest.headers.origin#" />
-							<cfheader name="Access-Control-Allow-Credentials" value="true" />
+					<cfloop from="1" to="#arrayLen( domains )#" index="local.i">
+						<cfif lcase( rereplace( _taffyRequest.headers.origin, "(http|https):\/\/", "", "all" ) ) EQ lcase( rereplace( domains[ local.i ], "(http|https):\/\/", "", "all" ) ) >
+							<cfset headers['Access-Control-Allow-Origin'] = _taffyRequest.headers.origin />
+							<cfset headers['Access-Control-Allow-Credentials'] = 'true' />
 							<cfbreak>
 						</cfif>
 					</cfloop>
 				</cfif>
 			</cfif>
-			<cfheader name="Access-Control-Allow-Methods" value="#local.allowVerbs#" />
+			<cfheader name="Access-Control-Allow-Methods" value="#allowVerbs#" />
 			<!--- Why do we parrot back these headers? See: https://github.com/atuttle/Taffy/issues/144 --->
 			<cfif not structKeyExists(_taffyRequest.headers, "Access-Control-Request-Headers")>
-				<cfheader name="Access-Control-Allow-Headers" value="Origin, Authorization, X-CSRF-Token, X-Requested-With, Content-Type, X-HTTP-Method-Override, Accept, Referrer, User-Agent" />
+				<cfset headers['Access-Control-Allow-Headers'] = 'Origin, Authorization, X-CSRF-Token, X-Requested-With, Content-Type, X-HTTP-Method-Override, Accept, Referrer, User-Agent' />
 			<cfelse>
 				<!--- parrot back all of the request headers to allow the request to continue (can we improve on this?) --->
-				<cfset local.allowedHeaders = {} />
-				<cfloop list="Origin,Authorization,X-CSRF-Token,X-Requested-With,Content-Type,X-HTTP-Method-Override,Accept,Referrer,User-Agent" index="local.h">
-					<cfset local.allowedHeaders[local.h] = 1 />
+				<cfset var allowedHeaders = {} />
+				<cfset var h = '' />
+				<cfloop list="Origin,Authorization,X-CSRF-Token,X-Requested-With,Content-Type,X-HTTP-Method-Override,Accept,Referrer,User-Agent" index="h">
+					<cfset allowedHeaders[h] = 1 />
 				</cfloop>
-				<cfset local.requestedHeaders = _taffyRequest.headers['Access-Control-Request-Headers'] />
-				<cfloop list="#local.requestedHeaders#" index="local.i">
-					<cfset local.allowedHeaders[ local.i ] = 1 />
+				<cfset var requestedHeaders = _taffyRequest.headers['Access-Control-Request-Headers'] />
+				<cfset var i = 0 />
+				<cfloop list="#requestedHeaders#" index="i">
+					<cfset allowedHeaders[ i ] = 1 />
 				</cfloop>
-				<cfheader name="Access-Control-Allow-Headers" value="#structKeyList(local.allowedHeaders)#" />
+				<cfset headers['Access-Control-Allow-Headers'] = structKeyList(allowedHeaders) />
 			</cfif>
 		</cfif>
 
-		<!--- global headers --->
-		<cfset addHeaders(getGlobalHeaders()) />
-
-		<!---
-			Now we know everything we need to know to service the request. let's service it!
-		--->
-
-		<!--- ...after we let the api developer know all of the request details first... --->
-		<cfset m.beforeOnTaffyRequest = getTickCount() />
-		<cfset _taffyRequest.continue = onTaffyRequest(
-			_taffyRequest.verb
-			,_taffyRequest.matchDetails.beanName
-			,_taffyRequest.requestArguments
-			,_taffyRequest.returnMimeExt
-			,_taffyRequest.headers
-			,_taffyRequest.methodMetadata
-			,local.parsed.matchDetails.srcUri
-		) />
-		<cfset m.afterOnTaffyRequest = getTickCount() />
-		<cfset m.otrTime = m.afterOnTaffyRequest - m.beforeOnTaffyRequest />
-
-		<cfif not structKeyExists(_taffyRequest, "continue")>
-			<!--- developer forgot to return true --->
-			<cfthrow
-				message="Error in your onTaffyRequest method"
-				detail="Your onTaffyRequest method returned no value. Expected: Return TRUE or call noData()/representationOf()."
-				errorcode="400"
-			/>
+		<cfif NOT listFind(allowVerbs,_taffyRequest.verb)>
+			<!--- if the verb is not implemented, refuse the request --->
+			<cfset headers['ALLOW'] = allowVerbs />
+			<!--- TODO: if we throw we won't have access to the headers variable :o( --->
+			<cfset throwError(405, "Method Not Allowed") />
 		</cfif>
 
-		<cfif isObject(_taffyRequest.continue)>
-			<!--- inspection complete but request has been aborted by developer; return custom response --->
-			<cfset _taffyRequest.result = duplicate(_taffyRequest.continue) />
-			<cfset structDelete(_taffyRequest, "continue")/>
-			<cfset m.resourceTime = 0 />
-		<cfelse>
-			<!--- inspection complete and request allowed by developer --->
+		<cfreturn headers />
+	</cffunction>
 
-			<!--- handle requests for simulated responses --->
-			<cfif structKeyExists(_taffyRequest.requestArguments, application._taffy.settings.simulateKey) and _taffyRequest.requestArguments[application._taffy.settings.simulateKey] eq application._taffy.settings.simulatePassword>
-				<!--- is there a simulated response? --->
-				<cfset sampler = 'sample#_taffyRequest.method#Response' />
-				<cfif structKeyExists(_taffyRequest.matchDetails.metadata, sampler)>
-					<!--- get simulated response --->
-					<cfinvoke
-						component="#application._taffy.factory.getBean(_taffyRequest.matchDetails.beanName)#"
-						method="#sampler#"
-						returnvariable="_taffyRequest.result"
-					/>
-					<cfset _taffyRequest.result = rep(_taffyRequest.result) />
-				<cfelse>
-					<!--- no method for simulated response, so return 400 --->
-					<cfset _taffyRequest.result = noData().withStatus(400, "No Sample Response Available") />
-				</cfif>
-			<cfelse>
-				<!--- send request to service --->
-				<cfif structKeyExists(_taffyRequest.matchDetails.methods, _taffyRequest.verb)>
-					<!--- check the cache before we call the resource --->
-					<cfset m.cacheCheckTime = getTickCount() />
-					<cfset local.cacheKey = getCacheKey(
-						_taffyRequest.matchDetails.beanName
-						,_taffyRequest.requestArguments
-						,local.parsed.matchDetails.srcUri
-					) />
-					<cfif ucase(_taffyRequest.verb) eq "GET" and validCacheExists(local.cacheKey)>
-						<cfset m.cacheCheckTime = getTickCount() - m.cacheCheckTime />
-						<cfset m.cacheGetTime = getTickCount() />
-						<cfset _taffyRequest.result = getCachedResponse(local.cacheKey) />
-						<cfset m.cacheGetTime = m.cacheGetTime - getTickCount() />
-					<cfelse>
-						<cfif ucase(_taffyRequest.verb) eq "GET">
-							<cfset m.cacheCheckTime = getTickCount() - m.cacheCheckTime />
-						<cfelse>
-							<cfset structDelete(m, "cacheCheckTime") />
-						</cfif>
-						<!--- returns a representation-object --->
-						<cfset m.beforeResource = getTickCount() />
-						<cfinvoke
-							component="#application._taffy.factory.getBean(_taffyRequest.matchDetails.beanName)#"
-							method="#_taffyRequest.method#"
-							argumentcollection="#_taffyRequest.requestArguments#"
-							returnvariable="_taffyRequest.result"
-						/>
-						<cfset m.afterResource = getTickCount() />
-						<cfset m.resourceTime = m.afterResource - m.beforeResource />
-						<cfif !isDefined("_taffyRequest.result")>
-							<cfthrow
-								message="Resource did not return a value"
-								detail="The resource is expected to return a call to rep()/representationOf() or noData(). It appears there was no return at all."
-								errorcode="taffy.resources.ResourceReturnsNothing"
-							/>
-						</cfif>
-						<!--- If the type returned is not an instance of baseSerializer, wrap it with a call to rep().
-						This way we can directly return the object instead of a serializer from resource actions. --->
-						<cfif !isInstanceOf(_taffyRequest.result, "taffy.core.baseSerializer")>
-							<cfset _taffyRequest.result = rep(_taffyRequest.result) />
-						</cfif>
-						<cfif ucase(_taffyRequest.verb) eq "GET" and structKeyExists(local, "cacheKey")>
-							<cfset m.cacheSaveStart = getTickCount() />
-							<cfset setCachedResponse(local.cacheKey, _taffyRequest.result) />
-							<cfset m.cacheSaveTime = getTickCount() - m.cacheSaveStart />
-						</cfif>
-					</cfif>
-				<cfelseif NOT listFind(local.allowVerbs,_taffyRequest.verb)>
-					<!--- if the verb is not implemented, refuse the request --->
-					<cfheader name="ALLOW" value="#local.allowVerbs#" />
-					<cfset throwError(405, "Method Not Allowed") />
-				<cfelse>
-					<!--- create dummy response for cross domain OPTIONS request --->
-					<cfset _taffyRequest.resultHeaders = structNew() />
-					<cfset _taffyRequest.statusArgs = structNew() />
-					<cfset _taffyRequest.statusArgs.statusCode = 200 />
-					<cfset _taffyRequest.statusArgs.statusText = 'OK' />
-				</cfif>
-			</cfif>
-
-		</cfif>
-		<!--- make sure the requested mime type is available --->
+	<cffunction name="detectUnsupportedResponseFormat">
+		<cfargument name="_taffyRequest" required="true" />
 		<cfif not mimeSupported(_taffyRequest.returnMimeExt)>
 			<cfset throwError(400, "Requested format not available (#_taffyRequest.returnMimeExt#)") />
 		</cfif>
+	</cffunction>
 
-		<cfif structKeyExists(_taffyRequest,'result')>
-			<!--- get status code --->
-			<cfset _taffyRequest.statusArgs = structNew() />
-			<cfset _taffyRequest.statusArgs.statusCode = _taffyRequest.result.getStatus() />
-			<cfset _taffyRequest.statusArgs.statusText = _taffyRequest.result.getStatusText() />
-			<!--- get custom headers --->
-			<cfinvoke
-				component="#_taffyRequest.result#"
-				method="getHeaders"
-				returnvariable="_taffyRequest.resultHeaders"
-			/>
-		</cfif>
+	<cffunction name="checkCache">
+		<cfargument name="_taffyRequest" required="true" />
+		<cfscript>
+			var cachedResponse = "not-found-in-cache";
+			metricsHeader("X-TIME-IN-CACHE-GET", function(){
+				var cacheKey = getCacheKey(
+					_taffyRequest.matchDetails.beanName
+					,_taffyRequest.requestArguments
+					,_taffyRequest.matchDetails.srcUri
+				);
+				if ( ucase(_taffyRequest.verb) == "GET" and validCacheExists(cacheKey) ){
+					cachedResponse = getCachedResponse(cacheKey);
+				}
+			});
+			if ( cachedResponse == "not-found-in-cache" ){
+				return;
+			}
+			return cachedResponse;
+		</cfscript>
+	</cffunction>
 
+	<cffunction name="upsertCache">
+		<cfargument name="_taffyRequest" required="true" />
+		<cfscript>
+			metricsHeader("X-TIME-IN-CACHE-SET", function(){
+				var cacheKey = getCacheKey(
+					_taffyRequest.matchDetails.beanName
+					,_taffyRequest.requestArguments
+					,_taffyRequest.matchDetails.srcUri
+				);
+				//TODO: update the cache
+				setCachedResponse(cacheKey, _taffyRequest.result);
+			});
+		</cfscript>
+	</cffunction>
+
+	<cffunction name="serviceRequest">
+		<cfargument name="_taffyRequest" required="true" />
+		<cfscript>
+			metricsHeader("X-TIME-IN-ONTAFFYREQUEST", function(){
+				_taffyRequest.continue = onTaffyRequest(
+					_taffyRequest.verb
+					,_taffyRequest.matchDetails.beanName
+					,_taffyRequest.requestArguments
+					,_taffyRequest.returnMimeExt
+					,_taffyRequest.headers
+					,_taffyRequest.methodMetadata
+					,_taffyRequest.matchDetails.srcUri
+				);
+
+				if (!structKeyExists(_taffyRequest, "continue")){
+					throw (
+						message: "Error in your onTaffyRequest method",
+						detail: "Your onTaffyRequest method returned no value. Expected: Return TRUE or call noData()/rep().",
+						errorcode: "400"
+					);
+				}
+			});
+
+			if (!mimeSupported(_taffyRequest.returnMimeExt)){
+				throwError(400, "Requested format not available (#_taffyRequest.returnMimeExt#)");
+			}
+
+			var interrupt = isObject(_taffyRequest.continue);
+			var simulateKeyMatch = structKeyExists(_taffyRequest.requestArguments, application._taffy.settings.simulateKey);
+			var simulatePasswordMatch = simulateKeyMatch && _taffyRequest.requestArguments[application._taffy.settings.simulateKey] == application._taffy.settings.simulatePassword;
+			var isSimulatedRequest = simulateKeyMatch && simulatePasswordMatch;
+
+			// request has been interrupted by developer; return custom response
+			if (interrupt){
+				_taffyRequest.result = duplicate(_taffyRequest.continue);
+				structDelete(_taffyRequest, "continue");
+				return;
+			}
+
+			if ( isSimulatedRequest ){
+				// is there a simulated response?
+				var sampler = 'sample#_taffyRequest.method#Response';
+				if (structKeyExists(_taffyRequest.matchDetails.metadata, sampler)){
+					// get simulated response
+					var resource = application._taffy.factory.getBean(_taffyRequest.matchDetails.beanName);
+					var getSample = resource[sampler];
+					_taffyRequest.result = rep(getSample());
+				}else {
+					// no method for simulated response, so return 400
+					_taffyRequest.result = noData().withStatus(400, "No Sample Response Available");
+				}
+				return;
+			}
+
+			var cachedResponse = checkCache(_taffyRequest);
+			//void response = not cached
+			if ( isDefined("cachedResponse") ){
+				_taffyRequest.result = cachedResponse;
+				return;
+			}
+
+			// ask resource to handle the request
+			metricsHeader("X-TIME-IN-RESOURCE", function(){
+				// returns a representation object
+				var resource = application._taffy.factory.getBean(_taffyRequest.matchDetails.beanName);
+				var handler = resource[_taffyRequest.method];
+				_taffyRequest.result = handler( argumentCollection: _taffyRequest.requestArguments );
+
+				if (!isDefined("_taffyRequest.result")){
+					throw(
+						message: "Resource did not return a value",
+						detail: "The resource is expected to return a call to rep()/representationOf() or noData(). It appears there was no return at all.",
+						errorcode: "taffy.resources.ResourceReturnsNothing"
+					);
+				}
+
+				// Allow resources to return bare data and automatically wrap with a rep() as needed.
+				if (!isInstanceOf(_taffyRequest.result, "taffy.core.baseSerializer")){
+					_taffyRequest.result = rep(_taffyRequest.result);
+				}
+			});
+
+			//update the cache if applicable
+			if (ucase(_taffyRequest.verb) == "GET"){
+				upsertCache(_taffyRequest);
+			}
+
+			return;
+		</cfscript>
+	</cffunction>
+
+	<cffunction name="respond">
+		<cfargument name="_taffyRequest" required="true" />
+		<cfargument name="_taffyResponse" required="true" />
+		<cfscript>
+			if (structKeyExists(_taffyRequest,'result')){
+				arguments._taffyResponse.statusArgs = {
+					statusCode: arguments._taffyRequest.result.getStatus(),
+					statusText: arguments._taffyRequest.result.getStatusText()
+				};
+				structAppend(arguments._taffyResponse.headers, arguments._taffyRequest.result.getHeaders());
+			}else{
+				//cross domain OPTIONS request (dummy response)
+				_taffyResponse.statusArgs = {
+					statusCode: 200,
+					statusText: 'OK'
+				};
+			}
+
+			//inspecting/filtering response headers to determine if Access-Control-Expose-Headers is necessary; including it in the response if it is
+			if (application._taffy.settings.exposeHeaders){
+				var exposeHeaderList = structKeyList(_taffyResponse.headers);
+				var exposeHeaderValue = "";
+				if (
+					application._taffy.settings.useEtags
+					&& _taffyRequest.verb == "GET"
+					&& _taffyRequest.result.getType() eq "textual"
+				){
+					exposeHeaderList = listAppend(exposeHeaderList, "Etag");
+				}
+				for (var exposeHeader in exposeHeaderList){
+					// filter out default simple response headers: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Expose-Headers
+					if (!listFindNoCase("Cache-Control,Content-Language,Content-Type,Expires,Last-Modified,Pragma", exposeHeader)){
+						exposeHeaderValue = listAppend(exposeHeaderValue, exposeHeader);
+					}
+				}
+				if (listLen(local.exposeHeaderValue) gt 0){
+					_taffyResponse.headers['Access-Control-Expose-Headers'] = exposeHeaderValue;
+				}
+			}
+
+			resetBuffer(_taffyRequest);
+
+			// output headers
+			cfheader(
+				statusCode: _taffyResponse.statusArgs.statusCode,
+				statusText: _taffyResponse.statusArgs.statusText
+			);
+			addHeaders(_taffyResponse.headers);
+
+			// output body (text/file/etc)
+			var resultSerialized = '';
+			if (structKeyExists(_taffyRequest,'result')){
+				_taffyResponse.resultType = _taffyRequest.result.getType();
+
+				if (_taffyResponse.resultType == "textual"){
+					// serialize the representation's data into the requested mime type
+					metricsHeader("X-TIME-IN-SERIALIZE", function(){
+						cfinvoke(
+							component: _taffyRequest.result,
+							method: "getAs#_taffyRequest.returnMimeExt#",
+							returnVariable: "_taffyResponse.resultSerialized"
+						);
+					});
+
+					// apply jsonp wrapper if requested
+					if (structKeyExists(_taffyRequest, "jsonpCallback")){
+						_taffyResponse.resultSerialized = _taffyRequest.jsonpCallback & "(" & _taffyResponse.resultSerialized & ");";
+					}
+
+					// don't return data if etags are enabled and the data hasn't changed
+					if (application._taffy.settings.useEtags && _taffyRequest.verb == "GET"){
+						// etag values are quoted per: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/ETag
+						if (structKeyExists(server, "lucee")){
+							// hashCode() will not work for lucee, see issue #354
+							_taffyResponse.serverEtag = '"' & hash(_taffyResponse.resultSerialized) & '"';
+						}else{
+							_taffyResponse.serverEtag = '"' & _taffyRequest.result.getData().hashCode() & '"';
+						}
+						if (structKeyExists(_taffyRequest.headers, "If-None-Match")){
+							_taffyRequest.clientEtag = _taffyRequest.headers['If-None-Match'];
+
+							if (len(_taffyRequest.clientEtag) > 0 && _taffyRequest.clientEtag == _taffyResponse.serverEtag){
+								cfheader(statuscode: 304, statustext: "Not Modified");
+								cfcontent(
+									reset: true,
+									type: "#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#; charset=utf-8"
+								);
+								return true;
+							}else{
+								cfheader(name="Etag", value="#_taffyResponse.serverEtag#");
+							}
+						}else{
+							cfheader(name="Etag", value="#_taffyResponse.serverEtag#");
+						}
+					}
+
+					cfcontent(
+						reset="true",
+						type="#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#; charset=utf-8"
+					);
+					if (_taffyResponse.resultSerialized neq ('"' & '"')){
+						resultSerialized = _taffyResponse.resultSerialized;
+					}
+
+					// debug output is only ever enabled for text responses (so it doesn't corrupt files)
+					var debug = false;
+					if (structKeyExists(url, application._taffy.settings.debugKey)){
+						debug = true;
+					}
+
+				}
+
+				if (_taffyResponse.resultType eq "filename"){
+					cfcontent(
+						reset="true",
+						file="#_taffyRequest.result.getFileName()#",
+						type="#_taffyRequest.result.getFileMime()#",
+						deletefile="#_taffyRequest.result.getDeleteFile()#"
+					);
+				}
+
+				if (_taffyResponse.resultType eq "filedata"){
+					cfcontent(
+						reset="true",
+						variable="#_taffyRequest.result.getFileData()#",
+						type="#_taffyRequest.result.getFileMime()#"
+					);
+				}
+
+				if (_taffyResponse.resultType eq "imagedata"){
+					cfcontent(
+						reset="true",
+						variable="#_taffyRequest.result.getImageData()#",
+						type="#_taffyRequest.result.getFileMime()#"
+					);
+				}
+			}
+
+			if (structKeyExists( _taffyResponse, "resultSerialized" )){
+				resultSerialized = _taffyResponse.resultSerialized;
+			}
+
+			var result = {};
+			if (structKeyExists( _taffyRequest, "result" )){
+				result = _taffyRequest.result.getData();
+			}
+
+			// ...after the service has finished...
+			metricsHeader("X-TIME-IN-ONTAFFYREQUESTEND", function(){
+				onTaffyRequestEnd(
+					_taffyRequest.verb
+					,_taffyRequest.matchDetails.beanName
+					,_taffyRequest.requestArguments
+					,_taffyRequest.returnMimeExt
+					,_taffyRequest.headers
+					,_taffyRequest.methodMetadata
+					,_taffyRequest.matchDetails.srcUri
+					,resultSerialized
+					,result
+					,_taffyResponse.statusArgs.statusCode
+					);
+			});
+
+			if (len(trim(resultSerialized))){
+				writeOutput("#resultSerialized#");
+			}
+
+			if (debug){
+				writeOutput('<h3>Request Details:</h3><cfdump var="#_taffyRequest#">');
+			}
+		</cfscript>
+	</cffunction>
+
+	<cffunction name="resetBuffer">
+		<cfargument name="_taffyRequest" required="true" />
 		<cfsetting enablecfoutputonly="true" />
-		<cfcontent reset="true" type="#getReturnMimeAsHeader(_taffyRequest.returnMimeExt)#; charset=utf-8" />
-		<cfheader statuscode="#_taffyRequest.statusArgs.statusCode#" statustext="#_taffyRequest.statusArgs.statusText#" />
-
-		<!--- headers --->
-		<cfset addHeaders(_taffyRequest.resultHeaders) />
-
-		<!--- add ALLOW header for current resource, which describes available verbs --->
-		<cfheader name="ALLOW" value="#local.allowVerbs#" />
-
-		<!--- metrics headers that should always apply --->
-		<cfheader name="X-TIME-IN-PARSE" value="#m.parseTime#" />
-		<cfheader name="X-TIME-IN-ONTAFFYREQUEST" value="#m.otrTime#" />
-		<cfif structKeyExists(m, "resourceTime")>
-			<cfheader name="X-TIME-IN-RESOURCE" value="#m.resourceTime#" />
-		</cfif>
-		<cfif structKeyExists(m, "cacheCheckTime")>
-			<cfheader name="X-TIME-IN-CACHE-CHECK" value="#m.cacheCheckTime#" />
-		</cfif>
-		<cfif structKeyExists(m, "cacheGetTime")>
-			<cfheader name="X-TIME-IN-CACHE-GET" value="#m.cacheGetTime#" />
-		</cfif>
-		<cfif structKeyExists(m, "cacheSaveTime")>
-			<cfheader name="X-TIME-IN-CACHE-SAVE" value="#m.cacheSaveTime#" />
-		</cfif>
-
-		<cfif application._taffy.settings.exposeHeaders>
-			<cfset local.exposeHeaderList = structKeyList(_taffyRequest.resultHeaders) />
-			<cfset local.exposeHeaderValue = "" />
-			<cfif application._taffy.settings.useEtags and _taffyRequest.verb eq "GET" and _taffyRequest.result.getType() eq "textual">
-				<cfset local.exposeHeaderList = listAppend(local.exposeHeaderList, "Etag") />
-			</cfif>
-			<cfloop list="#local.exposeHeaderList#" index="local.exposeHeader">
-				<!--- filter out default simple response headers: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Expose-Headers --->
-				<cfif not listFindNoCase("Cache-Control,Content-Language,Content-Type,Expires,Last-Modified,Pragma", local.exposeHeader)>
-					<cfset local.exposeHeaderValue = listAppend(local.exposeHeaderValue, local.exposeHeader) />
-				</cfif>
-			</cfloop>
-			<cfif listLen(local.exposeHeaderValue) gt 0>
-				<cfheader name="Access-Control-Expose-Headers" value="#local.exposeHeaderValue#" />
-			</cfif>
-		</cfif>
-
-		<!--- result data --->
-		<cfif structKeyExists(_taffyRequest,'result')>
-			<cfset _taffyRequest.resultType = _taffyRequest.result.getType() />
-			<cfset local.resultSerialized = '' />
-
-			<cfif _taffyRequest.resultType eq "textual">
-				<!--- serialize the representation's data into the requested mime type --->
-				<cfset _taffyRequest.metrics.beforeSerialize = getTickCount() />
-				<cfinvoke
-					component="#_taffyRequest.result#"
-					method="getAs#_taffyRequest.returnMimeExt#"
-					returnvariable="_taffyRequest.resultSerialized"
-				/>
-				<cfset _taffyRequest.metrics.afterSerialize = getTickCount() />
-				<cfset m.serializeTime = m.afterSerialize - m.beforeSerialize />
-				<cfheader name="X-TIME-IN-SERIALIZE" value="#m.serializeTime#" />
-
-				<!--- apply jsonp wrapper if requested --->
-				<cfif structKeyExists(_taffyRequest, "jsonpCallback")>
-					<cfset _taffyRequest.resultSerialized = _taffyRequest.jsonpCallback & "(" & _taffyRequest.resultSerialized & ");" />
-				</cfif>
-
-				<!--- don't return data if etags are enabled and the data hasn't changed --->
-				<cfif application._taffy.settings.useEtags and _taffyRequest.verb eq "GET">
-					<!--- etag values are quoted per: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/ETag --->
-					<cfif structKeyExists(server, "lucee")>
-						<!--- hashCode() will not work for lucee, see issue #354 --->
-						<cfset _taffyRequest.serverEtag = '"' & hash(_taffyRequest.resultSerialized) & '"' />
-					<cfelse>
-						<cfset _taffyRequest.serverEtag = '"' & _taffyRequest.result.getData().hashCode() & '"' />
-					</cfif>
-					<cfif structKeyExists(_taffyRequest.headers, "If-None-Match")>
-						<cfset _taffyRequest.clientEtag = _taffyRequest.headers['If-None-Match'] />
-
-						<cfif len(_taffyRequest.clientEtag) gt 0 and _taffyRequest.clientEtag eq _taffyRequest.serverEtag>
-							<cfheader statuscode="304" statustext="Not Modified" />
-							<cfcontent reset="true" type="#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#; charset=utf-8" />
-							<cfreturn true />
-						<cfelse>
-							<cfheader name="Etag" value="#_taffyRequest.serverEtag#" />
-						</cfif>
-					<cfelse>
-						<cfheader name="Etag" value="#_taffyRequest.serverEtag#" />
-					</cfif>
-				</cfif>
-
-				<cfset m.done = getTickCount() />
-				<cfset m.taffyTime = m.done - m.init - m.parseTime - m.otrTime - m.serializeTime />
-				<cfif structKeyExists(m, "resourceTime")>
-					<cfset m.taffyTime -= m.resourceTime />
-				</cfif>
-				<cfheader name="X-TIME-IN-TAFFY" value="#m.taffyTime#" />
-
-				<cfcontent reset="true" type="#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#; charset=utf-8" />
-				<cfif _taffyRequest.resultSerialized neq ('"' & '"')>
-					<cfset local.resultSerialized = _taffyRequest.resultSerialized />
-				</cfif>
-				<!--- debug output --->
-				<cfif structKeyExists(url, application._taffy.settings.debugKey)>
-					<cfset local.debug = true />
-				</cfif>
-
-			<cfelseif _taffyRequest.resultType eq "filename">
-				<cfset m.done = getTickCount() />
-				<cfset m.taffyTime = m.done - m.init - m.parseTime - m.otrTime - m.resourceTime />
-				<cfheader name="X-TIME-IN-TAFFY" value="#m.taffyTime#" />
-				<cfcontent reset="true" file="#_taffyRequest.result.getFileName()#" type="#_taffyRequest.result.getFileMime()#" deletefile="#_taffyRequest.result.getDeleteFile()#" />
-
-			<cfelseif _taffyRequest.resultType eq "filedata">
-				<cfset m.done = getTickCount() />
-				<cfset m.taffyTime = m.done - m.init - m.parseTime - m.otrTime - m.resourceTime />
-				<cfheader name="X-TIME-IN-TAFFY" value="#m.taffyTime#" />
-				<cfcontent reset="true" variable="#_taffyRequest.result.getFileData()#" type="#_taffyRequest.result.getFileMime()#" />
-
-			<cfelseif _taffyRequest.resultType eq "imagedata">
-				<cfset m.done = getTickCount() />
-				<cfset m.taffyTime = m.done - m.init - m.parseTime - m.otrTime - m.resourceTime />
-				<cfheader name="X-TIME-IN-TAFFY" value="#m.taffyTime#" />
-				<cfcontent reset="true" variable="#_taffyRequest.result.getImageData()#" type="#_taffyRequest.result.getFileMime()#" />
-
-			</cfif>
-		</cfif>
-
-		<cfset local.resultSerialized = "" />
-		<cfif structKeyExists( _taffyRequest, "resultSerialized" )>
-			<cfset local.resultSerialized = _taffyRequest.resultSerialized />
-		</cfif>
-
-		<cfset local.result = StructNew() />
-		<cfif structKeyExists( _taffyRequest, "result" )>
-			<cfset local.result = _taffyRequest.result.getData() />
-		</cfif>
-
-		<!--- ...after the service has finished... --->
-		<cfset m.beforeOnTaffyRequestEnd = getTickCount() />
-		<cfset onTaffyRequestEnd(
-			_taffyRequest.verb
-			,_taffyRequest.matchDetails.beanName
-			,_taffyRequest.requestArguments
-			,_taffyRequest.returnMimeExt
-			,_taffyRequest.headers
-			,_taffyRequest.methodMetadata
-			,local.parsed.matchDetails.srcUri
-			,local.resultSerialized
-			,local.result
-			,_taffyRequest.statusArgs.statusCode
-			) />
-		<cfset m.otreTime = getTickCount() - m.beforeOnTaffyRequestEnd />
-		<cfheader name="X-TIME-IN-ONTAFFYREQUESTEND" value="#m.otreTime#" />
-
-		<cfif len(trim(local.resultSerialized))>
-			<cfoutput>#local.resultSerialized#</cfoutput>
-		</cfif>
-		<!--- debug output --->
-		<cfif local.debug>
-			<cfoutput><h3>Request Details:</h3><cfdump var="#_taffyRequest#"></cfoutput>
-		</cfif>
-
-		<cfreturn true />
+		<cfcontent reset="true" type="#getReturnMimeAsHeader(arguments._taffyRequest.returnMimeExt)#; charset=utf-8" />
 	</cffunction>
 
 	<!--- :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: --->
