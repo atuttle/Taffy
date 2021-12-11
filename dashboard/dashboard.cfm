@@ -623,11 +623,16 @@
 			}).always(function(a,b,c){
 				var after = Date.now(), t = after-before;
 				var xhr = (a && a.getAllResponseHeaders) ? a : c;
+				var responseText = xhr.responseText;
+				try {
+					var testXml = $.parseXML( responseText );
+					responseText = responseText.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/(?:\r\n|\r|\n)/g, '<br>');
+				} catch(e){};
 				callback(
 					t
 					, xhr.status + " " + xhr.statusText		//status
-					, xhr.getAllResponseHeaders()				//headers
-					, xhr.responseText							//body
+					, xhr.getAllResponseHeaders()			//headers
+					, responseText					//body
 				);
 			});
 		}
