@@ -1,0 +1,14 @@
+changelog:
+  exclude:
+    labels:
+      - release-ignore
+  categories:
+    - title: Breaking Changes 🛠
+      labels:
+        - Semver-Major
+    - title: New Features 🎉
+      labels:
+        - Semver-Minor
+    - title: Other Changes & Fixes
+      labels:
+        - Semver-Patch
