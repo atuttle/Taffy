@@ -41,6 +41,11 @@
 			<cfset msg = variables.message />
 		</cfif>
 
+		<!--- You can use addDebugData() in resources to set this value --->
+		<cfif structKeyExists(request, "debugData") and not structKeyExists(exception, "extraInfo")>
+			<cfset exception.extraInfo = request.debugData />
+		</cfif>
+
 		<cfset var reqHeaders = getHTTPRequestData().headers />
 		<cfset var reqBody = getHTTPRequestData().content />
 		<!--- on input with content-type "application/json" CF seems to expose it as binary data. Here we convert it back to plain text --->
