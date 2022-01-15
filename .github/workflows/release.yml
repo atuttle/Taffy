@@ -67,11 +67,11 @@ jobs:
         git commit -m"New doc file ${{ steps.package-version.outputs.current-version }}.md"
         git push
 
-    - name: tweet
-      uses: ethomson/send-tweet-action@v1
+    - name: Tweet-trigger-publish-release
+      uses: mugi111/tweet-trigger-release@v1.1
       with:
-        status: "🍬 Taffy Version ${{steps.package-version.outputs.current-version}} was just released! https://github.com/atuttle/Taffy/releases/tag/v${{ steps.package-version.outputs.current-version }}"
-        consumer-key: ${{ secrets.TWITTER_CONSUMER_API_KEY }}
-        consumer-secret: ${{ secrets.TWITTER_CONSUMER_API_SECRET }}
-        access-token: ${{ secrets.TWITTER_ACCESS_TOKEN }}
-        access-token-secret: ${{ secrets.TWITTER_ACCESS_TOKEN_SECRET }}
+        consumer_key: ${{ secrets.TWITTER_CONSUMER_API_KEY }}
+        consumer_secret: ${{ secrets.TWITTER_CONSUMER_API_SECRET }}
+        access_token_key: ${{ secrets.TWITTER_ACCESS_TOKEN }}
+        access_token_secret: ${{ secrets.TWITTER_ACCESS_TOKEN_SECRET }}
+        tweet_body: "🍬 Taffy Version ${{steps.package-version.outputs.current-version}} was just released! https://github.com/atuttle/Taffy/releases/tag/v${{ steps.package-version.outputs.current-version }}"
