@@ -2,9 +2,9 @@
 
 The REST Web Service framework for ColdFusion and Lucee
 
-<a id="download" href="https://github.com/atuttle/Taffy/archive/v@next.zip">Download Taffy @next.zip</a>
+<a id="download" href="https://github.com/atuttle/Taffy/archive/v@version@.zip">Download Taffy @version@.zip</a>
 
-- [Release Notes](#whats-new-in-320)
+- [Release Notes](https://github.com/atuttle/testing-release-automations/releases/tag/v@version@)
 - [GitHub](https://github.com/atuttle/Taffy)
 - Join us in the **#taffy** chat room on the [CFML Slack](https://cfml-slack.herokuapp.com/)
 
@@ -1236,57 +1236,6 @@ When a request is made that wants XML back, Taffy calls the `getAsXML` method to
 
 And that &mdash;in a nutshell&mdash; is custom Serializers.
 
-## What's new in @next
+## Release Notes
 
-### Bug Fixes
-
-The following bugs were addressed:
-
-- [#314: Use a more secure location for the upload target folder in the file upload example](https://github.com/atuttle/Taffy/pull/314)
-- [#318: Fix improperly encoded url params in dashboard requests](https://github.com/atuttle/Taffy/pull/318)
-- [#319: Correct bad collapse behavior in generated documentation](https://github.com/atuttle/Taffy/pull/319)
-- [#365: noData() sends invalid response](https://github.com/atuttle/Taffy/pull/365) see: [noContent()](#nocontent-1)
-- [#395: Etag implementation doesn't follow specification](https://github.com/atuttle/Taffy/pull/395)
-- [#414: Fix taffy-docs links in dashboard](https://github.com/atuttle/Taffy/pull/414)
-
-### New Features
-
-#### Add automatic CSRF token headers to the dashboard \([#362](https://github.com/atuttle/Taffy/pull/362)\)
-
-Some front-end frameworks look for a CSRF token in responses and will include the last CSRF token response in the next request. If you've implemented this in your API, it breaks the dashboard because it doesn't do this for you. We've added some config ([csrfToken](#/3.3.0?id=csrftoken)) that you can use to tell the Taffy dashboard to do this by specifying the cookie name in which to find the current token, and the header name to use when adding it to the next request.
-
-#### Add `LogToLog` Exception Log Adapter \([#363](https://github.com/atuttle/Taffy/pull/363)\)
-
-Add support for sending Taffy logs to `<cflog>`.
-
-#### Support for `Access-Control-Expose-Headers` \([#379](https://github.com/atuttle/Taffy/issues/379)\)
-
-See the details at [Mozilla](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Expose-Headers).
-
-#### Support for flexibility in cacheKey generation \([#381](https://github.com/atuttle/Taffy/issues/381)\)
-
-You may now override the `cacheKey`-generation for based on the `cfc`, `requestArguments`, and `matchedURI` of a parsed request.
-
-#### Add a realtime search/filter of dashboard resources \([#396](https://github.com/atuttle/Taffy/pull/396)\)
-
-A new input has been added to the dashboard just above the resources list. Type in it to filter the resources. It matches against the display name, which by default is a sanitized version of the CFC filename, but can be overridden with `taffy:dashboard:name` or `taffy:docs:name`.
-
-#### Allow a bare return from resources \([#399](https://github.com/atuttle/Taffy/pull/399)\)
-
-If you would otherwise `return rep(someData);` with no additional headers or status code, you may now simply `return someData;` and Taffy will take care of adding the `rep()`. Just don't forget to add the `rep()` when you need to chain other methods onto it. Pro-tip: you can use `queryToArray()` without `rep()`.
-
-#### Simulated Runs & Sample Responses
-
-Ever wanted your API to be able to return sample data for onboarding consumers who aren't ready to work with real data yet? Now you can! Also, the very same sample data is used in Taffy's generated docs for added clarity. See [simulateKey](#simulateKey) and [simulatePassword](#simulatePassword) for information on how to configure this feature.
-
-#### Dashboard and documentation improvements
-
-The Taffy dashboard and generated documentation pages have been improved:
-
-- Larger text and better contrast: both better for accessibility! 👍
-- Separated the interaction tools from the inline documentation with new tabbed interface
-- Added section for sample responses for each method. For now, sample responses are always displayed as JSON.
-
-### Breaking Changes
-
-As a minor release (3.2.x to 3.3.0), there are no known breaking changes in this release. Taffy obeys [SemVer 2.0.0](http://semver.org/) versioning rules. If you find that this version breaks something for you, [please let us know by filing an issue](https://github.com/atuttle/Taffy/issues/new)!
+For every release after v3.3.0, release notes can be found in the [GitHub Releases](https://github.com/atuttle/taffy/releases).
