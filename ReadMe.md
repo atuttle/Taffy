@@ -21,8 +21,7 @@
 
 ## Currently Supported Versions
 
-- Taffy 3.3.x
-- Taffy 3.2.x
+- Taffy 3.3.x+
 - Taffy 2.2.x
 
 If you file a bug or ask for support please indicate which version of Taffy you're using. If it's an older release, we usually ask you to upgrade. Officially, we promise to support the current and previous **minor** releases and the last **minor** release of the previous **major** release. To the best of our abilities Taffy follows the versioning guidelines defined in [semver](https://semver.org/).
@@ -37,7 +36,7 @@ Primary documentation is available at [docs.taffy.io](https://docs.taffy.io), wi
 
 ### You can contribute to the documentation
 
-Contributing documentation changes is as easy as submitting a pull request to the [TaffyDocs][2] repo.
+Contributing documentation changes is as easy as submitting a pull request with modifications to the markdown files in the `/docs` folder.
 
 ## Roadmap
 
@@ -63,12 +62,7 @@ If your problem is too big or too private to ask for help in a chat room, [I am 
 >
 > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-**What does that mean?**
-
-It means you can use Taffy pretty much any way you like. You can fork it. You can include it in a proprietary product, sell it, and not give us a dime. Pretty much the only thing you can't do is hold us accountable if anything goes wrong.
-
 [1]: https://groups.google.com/forum/#!forum/taffy-users
-[2]: https://github.com/atuttle/TaffyDocs
 [3]: https://github.com/atuttle/Taffy/wiki
 [4]: https://cfml-slack.herokuapp.com
 [5]: https://twitter.com/adamtuttle
