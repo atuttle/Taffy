@@ -896,6 +896,15 @@ One of the [Caching Hooks](#caching-hooks) functions. The framework will call th
 
 Resource CFCs extend `taffy.core.resource`. The following methods are available inside each of your Resource CFCs:
 
+#### addDebugData()
+
+**Use it inside:** responder methods inside your Resource CFCs (e.g. get, put, post, delete)<br/>
+**Parameters:**
+
+- **data (any)** - data to include in exception logs.
+
+This method saves data in a way that makes it available to [exception log adapters](https://github.com/atuttle/Taffy/wiki/Exception-Logging-Adapters), if and when exceptions occur. It's a handy way to help you understand what was going on when an exception happened.
+
 #### encode.string()
 
 **Use it inside:** responder methods inside your Resource CFCs (e.g. get, put, post, delete)<br/>

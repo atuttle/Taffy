@@ -60,8 +60,8 @@ jobs:
 
     - name: Cut a docs file for the new release
       run: |
-        cat docs/src/@next.md | sed 's/@version@/${{ steps.package-version.outputs.current-version }}/gi' > docs/src/${{ steps.package-version.outputs.current-version }}.md
-        git add docs/src/${{ steps.package-version.outputs.current-version }}.md
+        cat docs/@next.md | sed 's/@version@/${{ steps.package-version.outputs.current-version }}/gi' > docs/${{ steps.package-version.outputs.current-version }}.md
+        git add docs/${{ steps.package-version.outputs.current-version }}.md
         cat docs/readme.md | sed 's/\<\!--new_docs_links_here--\>/\<\!--new_docs_links_here--\>\n\n- \[\v${{ steps.package-version.outputs.current-version }}]\(${{ steps.package-version.outputs.current-version }}.md\)/g' > docs/readme.md
         git add docs/readme.md
         git commit -m"New doc file ${{ steps.package-version.outputs.current-version }}.md"
