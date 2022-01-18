@@ -6,72 +6,74 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Largest semver bump of new version (major / minor / patch)'
+        description: "Largest semver bump of new version (major / minor / patch)"
         required: true
         type: choice
         options:
-        - patch
-        - minor
-        - major
+          - patch
+          - minor
+          - major
 
 jobs:
   bump-version:
     runs-on: ubuntu-latest
 
     steps:
-    # Check out the content (source branch).  Use a deploy key so that
-    # when we push changes, it will trigger the release workflow
-    # run that runs on: tag. (Using the GitHub token would
-    # not run the workflow to prevent infinite recursion.)
-    - name: Check out source
-      uses: actions/checkout@v2
-      with:
-        ssh-key: ${{ secrets.DEPLOY_KEY }}
+      # Check out the content (source branch).  Use a deploy key so that
+      # when we push changes, it will trigger the release workflow
+      # run that runs on: tag. (Using the GitHub token would
+      # not run the workflow to prevent infinite recursion.)
+      - name: Check out source
+        uses: actions/checkout@v2
+        with:
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '16'
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "16"
 
-    - name: Setup Git
-      run: |
-        git config user.name 'release-bot'
-        git config user.email 'adamtuttlecodes@gmail.com'
+      - name: Setup Git
+        run: |
+          git config user.name 'release-bot'
+          git config user.email 'adamtuttlecodes@gmail.com'
 
-    - name: bump version
-      run: npm version ${{ github.event.inputs.version }}
+      - name: bump version
+        run: npm version ${{ github.event.inputs.version }}
 
-    - name: Push latest version
-      run: git push origin main --follow-tags
+      - name: Push latest version
+        run: git push origin main --follow-tags
 
-    - name: get-npm-version
-      id: package-version
-      uses: martinbeentjes/npm-get-version-action@master
+      - name: get-npm-version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@master
 
-    - name: Create Release Notes
-      uses: actions/github-script@v4.0.2
-      with:
-        github-token: ${{secrets.GITHUB_TOKEN}}
-        script: |
-          await github.request(`POST /repos/${{ github.repository }}/releases`, {
-            tag_name: "v${{ steps.package-version.outputs.current-version }}",
-            generate_release_notes: true
-          });
+      - name: Create Release Notes
+        uses: actions/github-script@v4.0.2
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            await github.request(`POST /repos/${{ github.repository }}/releases`, {
+              tag_name: "v${{ steps.package-version.outputs.current-version }}",
+              generate_release_notes: true
+            });
 
-    - name: Cut a docs file for the new release
-      run: |
-        cat docs/@next.md | sed 's/@version@/${{ steps.package-version.outputs.current-version }}/gi' > docs/${{ steps.package-version.outputs.current-version }}.md
-        git add docs/${{ steps.package-version.outputs.current-version }}.md
-        cat docs/readme.md | sed 's/\<\!--new_docs_links_here--\>/\<\!--new_docs_links_here--\>\n\n- \[\v${{ steps.package-version.outputs.current-version }}]\(${{ steps.package-version.outputs.current-version }}.md\)/g' > docs/readme.md
-        git add docs/readme.md
-        git commit -m"New doc file ${{ steps.package-version.outputs.current-version }}.md"
-        git push
+      - name: Cut a docs file for the new release
+        run: |
+          cat docs/@next.md | sed 's/@version@/${{ steps.package-version.outputs.current-version }}/gi' > docs/${{ steps.package-version.outputs.current-version }}.md
+          git add docs/${{ steps.package-version.outputs.current-version }}.md
+          cat docs/readme.md | sed 's/\<\!--new_docs_links_here--\>/\<\!--new_docs_links_here--\>\n\n- \[\v${{ steps.package-version.outputs.current-version }}]\(${{ steps.package-version.outputs.current-version }}.md\)/g' > docs/readme-next.md
+          rm -f docs/readme.md
+          mv docs/readme-next.md docs/readme.md
+          git add docs/readme.md
+          git commit -m"New doc file ${{ steps.package-version.outputs.current-version }}.md"
+          git push
 
-    - name: Tweet-trigger-publish-release
-      uses: mugi111/tweet-trigger-release@v1.1
-      with:
-        consumer_key: ${{ secrets.TWITTER_CONSUMER_API_KEY }}
-        consumer_secret: ${{ secrets.TWITTER_CONSUMER_API_SECRET }}
-        access_token_key: ${{ secrets.TWITTER_ACCESS_TOKEN }}
-        access_token_secret: ${{ secrets.TWITTER_ACCESS_TOKEN_SECRET }}
-        tweet_body: "🍬 Taffy Version ${{steps.package-version.outputs.current-version}} was just released! https://github.com/atuttle/Taffy/releases/tag/v${{ steps.package-version.outputs.current-version }}"
+      - name: Tweet-trigger-publish-release
+        uses: mugi111/tweet-trigger-release@v1.1
+        with:
+          consumer_key: ${{ secrets.TWITTER_CONSUMER_API_KEY }}
+          consumer_secret: ${{ secrets.TWITTER_CONSUMER_API_SECRET }}
+          access_token_key: ${{ secrets.TWITTER_ACCESS_TOKEN }}
+          access_token_secret: ${{ secrets.TWITTER_ACCESS_TOKEN_SECRET }}
+          tweet_body: "🍬 Taffy Version ${{steps.package-version.outputs.current-version}} was just released! https://github.com/atuttle/Taffy/releases/tag/v${{ steps.package-version.outputs.current-version }}"
