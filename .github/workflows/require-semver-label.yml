@@ -1,0 +1,19 @@
+name: Require Semver Label
+
+on:
+  pull_request:
+    types: [opened, reopened, labeled, unlabeled, ready_for_review, synchronize]
+
+jobs:
+  check_pr_labels:
+    runs-on: ubuntu-latest
+    name: Verify that the PR has a valid label
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Verify PR label action
+        uses: jesusvasquez333/verify-pr-label-action@v1.4.0
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          valid-labels: 'Semver-Major, Semver-Minor, Semver-Patch'
+          pull-request-number: '${{ github.event.pull_request.number }}'

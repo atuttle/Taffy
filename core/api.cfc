@@ -320,60 +320,84 @@
 			<cfset structDelete(_taffyRequest, "continue")/>
 			<cfset m.resourceTime = 0 />
 		<cfelse>
-			<!--- inspection complete and request allowed by developer; send request to service --->
+			<!--- inspection complete and request allowed by developer --->
 
-			<cfif structKeyExists(_taffyRequest.matchDetails.methods, _taffyRequest.verb)>
-				<!--- check the cache before we call the resource --->
-				<cfset m.cacheCheckTime = getTickCount() />
-				<cfset local.cacheKey = getCacheKey(
-					_taffyRequest.matchDetails.beanName
-					,_taffyRequest.requestArguments
-					,local.parsed.matchDetails.srcUri
-				) />
-				<cfif ucase(_taffyRequest.verb) eq "GET" and validCacheExists(local.cacheKey)>
-					<cfset m.cacheCheckTime = getTickCount() - m.cacheCheckTime />
-					<cfset m.cacheGetTime = getTickCount() />
-					<cfset _taffyRequest.result = getCachedResponse(local.cacheKey) />
-					<cfset m.cacheGetTime = m.cacheGetTime - getTickCount() />
-				<cfelse>
-					<cfif ucase(_taffyRequest.verb) eq "GET">
-						<cfset m.cacheCheckTime = getTickCount() - m.cacheCheckTime />
-					<cfelse>
-						<cfset structDelete(m, "cacheCheckTime") />
-					</cfif>
-					<!--- returns a representation-object --->
-					<cfset m.beforeResource = getTickCount() />
+			<!--- handle requests for simulated responses --->
+			<cfif structKeyExists(_taffyRequest.requestArguments, application._taffy.settings.simulateKey) and _taffyRequest.requestArguments[application._taffy.settings.simulateKey] eq application._taffy.settings.simulatePassword>
+				<!--- is there a simulated response? --->
+				<cfset sampler = 'sample#_taffyRequest.method#Response' />
+				<cfif structKeyExists(_taffyRequest.matchDetails.metadata, sampler)>
+					<!--- get simulated response --->
 					<cfinvoke
 						component="#application._taffy.factory.getBean(_taffyRequest.matchDetails.beanName)#"
-						method="#_taffyRequest.method#"
-						argumentcollection="#_taffyRequest.requestArguments#"
+						method="#sampler#"
 						returnvariable="_taffyRequest.result"
 					/>
-					<cfset m.afterResource = getTickCount() />
-					<cfset m.resourceTime = m.afterResource - m.beforeResource />
-					<cfif !isDefined("_taffyRequest.result")>
-						<cfthrow
-							message="Resource did not return a value"
-							detail="The resource is expected to return a call to rep()/representationOf() or noData(). It appears there was no return at all."
-							errorcode="taffy.resources.ResourceReturnsNothing"
-						/>
-					</cfif>
-					<cfif ucase(_taffyRequest.verb) eq "GET" and structKeyExists(local, "cacheKey")>
-						<cfset m.cacheSaveStart = getTickCount() />
-						<cfset setCachedResponse(local.cacheKey, _taffyRequest.result) />
-						<cfset m.cacheSaveTime = getTickCount() - m.cacheSaveStart />
-					</cfif>
+					<cfset _taffyRequest.result = rep(_taffyRequest.result) />
+				<cfelse>
+					<!--- no method for simulated response, so return 400 --->
+					<cfset _taffyRequest.result = noData().withStatus(400, "No Sample Response Available") />
 				</cfif>
-			<cfelseif NOT listFind(local.allowVerbs,_taffyRequest.verb)>
-				<!--- if the verb is not implemented, refuse the request --->
-				<cfheader name="ALLOW" value="#local.allowVerbs#" />
-				<cfset throwError(405, "Method Not Allowed") />
 			<cfelse>
-				<!--- create dummy response for cross domain OPTIONS request --->
-				<cfset _taffyRequest.resultHeaders = structNew() />
-				<cfset _taffyRequest.statusArgs = structNew() />
-				<cfset _taffyRequest.statusArgs.statusCode = 200 />
-				<cfset _taffyRequest.statusArgs.statusText = 'OK' />
+				<!--- send request to service --->
+				<cfif structKeyExists(_taffyRequest.matchDetails.methods, _taffyRequest.verb)>
+					<!--- check the cache before we call the resource --->
+					<cfset m.cacheCheckTime = getTickCount() />
+					<cfset local.cacheKey = getCacheKey(
+						_taffyRequest.matchDetails.beanName
+						,_taffyRequest.requestArguments
+						,local.parsed.matchDetails.srcUri
+					) />
+					<cfif ucase(_taffyRequest.verb) eq "GET" and validCacheExists(local.cacheKey)>
+						<cfset m.cacheCheckTime = getTickCount() - m.cacheCheckTime />
+						<cfset m.cacheGetTime = getTickCount() />
+						<cfset _taffyRequest.result = getCachedResponse(local.cacheKey) />
+						<cfset m.cacheGetTime = m.cacheGetTime - getTickCount() />
+					<cfelse>
+						<cfif ucase(_taffyRequest.verb) eq "GET">
+							<cfset m.cacheCheckTime = getTickCount() - m.cacheCheckTime />
+						<cfelse>
+							<cfset structDelete(m, "cacheCheckTime") />
+						</cfif>
+						<!--- returns a representation-object --->
+						<cfset m.beforeResource = getTickCount() />
+						<cfinvoke
+							component="#application._taffy.factory.getBean(_taffyRequest.matchDetails.beanName)#"
+							method="#_taffyRequest.method#"
+							argumentcollection="#_taffyRequest.requestArguments#"
+							returnvariable="_taffyRequest.result"
+						/>
+						<cfset m.afterResource = getTickCount() />
+						<cfset m.resourceTime = m.afterResource - m.beforeResource />
+						<cfif !isDefined("_taffyRequest.result")>
+							<cfthrow
+								message="Resource did not return a value"
+								detail="The resource is expected to return a call to rep()/representationOf() or noData(). It appears there was no return at all."
+								errorcode="taffy.resources.ResourceReturnsNothing"
+							/>
+						</cfif>
+						<!--- If the type returned is not an instance of baseSerializer, wrap it with a call to rep().
+						This way we can directly return the object instead of a serializer from resource actions. --->
+						<cfif !isInstanceOf(_taffyRequest.result, "taffy.core.baseSerializer")>
+							<cfset _taffyRequest.result = rep(_taffyRequest.result) />
+						</cfif>
+						<cfif ucase(_taffyRequest.verb) eq "GET" and structKeyExists(local, "cacheKey")>
+							<cfset m.cacheSaveStart = getTickCount() />
+							<cfset setCachedResponse(local.cacheKey, _taffyRequest.result) />
+							<cfset m.cacheSaveTime = getTickCount() - m.cacheSaveStart />
+						</cfif>
+					</cfif>
+				<cfelseif NOT listFind(local.allowVerbs,_taffyRequest.verb)>
+					<!--- if the verb is not implemented, refuse the request --->
+					<cfheader name="ALLOW" value="#local.allowVerbs#" />
+					<cfset throwError(405, "Method Not Allowed") />
+				<cfelse>
+					<!--- create dummy response for cross domain OPTIONS request --->
+					<cfset _taffyRequest.resultHeaders = structNew() />
+					<cfset _taffyRequest.statusArgs = structNew() />
+					<cfset _taffyRequest.statusArgs.statusCode = 200 />
+					<cfset _taffyRequest.statusArgs.statusText = 'OK' />
+				</cfif>
 			</cfif>
 
 		</cfif>
@@ -462,11 +486,12 @@
 
 				<!--- don't return data if etags are enabled and the data hasn't changed --->
 				<cfif application._taffy.settings.useEtags and _taffyRequest.verb eq "GET">
+					<!--- etag values are quoted per: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/ETag --->
 					<cfif structKeyExists(server, "lucee")>
 						<!--- hashCode() will not work for lucee, see issue #354 --->
-						<cfset _taffyRequest.serverEtag = hash(_taffyRequest.resultSerialized) />
+						<cfset _taffyRequest.serverEtag = '"' & hash(_taffyRequest.resultSerialized) & '"' />
 					<cfelse>
-						<cfset _taffyRequest.serverEtag = _taffyRequest.result.getData().hashCode() />
+						<cfset _taffyRequest.serverEtag = '"' & _taffyRequest.result.getData().hashCode() & '"' />
 					</cfif>
 					<cfif structKeyExists(_taffyRequest.headers, "If-None-Match")>
 						<cfset _taffyRequest.clientEtag = _taffyRequest.headers['If-None-Match'] />
@@ -568,7 +593,7 @@
 		<cfheader name="X-TAFFY-RELOADED" value="true" />
 		<cfset request.taffyReloaded = true />
 		<cfset local._taffy = structNew() />
-		<cfset local._taffy.version = "3.2.0" />
+		<cfset local._taffy.version = "3.3.0" />
 		<cfset local._taffy.endpoints = structNew() />
 		<!--- default settings --->
 		<cfset local.defaultConfig = structNew() />
@@ -581,6 +606,8 @@
 		<cfset local.defaultConfig.reloadKey = "reload" />
 		<cfset local.defaultConfig.reloadPassword = "true" />
 		<cfset local.defaultConfig.reloadOnEveryRequest = false />
+		<cfset local.defaultConfig.simulateKey = "sampleResponse" />
+		<cfset local.defaultConfig.simulatePassword = "true" />
 		<cfset local.defaultConfig.endpointURLParam = 'endpoint' />
 		<cfset local.defaultConfig.serializer = "taffy.core.nativeJsonSerializer" />
 		<cfset local.defaultConfig.deserializer = "taffy.core.nativeJsonDeserializer" />
