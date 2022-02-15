@@ -41,12 +41,30 @@ jobs:
       - name: bump version
         run: npm version ${{ github.event.inputs.version }}
 
-      - name: Push latest version
-        run: git push origin main --follow-tags
-
       - name: get-npm-version
         id: package-version
         uses: martinbeentjes/npm-get-version-action@master
+
+      - name: Update version in api.cfc
+        run: |
+          cat core/api.cfc | sed 's/local\._taffy\.version = \"[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}\"/local._taffy.version = "${{ steps.package-version.outputs.current-version }}"/gi' > core/api.new.cfc
+          rm -f core/api.cfc
+          mv core/api.new.cfc core/api.cfc
+          git add core/api.cfc
+          git commit --amend --no-edit
+
+      - name: Cut a docs file for the new release
+        run: |
+          cat docs/@next.md | sed 's/@version@/${{ steps.package-version.outputs.current-version }}/gi' > docs/${{ steps.package-version.outputs.current-version }}.md
+          git add docs/${{ steps.package-version.outputs.current-version }}.md
+          cat docs/readme.md | sed 's/\<\!--new_docs_links_here--\>/\<\!--new_docs_links_here--\>\n\n- \[\v${{ steps.package-version.outputs.current-version }}]\(${{ steps.package-version.outputs.current-version }}.md\)/g' > docs/readme-next.md
+          rm -f docs/readme.md
+          mv docs/readme-next.md docs/readme.md
+          git add docs/readme.md
+          git commit --amend --no-edit
+
+      - name: Push latest version
+        run: git push origin main --follow-tags
 
       - name: Create Release Notes
         uses: actions/github-script@v4.0.2
@@ -57,17 +75,6 @@ jobs:
               tag_name: "v${{ steps.package-version.outputs.current-version }}",
               generate_release_notes: true
             });
-
-      - name: Cut a docs file for the new release
-        run: |
-          cat docs/@next.md | sed 's/@version@/${{ steps.package-version.outputs.current-version }}/gi' > docs/${{ steps.package-version.outputs.current-version }}.md
-          git add docs/${{ steps.package-version.outputs.current-version }}.md
-          cat docs/readme.md | sed 's/\<\!--new_docs_links_here--\>/\<\!--new_docs_links_here--\>\n\n- \[\v${{ steps.package-version.outputs.current-version }}]\(${{ steps.package-version.outputs.current-version }}.md\)/g' > docs/readme-next.md
-          rm -f docs/readme.md
-          mv docs/readme-next.md docs/readme.md
-          git add docs/readme.md
-          git commit -m"New doc file ${{ steps.package-version.outputs.current-version }}.md"
-          git push
 
       - name: Tweet-trigger-publish-release
         uses: mugi111/tweet-trigger-release@v1.1
