@@ -1228,14 +1228,16 @@
 		<cfset var beanFactoryMeta = getMetadata(arguments.bf) />
 		<cfif lcase(left(beanFactoryMeta.name, 10)) eq "coldspring">
 			<cfreturn getBeanListFromColdSpring( arguments.bf ) />
-		<cfelseif beanFactoryMeta.name contains "ioc">
+		<cfelseif beanFactoryMeta.name contains "ioc" OR beanFactoryMeta.name contains "aop">
 			<!--- this isn't a perfect test (contains "ioc") but it's all we can do for now... --->
+			<!--- If we want AOP with full FW/1 then we need to sniff for ioc extended to: "aop" --->
 			<cfset local.beanInfo = arguments.bf.getBeanInfo().beanInfo />
 			<cfset local.beanList = "" />
 			<cfloop collection="#local.beanInfo#" item="local.beanName">
 				<cfif structKeyExists(local.beanInfo[local.beanName],'name')
-					  AND local.beanName NEQ local.beanInfo[local.beanName].name
+					  AND local.beanName EQ local.beanInfo[local.beanName].name
 					  AND isInstanceOf(arguments.bf.getBean(local.beanName),'taffy.core.resource')>
+                                          <!--- not sure what 'NEQ' eliminates; everything, it seems --->
 					<cfset local.beanList = listAppend(local.beanList,local.beanName) />
 				</cfif>
 			</cfloop>
