@@ -1028,6 +1028,8 @@
 					<cfset local.returnData[local.qsKey] = arrayNew(1) />
 				</cfif>
 				<cfset arrayAppend(local.returnData[local.qsKey], local.qsValue) />
+                        <cfelseif local.returnData.keyExists(local.qsKey)>
+                                <cfset local.returnData[local.qsKey] = local.returnData[local.qsKey].listAppend(local.qsValue) />
 			<cfelse>
 				<cfset local.returnData[local.qsKey] = local.qsValue />
 			</cfif>
