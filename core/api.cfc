@@ -1039,7 +1039,7 @@
 		<cfset local.numTokenNames = arrayLen(arguments.tokenNamesArray) />
 		<cfif local.numTokenNames gt 0>
 			<cfloop from="1" to="#local.numTokenNames#" index="local.t">
-				<cfset local.returnData[arguments.tokenNamesArray[local.t]] = local.tokenValues[local.t] />
+				<cfset local.returnData[arguments.tokenNamesArray[local.t]] = urlDecode(local.tokenValues[local.t]) />
 			</cfloop>
 		</cfif>
 		<!--- query_string input is also key-value pairs --->
