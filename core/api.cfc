@@ -616,7 +616,11 @@
 	<cffunction name="setupFramework" access="private" output="false" returntype="void">
 		<cfset var local = structNew() />
 		<cfparam name="variables.framework" default="#structNew()#" />
-		<cfheader name="X-TAFFY-RELOADED" value="true" />
+
+		<cfif not application._taffy.settings.suppressTaffyHeaders >
+			<cfheader name="X-TAFFY-RELOADED" value="true" />
+		</cfif>
+		
 		<cfset request.taffyReloaded = true />
 		<cfset local._taffy = structNew() />
 		<cfset local._taffy.version = "3.6.0" />
