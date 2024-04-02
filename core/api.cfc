@@ -616,10 +616,6 @@
 	<cffunction name="setupFramework" access="private" output="false" returntype="void">
 		<cfset var local = structNew() />
 		<cfparam name="variables.framework" default="#structNew()#" />
-
-		<cfif not application._taffy.settings.suppressTaffyHeaders >
-			<cfheader name="X-TAFFY-RELOADED" value="true" />
-		</cfif>
 		
 		<cfset request.taffyReloaded = true />
 		<cfset local._taffy = structNew() />
@@ -731,6 +727,10 @@
 		<cfset local._taffy.contentTypes = getSupportedContentTypes(local._taffy.settings.deserializer) />
 		<!--- hot-swap! --->
 		<cfset application._taffy = local._taffy />
+
+		<cfif not application._taffy.settings.suppressTaffyHeaders >
+			<cfheader name="X-TAFFY-RELOADED" value="true" />
+		</cfif>
 	</cffunction>
 
 	<cffunction name="parseRequest" access="private" output="false" returnType="struct">
