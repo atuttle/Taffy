@@ -525,6 +525,7 @@
 		<cfinclude template="bootstrap.min.js" />
 		<cfinclude template="highlight.min.js" />
 		<cfinclude template="dash.js" />
+		<cfinclude template="jquery.dump.min.js" />
 
 		$(function(){
 			hljs.initHighlighting();
