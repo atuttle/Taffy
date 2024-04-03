@@ -27,6 +27,10 @@
 		<cfcontent type="image/gif" file="#expandPath('./loading.gif')#" reset="true" /><cfabort />
 	</cfcase>
 
+	<cfcase value="jquery.dump.min.js">
+		<cfcontent type="text/javascript" file="#expandPath('./jquery.dump.min.js')#" reset="true" /><cfabort />
+	</cfcase>
+
 	<cfdefaultcase>
 		<cfheader statuscode="404" statustext="Not Found" />
 		<cfcontent reset="true" /><cfabort />
