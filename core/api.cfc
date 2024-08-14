@@ -63,6 +63,7 @@
 		<cfset var before = getTickCount() />
 		<cfset var after = 0 />
 		<cfset setupFramework() />
+		<cfset checkEngineSupport() />
 		<cfset after = getTickCount() />
 		<cfheader name="X-TIME-TO-RELOAD" value="#(after-before)#" />
 		<cfreturn true />
@@ -587,6 +588,22 @@
 	<!--- :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: --->
 
 	<!--- internal methods --->
+	<cffunction name="checkEngineSupport" access="private" output="false" returntype="void">
+		<cfscript>
+			application._taffy.compat = {
+				queryToStruct: "missing",
+				queryToArray: "missing"
+			};
+			var funcs = getFunctionList();
+			if (structKeyExists(funcs, "queryToStruct")) {
+				application._taffy.compat.queryToStruct = "exists";
+			}
+			if (structKeyExists(funcs, "queryToArray")) {
+				application._taffy.compat.queryToArray = "exists";
+			}
+		</cfscript>
+	</cffunction>
+
 	<cffunction name="setupFramework" access="private" output="false" returntype="void">
 		<cfset var local = structNew() />
 		<cfparam name="variables.framework" default="#structNew()#" />

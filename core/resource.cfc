@@ -50,7 +50,7 @@
 		<cfset logger.saveLog(exception) />
 	</cffunction>
 
-	<cffunction name="queryToArray" access="private" returntype="array" output="false">
+	<cffunction name="qToArray" access="private" returntype="array" output="false">
 		<cfargument name="q" type="query" required="yes" />
 		<cfargument name="cb" type="any" required="no" />
 		<cfscript>
@@ -80,7 +80,15 @@
 		</cfscript>
 	</cffunction>
 
-	<cffunction name="queryToStruct" access="private" returntype="struct" output="false">
+	<cfif application._taffy.compat.queryToArray eq "missing">
+		<cffunction name="queryToArray" access="private" returntype="struct" output="false">
+			<cfargument name="q" type="query" required="yes" />
+			<cfargument name="cb" type="any" required="no" />
+			<cfreturn qToArray(arguments.q, arguments.cb) />
+		</cffunction>
+	</cfif>
+
+	<cffunction name="qToStruct" access="private" returntype="struct" output="false">
 		<cfargument name="q" type="query" required="yes" />
 		<cfargument name="cb" type="any" required="no" />
 		<cfset var local = {} />
@@ -115,6 +123,14 @@
 		</cfscript>
 	</cffunction>
 
+	<cfif application._taffy.compat.queryToStruct eq "missing">
+		<cffunction name="queryToStruct" access="private" returntype="struct" output="false">
+			<cfargument name="q" type="query" required="yes" />
+			<cfargument name="cb" type="any" required="no" />
+			<cfreturn qToStruct(arguments.q, arguments.cb) />
+		</cffunction>
+	</cfif>
+
 	<!---
 		function that gets the representation class instance
 		-- if the argument is blank, we use the default from taffy settings
@@ -132,7 +148,7 @@
 			<cfreturn createObject("component", arguments.repClass) />
 		</cfif>
 	</cffunction>
-	
+
 	<cffunction name="addDebugData" access="package" output="false">
 		<cfargument name="data" type="any" />
 		<cfset request.debugData = arguments.data />
