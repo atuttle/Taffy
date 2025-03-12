@@ -4,7 +4,7 @@
 
 The REST Web Service framework for ColdFusion and Lucee
 
-- [Download Taffy 3.3.0.zip](https://github.com/atuttle/Taffy/archive/v3.3.0.zip)
+- [Download Taffy 3.7.0.zip](https://github.com/atuttle/Taffy/archive/v3.7.0.zip)
 - [GitHub](https://github.com/atuttle/Taffy)
 - Join us in the **#taffy** chat room on the [CFML Slack](https://cfml-slack.herokuapp.com/)
 
@@ -14,6 +14,8 @@ Nobody has time to keep every framework and every dependency up to date. Sometim
 
 <!--new_docs_links_here-->
 
+- [v3.7.0](3.7.0.md)
+- [v3.6.0](3.6.0.md)
 - [v3.5.0](3.5.0.md)
 - [v3.4.0](3.4.0.md)
 - [v3.3.0](3.3.0.md)
