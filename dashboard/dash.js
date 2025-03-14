@@ -98,6 +98,10 @@ $(function(){
 			,path = uri.supplant(form);
 
 		var verb = resource.find('.reqMethod option:checked').val();
+		if (verb === 'POST' || verb === 'PUT' || verb === 'PATCH'){
+			path += '?' + qParams(resource);
+		}
+
 		var body = (verb === 'GET' || verb === 'DELETE') ? qParams(resource) : resource.find('.reqBody textarea').val();
 		var reqHeaders = resource.find('.requestHeaders').val().replace(/\r/g, '').split('\n');
 		var headers = {
