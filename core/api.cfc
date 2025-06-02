@@ -760,7 +760,7 @@
 		<cfset requestObj.verb = cgi.request_method />
 
 		<!--- Should we override the actual method based on method tunnelling? --->
-		<cfif isDefined("httpMethodOverride") AND not httpMethodOverride eq "null">
+		<cfif isDefined("httpMethodOverride") AND not isNull(httpMethodOverride) AND not httpMethodOverride eq "null">
 			<cfset requestObj.verb = httpMethodOverride />
 		</cfif>
 
