@@ -726,11 +726,11 @@
 
 		<!--- Check for method tunnelling by clients unable to send PUT/DELETE requests (e.g. Flash Player);
 					Actual desired method will be contained in a special header --->
- 		<cfset var httpMethodOverride = null />
- 		<cftry>
- 			<cfset httpMethodOverride = GetPageContext().getRequest().getHeader("X-HTTP-Method-Override") />
- 			<cfcatch type="any"></cfcatch>
- 		</cftry>
+		<cfset var httpMethodOverride = "null" />
+		<cftry>
+			<cfset httpMethodOverride = GetPageContext().getRequest().getHeader("X-HTTP-Method-Override") />
+			<cfcatch type="any"></cfcatch>
+		</cftry>
 
 		<cfset requestObj.uri = getPath() />
 		<cfif NOT len(requestObj.uri)>
@@ -742,8 +742,8 @@
 			</cfif>
 		</cfif>
 
- 		<!--- check for format in the URI --->
- 		<cfset requestObj.uriFormat = formatFromURI(requestObj.uri) />
+		<!--- check for format in the URI --->
+		<cfset requestObj.uriFormat = formatFromURI(requestObj.uri) />
 
 		<!--- attempt to find the cfc for the requested uri --->
 		<cfset requestObj.matchingRegex = matchURI(requestObj.uri) />
@@ -760,8 +760,8 @@
 		<cfset requestObj.verb = cgi.request_method />
 
 		<!--- Should we override the actual method based on method tunnelling? --->
-		<cfif isDefined("httpMethodOverride") AND not isNull(httpMethodOverride)>
-		    <cfset requestObj.verb = httpMethodOverride />
+		<cfif isDefined("httpMethodOverride") AND not httpMethodOverride eq "null">
+			<cfset requestObj.verb = httpMethodOverride />
 		</cfif>
 
 		<cfif structKeyExists(application._taffy.endpoints[requestObj.matchingRegex].methods, requestObj.verb)>
