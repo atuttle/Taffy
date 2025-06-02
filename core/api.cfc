@@ -65,7 +65,9 @@
 		<cfset setupFramework() />
 		<cfset checkEngineSupport() />
 		<cfset after = getTickCount() />
-		<cfheader name="X-TIME-TO-RELOAD" value="#(after-before)#" />
+		<cfif not application._taffy.settings.suppressTaffyHeaders >
+			<cfheader name="X-TIME-TO-RELOAD" value="#(after-before)#" />
+		</cfif>
 		<cfreturn true />
 	</cffunction>
 
@@ -431,19 +433,21 @@
 		<cfheader name="ALLOW" value="#local.allowVerbs#" />
 
 		<!--- metrics headers that should always apply --->
-		<cfheader name="X-TIME-IN-PARSE" value="#m.parseTime#" />
-		<cfheader name="X-TIME-IN-ONTAFFYREQUEST" value="#m.otrTime#" />
-		<cfif structKeyExists(m, "resourceTime")>
-			<cfheader name="X-TIME-IN-RESOURCE" value="#m.resourceTime#" />
-		</cfif>
-		<cfif structKeyExists(m, "cacheCheckTime")>
-			<cfheader name="X-TIME-IN-CACHE-CHECK" value="#m.cacheCheckTime#" />
-		</cfif>
-		<cfif structKeyExists(m, "cacheGetTime")>
-			<cfheader name="X-TIME-IN-CACHE-GET" value="#m.cacheGetTime#" />
-		</cfif>
-		<cfif structKeyExists(m, "cacheSaveTime")>
-			<cfheader name="X-TIME-IN-CACHE-SAVE" value="#m.cacheSaveTime#" />
+		<cfif not application._taffy.settings.suppressTaffyHeaders >
+			<cfheader name="X-TIME-IN-PARSE" value="#m.parseTime#" />
+			<cfheader name="X-TIME-IN-ONTAFFYREQUEST" value="#m.otrTime#" />
+			<cfif structKeyExists(m, "resourceTime")>
+				<cfheader name="X-TIME-IN-RESOURCE" value="#m.resourceTime#" />
+			</cfif>
+			<cfif structKeyExists(m, "cacheCheckTime")>
+				<cfheader name="X-TIME-IN-CACHE-CHECK" value="#m.cacheCheckTime#" />
+			</cfif>
+			<cfif structKeyExists(m, "cacheGetTime")>
+				<cfheader name="X-TIME-IN-CACHE-GET" value="#m.cacheGetTime#" />
+			</cfif>
+			<cfif structKeyExists(m, "cacheSaveTime")>
+				<cfheader name="X-TIME-IN-CACHE-SAVE" value="#m.cacheSaveTime#" />
+			</cfif>
 		</cfif>
 
 		<cfif application._taffy.settings.exposeHeaders>
@@ -478,7 +482,10 @@
 				/>
 				<cfset _taffyRequest.metrics.afterSerialize = getTickCount() />
 				<cfset m.serializeTime = m.afterSerialize - m.beforeSerialize />
-				<cfheader name="X-TIME-IN-SERIALIZE" value="#m.serializeTime#" />
+
+				<cfif not application._taffy.settings.suppressTaffyHeaders >
+					<cfheader name="X-TIME-IN-SERIALIZE" value="#m.serializeTime#" />
+				</cfif>
 
 				<!--- apply jsonp wrapper if requested --->
 				<cfif structKeyExists(_taffyRequest, "jsonpCallback")>
@@ -514,7 +521,10 @@
 				<cfif structKeyExists(m, "resourceTime")>
 					<cfset m.taffyTime -= m.resourceTime />
 				</cfif>
-				<cfheader name="X-TIME-IN-TAFFY" value="#m.taffyTime#" />
+
+				<cfif not application._taffy.settings.suppressTaffyHeaders >
+					<cfheader name="X-TIME-IN-TAFFY" value="#m.taffyTime#" />
+				</cfif>
 
 				<cfcontent reset="true" type="#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#; charset=utf-8" />
 				<cfif _taffyRequest.resultSerialized neq ('"' & '"')>
@@ -528,19 +538,32 @@
 			<cfelseif _taffyRequest.resultType eq "filename">
 				<cfset m.done = getTickCount() />
 				<cfset m.taffyTime = m.done - m.init - m.parseTime - m.otrTime - m.resourceTime />
-				<cfheader name="X-TIME-IN-TAFFY" value="#m.taffyTime#" />
+
+				<cfif not application._taffy.settings.suppressTaffyHeaders >
+					<cfheader name="X-TIME-IN-TAFFY" value="#m.taffyTime#" />
+				</cfif>
+
 				<cfcontent reset="true" file="#_taffyRequest.result.getFileName()#" type="#_taffyRequest.result.getFileMime()#" deletefile="#_taffyRequest.result.getDeleteFile()#" />
 
 			<cfelseif _taffyRequest.resultType eq "filedata">
 				<cfset m.done = getTickCount() />
 				<cfset m.taffyTime = m.done - m.init - m.parseTime - m.otrTime - m.resourceTime />
-				<cfheader name="X-TIME-IN-TAFFY" value="#m.taffyTime#" />
+
+
+				<cfif not application._taffy.settings.suppressTaffyHeaders >
+					<cfheader name="X-TIME-IN-TAFFY" value="#m.taffyTime#" />
+				</cfif>
+
 				<cfcontent reset="true" variable="#_taffyRequest.result.getFileData()#" type="#_taffyRequest.result.getFileMime()#" />
 
 			<cfelseif _taffyRequest.resultType eq "imagedata">
 				<cfset m.done = getTickCount() />
 				<cfset m.taffyTime = m.done - m.init - m.parseTime - m.otrTime - m.resourceTime />
-				<cfheader name="X-TIME-IN-TAFFY" value="#m.taffyTime#" />
+				
+				<cfif not application._taffy.settings.suppressTaffyHeaders >
+					<cfheader name="X-TIME-IN-TAFFY" value="#m.taffyTime#" />
+				</cfif>
+				
 				<cfcontent reset="true" variable="#_taffyRequest.result.getImageData()#" type="#_taffyRequest.result.getFileMime()#" />
 
 			</cfif>
@@ -571,7 +594,10 @@
 			,_taffyRequest.statusArgs.statusCode
 			) />
 		<cfset m.otreTime = getTickCount() - m.beforeOnTaffyRequestEnd />
-		<cfheader name="X-TIME-IN-ONTAFFYREQUESTEND" value="#m.otreTime#" />
+
+		<cfif not application._taffy.settings.suppressTaffyHeaders >
+			<cfheader name="X-TIME-IN-ONTAFFYREQUESTEND" value="#m.otreTime#" />
+		</cfif>
 
 		<cfif len(trim(local.resultSerialized))>
 			<cfoutput>#local.resultSerialized#</cfoutput>
@@ -607,7 +633,7 @@
 	<cffunction name="setupFramework" access="private" output="false" returntype="void">
 		<cfset var local = structNew() />
 		<cfparam name="variables.framework" default="#structNew()#" />
-		<cfheader name="X-TAFFY-RELOADED" value="true" />
+		
 		<cfset request.taffyReloaded = true />
 		<cfset local._taffy = structNew() />
 		<cfset local._taffy.version = "3.7.0" />
@@ -623,6 +649,7 @@
 		<cfset local.defaultConfig.reloadKey = "reload" />
 		<cfset local.defaultConfig.reloadPassword = "true" />
 		<cfset local.defaultConfig.reloadOnEveryRequest = false />
+		<cfset local.defaultConfig.suppressTaffyHeaders = false />
 		<cfset local.defaultConfig.simulateKey = "sampleResponse" />
 		<cfset local.defaultConfig.simulatePassword = "true" />
 		<cfset local.defaultConfig.endpointURLParam = 'endpoint' />
@@ -717,6 +744,10 @@
 		<cfset local._taffy.contentTypes = getSupportedContentTypes(local._taffy.settings.deserializer) />
 		<!--- hot-swap! --->
 		<cfset application._taffy = local._taffy />
+
+		<cfif not application._taffy.settings.suppressTaffyHeaders >
+			<cfheader name="X-TAFFY-RELOADED" value="true" />
+		</cfif>
 	</cffunction>
 
 	<cffunction name="parseRequest" access="private" output="false" returnType="struct">
