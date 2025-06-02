@@ -726,12 +726,7 @@
 
 		<!--- Check for method tunnelling by clients unable to send PUT/DELETE requests (e.g. Flash Player);
 					Actual desired method will be contained in a special header --->
- 		 		<cfset var httpMethodOverride = nullValue()/>
- 		<cftry>
- 			<cfset httpMethodOverride = GetPageContext().getRequest().getHeader("X-HTTP-Method-Override") />
- 			<cfcatch type="any"></cfcatch>
- 		</cftry>
-<cfset var httpMethodOverride = nullValue()/>
+ 		<cfset var httpMethodOverride = null />
  		<cftry>
  			<cfset httpMethodOverride = GetPageContext().getRequest().getHeader("X-HTTP-Method-Override") />
  			<cfcatch type="any"></cfcatch>
