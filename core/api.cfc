@@ -146,7 +146,7 @@
 			<cfset logger.saveLog(exception) />
 
 			<!--- return 500 no matter what --->
-			<cfheader statuscode="500" statustext="Error" />
+			<cfheader statuscode="500" />
 			<cfcontent reset="true" />
 
 			<cfif structKeyExists(exception, "rootCause")>
@@ -177,7 +177,7 @@
 			</cfif>
 			<cfcatch>
 				<cfcontent reset="true" type="text/plain; charset=utf-8" />
-				<cfheader statuscode="500" statustext="Error" />
+				<cfheader statuscode="500" />
 				<cfoutput>An unhandled exception occurred: <cfif isStruct(root) and structKeyExists(root,"message")>#root.message#<cfelse>#root#</cfif> <cfif isStruct(root) and structKeyExists(root,"detail")>-- #root.detail#</cfif></cfoutput>
 				<cfdump var="#cfcatch#" format="text" label="ERROR WHEN LOGGING EXCEPTION" />
 				<cfdump var="#exception#" format="text" label="ORIGINAL EXCEPTION" />
@@ -422,7 +422,7 @@
 
 		<cfsetting enablecfoutputonly="true" />
 		<cfcontent reset="true" type="#getReturnMimeAsHeader(_taffyRequest.returnMimeExt)#; charset=utf-8" />
-		<cfheader statuscode="#_taffyRequest.statusArgs.statusCode#" statustext="#_taffyRequest.statusArgs.statusText#" />
+		<cfheader statuscode="#_taffyRequest.statusArgs.statusCode#" />
 
 		<!--- headers --->
 		<cfset addHeaders(_taffyRequest.resultHeaders) />
@@ -498,7 +498,7 @@
 						<cfset _taffyRequest.clientEtag = _taffyRequest.headers['If-None-Match'] />
 
 						<cfif len(_taffyRequest.clientEtag) gt 0 and _taffyRequest.clientEtag eq _taffyRequest.serverEtag>
-							<cfheader statuscode="304" statustext="Not Modified" />
+							<cfheader statuscode="304" />
 							<cfcontent reset="true" type="#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#; charset=utf-8" />
 							<cfreturn true />
 						<cfelse>
@@ -1117,7 +1117,7 @@
 		<cfargument name="headers" type="struct" required="false" default="#structNew()#" />
 		<cfcontent reset="true" />
 		<cfset addHeaders(arguments.headers) />
-		<cfheader statuscode="#arguments.statusCode#" statustext="#arguments.msg#" />
+		<cfheader statuscode="#arguments.statusCode#" />
 		<cfabort />
 	</cffunction>
 

@@ -9,7 +9,7 @@
 	<cffunction name="saveLog">
 		<cfargument name="exception" />
 		<cfcontent type="text/html" />
-		<cfheader statuscode="500" statustext="Unhandled API Error" />
+		<cfheader statuscode="500" />
 		<cfdump var="#arguments#" />
 		<cfif isDefined('request.debugData')>
 			<cfdump var="#request.debugData#" label="debug data" />

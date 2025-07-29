@@ -40,7 +40,7 @@
 		<cfargument name="headers" type="struct" required="false" default="#structNew()#" />
 		<cfcontent reset="true" />
 		<cfset addHeaders(arguments.headers) />
-		<cfheader statuscode="#arguments.statusCode#" statustext="#arguments.msg#" />
+		<cfheader statuscode="#arguments.statusCode#" />
 		<cfabort />
 	</cffunction>
 

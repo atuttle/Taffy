@@ -28,7 +28,7 @@
 	</cfcase>
 
 	<cfdefaultcase>
-		<cfheader statuscode="404" statustext="Not Found" />
+		<cfheader statuscode="404" />
 		<cfcontent reset="true" /><cfabort />
 	</cfdefaultcase>
 
