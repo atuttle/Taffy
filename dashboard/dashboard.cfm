@@ -17,7 +17,7 @@
 	<div class="container">
 
 		<div class="masthead">
-			<button id="docs" class="btn btn-success" onclick="window.location.href = '<cfoutput>#CGI.SCRIPT_NAME#</cfoutput>?docs'">Documentation</button>
+			<button id="docs" class="btn btn-success" onclick="window.location.href = '<cfoutput>#encodeForHTMLAttribute(CGI.SCRIPT_NAME)#</cfoutput>?docs'">Documentation</button>
 			<button id="reload" class="btn btn-info">Reload API Cache</button>
 			<button data-toggle="modal" data-target="#config" class="btn btn-default">Config</button>
 			<h1>API Dashboard</h1>
@@ -299,7 +299,7 @@
 																rows="#listLen(structKeyList(application._taffy.settings.dashboardHeaders, '|'), '|')+1#"
 																class="form-control input-sm requestHeaders"
 																placeholder="X-MY-HEADER: VALUE"
-																><cfloop list="#structKeyList(application._taffy.settings.dashboardHeaders, '|')#" delimiters="|" index="k">#k#: #application._taffy.settings.dashboardHeaders[k]##chr(13)##chr(10)#</cfloop></textarea>
+																><cfloop list="#structKeyList(application._taffy.settings.dashboardHeaders, '|')#" delimiters="|" index="k">#encodeForHTML(k)#: #encodeForHTML(application._taffy.settings.dashboardHeaders[k])##chr(13)##chr(10)#</cfloop></textarea>
 														</div>
 
 														<div class="expandable" id="auth_#local.resourceHTTPID#">
@@ -529,7 +529,7 @@
 		$(function(){
 			hljs.initHighlighting();
 
-			var baseurl = '<cfoutput>#cgi.script_name#?dashboard</cfoutput>';
+			var baseurl = '<cfoutput>#encodeForJavaScript(cgi.script_name)#?dashboard</cfoutput>';
 			$("#reload").click(function(){
 				var reloadUrl = baseurl + '<cfoutput>&#application._taffy.settings.reloadKey#=#application._taffy.settings.reloadPassword#</cfoutput>';
 				var btn = $("#reload");
@@ -597,7 +597,7 @@
 				}
 			</cfif>
 
-			url += '<cfoutput>#cgi.SCRIPT_NAME#</cfoutput>' + '?' + endpointURLParam + '=' + encodeURIComponent(endpoint);
+			url += '<cfoutput>#encodeForJavaScript(cgi.SCRIPT_NAME)#</cfoutput>' + '?' + endpointURLParam + '=' + encodeURIComponent(endpoint);
 			if( resource.indexOf('?') && resource.split('?')[1] ){
 				url += '&' + resource.split('?')[1];
 			}

@@ -177,7 +177,9 @@
 				<cfif len(local.fname) gt 3>
 					<cfset local.propName = right(local.fname, len(local.fname)-3) />
 					<cfif left(local.fname, 3) eq "set" and beanExists(local.propName, true, true)>
-						<cfset evaluate("arguments.bean.#local.fname#(getBean('#local.propName#'))") />
+						<cfinvoke component="#arguments.bean#" method="#local.fname#">
+							<cfinvokeargument name="1" value="#getBean(local.propName)#" />
+						</cfinvoke>
 					</cfif>
 				</cfif>
 			</cfloop>
