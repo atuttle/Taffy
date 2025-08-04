@@ -34,13 +34,24 @@
 	<!--- Helpers                      --->
 	<!--- ============================ --->
 
+	<!--- Instance-level utility for backwards compatible cfheader handling --->
+	<cfset variables.headerUtils = "" />
+
+	<!--- Lazy-loaded getter for header utility --->
+	<cffunction name="getHeaderUtils" access="private" output="false" returntype="any" hint="Returns header utility instance with lazy loading">
+		<cfif variables.headerUtils eq "">
+			<cfset variables.headerUtils = createObject("component", "taffy.core.cfHeaderUtils").init() />
+		</cfif>
+		<cfreturn variables.headerUtils />
+	</cffunction>
+
 	<cffunction name="throwError" access="private" output="false" returntype="void">
-		<cfargument name="statusCode" type="numeric" default="500" />
+		<cfargument name="statusCode" type="numeric" default="500" hint="HTTP status code to return" />
 		<cfargument name="msg" type="string" required="true" hint="message to return to api consumer" />
-		<cfargument name="headers" type="struct" required="false" default="#structNew()#" />
+		<cfargument name="headers" type="struct" required="false" default="#structNew()#" hint="additional HTTP headers" />
 		<cfcontent reset="true" />
 		<cfset addHeaders(arguments.headers) />
-		<cfheader statuscode="#arguments.statusCode#" />
+		<cfset getHeaderUtils().setStatusHeader(arguments.statusCode, arguments.msg) />
 		<cfabort />
 	</cffunction>
 

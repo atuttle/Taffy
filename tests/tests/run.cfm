@@ -36,7 +36,8 @@
 <cfset resultObject = r.getResult()>
 <cfset errors       = resultObject.getTotalFail() + resultObject.getTotalError()>
 <cfif errors GT 0>
-	<cfheader statuscode="500">
+	<cfinclude template="../../core/cfHeaderHelper.cfm" />
+	<cfset setTaffyStatusHeader(500, "Tests Failed") />
 </cfif>
 
 <cfif NOT plainText>
