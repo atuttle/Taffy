@@ -9,7 +9,8 @@
 	<cffunction name="saveLog">
 		<cfargument name="exception" />
 		<cfcontent type="text/html" />
-		<cfheader statuscode="500" statustext="Unhandled API Error" />
+		<cfinclude template="../core/cfHeaderHelper.cfm" />
+		<cfset setTaffyStatusHeader(500, "Unhandled API Error") />
 		<cfdump var="#arguments#" />
 		<cfif isDefined('request.debugData')>
 			<cfdump var="#request.debugData#" label="debug data" />
