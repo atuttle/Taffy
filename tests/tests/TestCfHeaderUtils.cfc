@@ -176,6 +176,71 @@ component extends="base" {
 		assertEquals(true, util.isColdFusion2025OrLater(), "Should handle complex version strings");
 	}
 
+	// Test version string with text prefix
+	function test_version_detection_with_text_prefix() {
+		var mockServerInfo = {
+			coldfusion: {
+				productname: "ColdFusion",
+				productversion: "ColdFusion 2025"
+			}
+		};
+		
+		var util = variables.headerUtils.init(mockServerInfo);
+		assertEquals(true, util.isColdFusion2025OrLater(), "Should extract version from 'ColdFusion 2025' format");
+	}
+
+	// Test empty version string
+	function test_version_detection_with_empty_version() {
+		var mockServerInfo = {
+			coldfusion: {
+				productname: "ColdFusion",
+				productversion: ""
+			}
+		};
+		
+		var util = variables.headerUtils.init(mockServerInfo);
+		assertEquals(false, util.isColdFusion2025OrLater(), "Empty version should return false");
+	}
+
+	// Test non-numeric version string
+	function test_version_detection_with_non_numeric_version() {
+		var mockServerInfo = {
+			coldfusion: {
+				productname: "ColdFusion",
+				productversion: "Latest"
+			}
+		};
+		
+		var util = variables.headerUtils.init(mockServerInfo);
+		assertEquals(false, util.isColdFusion2025OrLater(), "Non-numeric version should return false");
+	}
+
+	// Test version with build prefix
+	function test_version_detection_with_build_prefix() {
+		var mockServerInfo = {
+			coldfusion: {
+				productname: "ColdFusion",
+				productversion: "Build 2025.0.0.12345"
+			}
+		};
+		
+		var util = variables.headerUtils.init(mockServerInfo);
+		assertEquals(true, util.isColdFusion2025OrLater(), "Should extract version from 'Build 2025...' format");
+	}
+
+	// Test malformed version data
+	function test_version_detection_with_malformed_data() {
+		var mockServerInfo = {
+			coldfusion: {
+				productname: "ColdFusion",
+				productversion: "!@#$%"
+			}
+		};
+		
+		var util = variables.headerUtils.init(mockServerInfo);
+		assertEquals(false, util.isColdFusion2025OrLater(), "Malformed version should return false");
+	}
+
 	function test_version_detection_with_cf11() {
 		var mockServerInfo = {
 			coldfusion: {

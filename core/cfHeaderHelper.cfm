@@ -11,9 +11,14 @@
 	<cfargument name="statusText" type="string" required="false" default="" hint="HTTP status text (optional for CF 2025+)" />
 	
 	<cfscript>
-		// Use application scope to cache the utility instance
+		// Ensure thread-safe initialization using an exclusive application-scoped lock
 		if (!structKeyExists(application, "_taffyHeaderUtils")) {
-			application._taffyHeaderUtils = createObject("component", "taffy.core.cfHeaderUtils").init();
+			lock name="taffyHeaderUtilsInit" scope="application" type="exclusive" timeout="5" {
+				// Double-check inside the lock to prevent race conditions
+				if (!structKeyExists(application, "_taffyHeaderUtils")) {
+					application._taffyHeaderUtils = createObject("component", "taffy.core.cfHeaderUtils").init();
+				}
+			}
 		}
 		
 		application._taffyHeaderUtils.setStatusHeader(arguments.statusCode, arguments.statusText);

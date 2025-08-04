@@ -52,7 +52,13 @@
 				if (structKeyExists(variables.serverInfo, "coldfusion") && 
 					structKeyExists(variables.serverInfo.coldfusion, "productname") &&
 					variables.serverInfo.coldfusion.productname contains "ColdFusion") {
-					cfVersion = val(listFirst(variables.serverInfo.coldfusion.productversion));
+					// Extract the first number from the productversion string, regardless of format
+					var versionMatch = reMatch("\d+", variables.serverInfo.coldfusion.productversion);
+					if (arrayLen(versionMatch) > 0) {
+						cfVersion = val(versionMatch[1]);
+					} else {
+						cfVersion = 0;
+					}
 				}
 				variables.isCF2025OrLater = (cfVersion >= 2025);
 			}
