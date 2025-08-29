@@ -8,6 +8,8 @@
 		this.mappings["/bugLog"] = this.dirPath & "BugLogHQ/";
 		this.mappings["/Hoth"] = this.dirPath & "Hoth/";
 		this.mappings["/di1"] = this.dirPath & "di1/";
+		// an alternative mapping to our sources folder
+		this.mappings["/api/components"] = this.dirPath & "resources/";
 
 		this.system = createObject("java", "java.lang.System");
 		this.datasources["bugLog"] = {
@@ -21,6 +23,10 @@
 
 
 		variables.framework = {};
+		// // this would load from our alternative mapping
+		// variables.framework.resourcesCFCPath = "api.components";
+		// // this is a path that does not exist, so would not return resources
+		// variables.framework.resourcesCFCPath = "api.invalid";
 		variables.framework.disableDashboard = false;
 		variables.framework.reloadKey = "reload";
 		variables.framework.unhandledPaths = "/Taffy/tests/someFolder,/Taffy/tests/tests,/tests/someFolder,/tests/tests,BugLogHQ";

@@ -75,11 +75,15 @@ Using sub-folders requires the use of Application-Specific Mappings (introduced 
 
 You can see that the taffy folder is a sibling to Application.cfc. This allows Application.cfc to use relative paths to extend `taffy.core.api`.
 
-Next, if your Application.cfc and `/resources/` folder aren't in the web-root (e.g. they're inside something like `/api/`) then you'll need to add an [application-specific mapping](http://livedocs.adobe.com/coldfusion/8/htmldocs/help.html?content=appFramework_04.html) for `/resources` so that Taffy can find your resources to initialize the routes.
+Next, if your Application.cfc and `/resources/` folder aren't in the web-root (e.g. they're inside something like `/api/`) then you'll need to do one of the following:
 
-```js
-this.mappings["/resources"] = expandPath("./resources");
-```
+* Add an [application-specific mapping](http://livedocs.adobe.com/coldfusion/8/htmldocs/help.html?content=appFramework_04.html) for `/resources` so that Taffy can find your resources to initialize the routes.
+
+	```js
+	this.mappings["/resources"] = expandPath("../api/resources");
+	```
+* You can specify the path to your resource components using the [`resourcesCFCPath`](#resourcescfcpath) setting to specify the dotted path to your resource folder. This will allow you to store your resource components in the directory of your choosing.
+
 
 You'll also need to add a mapping for `/taffy` so that the resources can extend `taffy.core.resource` (since the taffy folder isn't a child of the resources folder):
 
@@ -366,6 +370,7 @@ Default values:
 
 ```js
 variables.framework = {
+	resourcesCFCPath = "", 
 	reloadKey = "reload",
 	reloadPassword = "true",
 	reloadOnEveryRequest = false,
@@ -410,6 +415,13 @@ variables.framework = {
 	environments = {}
 };
 ```
+
+#### resourcesCFCPath
+
+**Available in:** Taffy 3.8+<br/>
+**Type:** String<br/>
+**Default:** ""<br/>
+**Description:** By default, Taffy will attempt to load your resource components from either a child folder named `resources` or from a CF mapping named `resources`. You can use this setting to define an explicit path to your resource components using the "dotted" path of your resource folder (e.g. `myapp.api.rest-cfcs`). 
 
 #### reloadKey
 
