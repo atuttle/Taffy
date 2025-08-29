@@ -29,6 +29,7 @@
 		variables.framework.globalHeaders = {};
 		variables.framework.globalHeaders["x-foo-globalheader"] = "snafu";
 		variables.framework.exposeHeaders = true;
+		variables.framework.exposeTaffyHeaders = true;
 
 		variables.framework.environments = {};
 		variables.framework.environments.test = {};

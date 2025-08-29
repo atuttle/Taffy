@@ -396,6 +396,7 @@ variables.framework = {
 
 	unhandledPaths = "/flex2gateway",
 	allowCrossDomain = false,
+	exposeTaffyHeaders = true,
 	globalHeaders = structNew(),
 	debugKey = "debug",
 
@@ -574,6 +575,27 @@ In addition, as of Taffy 3.1.0, you can set this setting to a string of allowabl
 variables.framework.allowCrossDomain =
   "http://example.com; http://foo.bar, http://google.com";
 ```
+
+#### exposeTaffyHeaders
+
+**Available in:** Taffy 3.8+<br/>
+**Type:** Boolean<br/>
+**Default:** true<br/>
+**Description:** Determines if the standard Taffy debug HTTP response headers should be included with each request. The Taffy debug headers are:
+
+* `X-TAFFY-RELOADED` — Determines if the Taffy configuration was reloaded on the request.
+* `X-TIME-TO-RELOAD` — The time it took for Taffy to initialize.
+* `X-TIME-IN-PARSE` — The time it took to parse the response.
+* `X-TIME-IN-ONTAFFYREQUEST` — The time spent in the `onTaffyRequest` method.
+* `X-TIME-IN-RESOURCE` — The time spent executing the requested resource.
+* `X-TIME-IN-CACHE-CHECK` — The time spent checking for a cached response. 
+* `X-TIME-IN-CACHE-GET` — The time spent to retrieve a cached response.
+* `X-TIME-IN-CACHE-SAVE` — The time spent to save a cached response.
+* `X-TIME-IN-SERIALIZE` — The time spent serializing the response.
+* `X-TIME-IN-TAFFY` — The time spent executing the Taffy internals.
+* `X-TIME-IN-ONTAFFYREQUESTEND` — The time spent in the `onTaffyRequestEnd` method.
+
+Setting this to `false` will prevent these response headers from being written to the HTTP stream.
 
 #### globalHeaders
 
