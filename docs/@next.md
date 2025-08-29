@@ -585,7 +585,7 @@ variables.framework.allowCrossDomain =
 
 * `X-TAFFY-RELOADED` — Determines if the Taffy configuration was reloaded on the request.
 * `X-TIME-TO-RELOAD` — The time it took for Taffy to initialize.
-* `X-TIME-IN-PARSE` — The time it took to parse the response.
+* `X-TIME-IN-PARSE` — The time it took to parse the request.
 * `X-TIME-IN-ONTAFFYREQUEST` — The time spent in the `onTaffyRequest` method.
 * `X-TIME-IN-RESOURCE` — The time spent executing the requested resource.
 * `X-TIME-IN-CACHE-CHECK` — The time spent checking for a cached response. 
