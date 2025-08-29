@@ -613,6 +613,7 @@
 		<cfset local._taffy.endpoints = structNew() />
 		<!--- default settings --->
 		<cfset local.defaultConfig = structNew() />
+		<cfset local.defaultConfig.resourcesCFCPath = "" />
 		<cfset local.defaultConfig.docs = structNew() />
 		<cfset local.defaultConfig.docs.APIName = "Your API Name (variables.framework.docs.APIName)" />
 		<cfset local.defaultConfig.docs.APIVersion = "0.0.0 (variables.framework.docs.APIVersion)" />
@@ -679,7 +680,7 @@
 			',', '|', 'all' )
 		/>
 		<!--- if resources folder exists, use internal bean factory --->
-		<cfset local.resourcePath = guessResourcesFullPath() />
+		<cfset local.resourcePath = guessResourcesFullPath(local._taffy.settings.resourcesCFCPath) />
 		<cfset local.noResources = false />
 		<cfif directoryExists(local.resourcePath)>
 			<!--- setup internal bean factory --->
@@ -689,7 +690,7 @@
 			<cfelse>
 				<cfset local._taffy.factory.init() />
 			</cfif>
-			<cfset local._taffy.factory.loadBeansFromPath(local.resourcePath, guessResourcesCFCPath(), guessResourcesFullPath(), true, local._taffy) />
+			<cfset local._taffy.factory.loadBeansFromPath(local.resourcePath, guessResourcesCFCPath(local._taffy.settings.resourcesCFCPath), local.resourcePath, true, local._taffy) />
 			<cfset local._taffy.beanList = local._taffy.factory.getBeanList() />
 			<cfset local._taffy.endpoints = cacheBeanMetaData(local._taffy.factory, local._taffy.beanList, local._taffy) />
 			<cfset local._taffy.status.internalBeanFactoryUsed = true />
@@ -1105,10 +1106,24 @@
 	</cffunction>
 
 	<cffunction name="guessResourcesFullPath" access="private" output="false" returntype="string">
+		<cfargument name="dottedPath" type="string" required="false" default="" hint="dotted path to a resource folder to use" />
+
+		<!--- when we have an explicit path, no need to make a guess, we just need to convert the dotted path to a file path --->
+		<cfif len(arguments.dottedPath)>
+			<cfreturn expandPath("/" & replace(arguments.dottedPath, ".", "/", "all")) />
+		</cfif>
+
 		<cfreturn expandPath(guessResourcesPath()) />
 	</cffunction>
 
 	<cffunction name="guessResourcesCFCPath" access="private" output="false" returntype="string">
+		<cfargument name="dottedPath" type="string" required="false" default="" hint="dotted path to a resource folder to use" />
+
+		<!--- when we have an explicit path, no need to make a guess --->
+		<cfif len(arguments.dottedPath)>
+			<cfreturn arguments.dottedPath />
+		</cfif>
+
 		<cfset var path = guessResourcesPath() />
 		<cfif left(path, 1) eq "/"><cfset path = right(path, len(path)-1) /></cfif>
 		<cfreturn reReplace(path, "\/", ".", "all") />
