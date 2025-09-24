@@ -74,13 +74,27 @@
 		<cfargument name="targetPath" default="" />
 		<cfset var local = structNew() />
 		<cfset request.unhandled = false />
-		<cfset local.reloadedInThisRequest = false />
 		<cfset request.taffyReloaded = false />
 		<!--- this will probably happen if taffy is sharing an app name with an existing application so that you can use its application context --->
 		<cfif not structKeyExists(application, "_taffy")>
 			<cfset onApplicationStart() />
-			<cfset local.reloadedInThisRequest = true />
 		</cfif>
+		
+		<cfif !isUnhandledPathRequest(arguments.targetPath)>
+			<!---if the path is handled then we pass it along to onRequest--->
+		<cfelse>
+			<!--- allow pass-thru for selected paths --->
+			<cfset structDelete(this, 'onRequest') />
+			<cfset structDelete(variables, 'onRequest') />
+			<cfset request.unhandled = true />
+		</cfif>
+
+		<cfreturn true />
+	</cffunction>
+
+	<cffunction name="onRequestEnd">
+		<cfargument name="targetPage" />
+
 		<!--- allow reloading --->
 		<cfif
 			(
@@ -91,41 +105,15 @@
 			OR
 			(
 				application._taffy.settings.reloadOnEveryRequest eq true
+			)
+			OR(
+				isdefined("variables.framework.docs.apiVersion")
+				AND
+				variables.framework.docs.apiVersion neq application._taffy.settings.docs.apiVersion
 			)>
-			<cfif !local.reloadedInThisRequest and !isUnhandledPathRequest(arguments.targetPath)><!--- prevent double reloads --->
-				<cfset onApplicationStart() />
-			</cfif>
+				<cfset applicationStop() />
 		</cfif>
-		<cfif !isUnhandledPathRequest(arguments.targetPath)>
-			<!--- if browsing to root of api, show dashboard --->
-			<cfset local.path = replaceNoCase(cgi.path_info, cgi.script_name, "") />
-			<cfif
-				NOT structKeyExists(url,application._taffy.settings.endpointURLParam)
-				AND NOT structKeyExists(form,application._taffy.settings.endpointURLParam)
-				AND len(local.path) lte 1
-				AND listFindNoCase(cgi.script_name, "index.cfm", "/") EQ listLen(cgi.script_name, "/")>
-				<cfif NOT application._taffy.settings.disableDashboard>
-					<cfif StructKeyExists( URL, "docs" )>
-						<cfinclude template="#application._taffy.settings.docsPath#" />
-					<cfelse>
-						<cfinclude template="../dashboard/dashboard.cfm" />
-					</cfif>
-					<cfabort />
-				<cfelse>
-					<cfif len(application._taffy.settings.disabledDashboardRedirect)>
-						<cflocation url="#application._taffy.settings.disabledDashboardRedirect#" addtoken="false" />
-						<cfabort />
-					<cfelseif application._taffy.settings.showDocsWhenDashboardDisabled IS False>
-						<cfset throwError(403, "Forbidden") />
-					</cfif>
-				</cfif>
-			</cfif>
-		<cfelse>
-			<!--- allow pass-thru for selected paths --->
-			<cfset structDelete(this, 'onRequest') />
-			<cfset structDelete(variables, 'onRequest') />
-			<cfset request.unhandled = true />
-		</cfif>
+
 		<cfreturn true />
 	</cffunction>
 
@@ -219,14 +207,14 @@
 				<cfelse>
 					<cfinclude template="../dashboard/dashboard.cfm" />
 				</cfif>
-				<cfabort />
+				<cfreturn true />
 			<cfelse>
 				<cfif len(application._taffy.settings.disabledDashboardRedirect)>
 					<cflocation url="#application._taffy.settings.disabledDashboardRedirect#" addtoken="false" />
-					<cfabort />
+					<cfreturn true />
 				<cfelseif application._taffy.settings.showDocsWhenDashboardDisabled>
 					<cfinclude template="#application._taffy.settings.docsPath#" />
-					<cfabort />
+					<cfreturn true />
 				<cfelse>
 					<cfset throwError(403, "Forbidden") />
 				</cfif>
@@ -1136,6 +1124,7 @@
 		<cfcontent reset="true" />
 		<cfset addHeaders(arguments.headers) />
 		<cfheader statuscode="#arguments.statusCode#" statustext="#arguments.msg#" />
+		<cfset onRequestEnd()>
 		<cfabort />
 	</cffunction>
 
