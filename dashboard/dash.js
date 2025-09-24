@@ -132,10 +132,12 @@ $(function(){
 			submit.removeAttr('disabled');
 			reset.show();
 			headers = parseHeaders(headers);
+			resource.data("jsondata", "");
 
 			if (headers['content-type'].indexOf('application/json') > -1 || headers['content-type'].indexOf('text/json') > -1 || headers['content-type'].indexOf('application/vnd.api+json') > -1){
 				//indentation!
 				if (body.length){
+					resource.data("jsondata", JSON.parse(body));
 					body = JSON.stringify(JSON.parse(body), null, 3);
 					// only do syntax highlighting if hljs is defined
 					if (typeof hljs === 'undefined') {
@@ -166,11 +168,28 @@ $(function(){
 				headerRow.append('<div class="row"><div class="col-md-5 headerName">' + sortable[h] + ':</div><div class="col-md-7 headerVal">' + headers[sortable[h]] + '</div></div>');
 			}
 
-			response.find('.responseTime').html('Request took ' + timeSpent + 'ms');
+			// only display dump button if jQuery dump is available
+			var renderBtn = "";
+			if (typeof $.dump === "undefined") {
+				/* nothing */
+			} else if (resource.data("jsondata")){
+				renderBtn = "<span class=\"dumpBtn label label-default\" style=\"cursor:pointer;\">CLICK TO DUMP</span> ";
+			}
+
+			response.find('.responseTime').html(renderBtn + 'Request took ' + timeSpent + 'ms');
 			response.find('.responseStatus').html(status);
 			response.find('.responseBody').html(body);
 		});
 
+	});
+
+	$("body").on("click", ".dumpBtn", function(e){
+		var data = $(this).closest(".resource").data("jsondata") || 0;
+		if (data){
+			$.dump(data, false, true, true);
+		} else {
+			alert("Unable to dump API response");
+		}
 	});
 
 	$(".resetRequest").click(function(){
