@@ -28,7 +28,8 @@
 	</cfcase>
 
 	<cfdefaultcase>
-		<cfheader statuscode="404" statustext="Not Found" />
+		<cfinclude template="../core/cfHeaderHelper.cfm" />
+		<cfset setTaffyStatusHeader(404, "Not Found") />
 		<cfcontent reset="true" /><cfabort />
 	</cfdefaultcase>
 

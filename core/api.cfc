@@ -1,5 +1,23 @@
 <cfcomponent hint="Base class for taffy REST application's Application.cfc">
 
+	<!--- Instance-level utility for backwards compatible cfheader handling --->
+	<cfset variables.headerUtils = "" />
+
+	<!--- Lazy-loaded getter for header utility --->
+	<cffunction name="getHeaderUtils" access="private" output="false" returntype="any" hint="Returns header utility instance with lazy loading">
+		<cfif variables.headerUtils eq "">
+			<cfset variables.headerUtils = createObject("component", "taffy.core.cfHeaderUtils").init() />
+		</cfif>
+		<cfreturn variables.headerUtils />
+	</cffunction>
+
+	<!--- Wrapper function to maintain API compatibility --->
+	<cffunction name="setStatusHeader" access="private" output="false" returntype="void" hint="Sets HTTP status header with backwards compatibility">
+		<cfargument name="statusCode" type="numeric" required="true" hint="HTTP status code to set" />
+		<cfargument name="statusText" type="string" required="false" default="" hint="HTTP status text (optional for CF 2025+)" />
+		<cfset getHeaderUtils().setStatusHeader(arguments.statusCode, arguments.statusText) />
+	</cffunction>
+
 	<!--- this method is meant to be (optionally) overrided in your application.cfc --->
 	<cffunction name="getEnvironment" output="false" hint="override this function to define the current API environment"><cfreturn "" /></cffunction>
 
@@ -146,7 +164,7 @@
 			<cfset logger.saveLog(exception) />
 
 			<!--- return 500 no matter what --->
-			<cfheader statuscode="500" statustext="Error" />
+			<cfset setStatusHeader(500, "Error") />
 			<cfcontent reset="true" />
 
 			<cfif structKeyExists(exception, "rootCause")>
@@ -177,7 +195,7 @@
 			</cfif>
 			<cfcatch>
 				<cfcontent reset="true" type="text/plain; charset=utf-8" />
-				<cfheader statuscode="500" statustext="Error" />
+				<cfset setStatusHeader(500, "Error") />
 				<cfoutput>An unhandled exception occurred: <cfif isStruct(root) and structKeyExists(root,"message")>#root.message#<cfelse>#root#</cfif> <cfif isStruct(root) and structKeyExists(root,"detail")>-- #root.detail#</cfif></cfoutput>
 				<cfdump var="#cfcatch#" format="text" label="ERROR WHEN LOGGING EXCEPTION" />
 				<cfdump var="#exception#" format="text" label="ORIGINAL EXCEPTION" />
@@ -422,7 +440,7 @@
 
 		<cfsetting enablecfoutputonly="true" />
 		<cfcontent reset="true" type="#getReturnMimeAsHeader(_taffyRequest.returnMimeExt)#; charset=utf-8" />
-		<cfheader statuscode="#_taffyRequest.statusArgs.statusCode#" statustext="#_taffyRequest.statusArgs.statusText#" />
+		<cfset setStatusHeader(_taffyRequest.statusArgs.statusCode, _taffyRequest.statusArgs.statusText) />
 
 		<!--- headers --->
 		<cfset addHeaders(_taffyRequest.resultHeaders) />
@@ -498,7 +516,7 @@
 						<cfset _taffyRequest.clientEtag = _taffyRequest.headers['If-None-Match'] />
 
 						<cfif len(_taffyRequest.clientEtag) gt 0 and _taffyRequest.clientEtag eq _taffyRequest.serverEtag>
-							<cfheader statuscode="304" statustext="Not Modified" />
+							<cfset setStatusHeader(304, "Not Modified") />
 							<cfcontent reset="true" type="#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#; charset=utf-8" />
 							<cfreturn true />
 						<cfelse>
@@ -1135,7 +1153,7 @@
 		<cfargument name="headers" type="struct" required="false" default="#structNew()#" />
 		<cfcontent reset="true" />
 		<cfset addHeaders(arguments.headers) />
-		<cfheader statuscode="#arguments.statusCode#" statustext="#arguments.msg#" />
+		<cfset setStatusHeader(arguments.statusCode, arguments.msg) />
 		<cfabort />
 	</cffunction>
 
