@@ -1053,6 +1053,8 @@
 					<cfset local.returnData[local.qsKey] = arrayNew(1) />
 				</cfif>
 				<cfset arrayAppend(local.returnData[local.qsKey], local.qsValue) />
+                        <cfelseif local.returnData.keyExists(local.qsKey)>
+                                <cfset local.returnData[local.qsKey] = local.returnData[local.qsKey].listAppend(local.qsValue) />
 			<cfelse>
 				<cfset local.returnData[local.qsKey] = local.qsValue />
 			</cfif>
@@ -1088,15 +1090,15 @@
 
 	<cffunction name="guessResourcesPath" access="private" output="false" returntype="string" hint="used to try and figure out the absolute path of the /resources folder even though this file may not be in the web root">
 		<!--- if /resources has been explicitly defined in an server/application mapping, it should take precedence --->
-		<cfif directoryExists(expandPath("resources"))>
-			<cfreturn "resources" />
-		<cfelseif directoryExists(expandPath("/resources"))>
-			<cfreturn "/resources" />
+		<cfif directoryExists(expandPath("taffy_resources"))>
+			<cfreturn "taffy_resources" />
+		<cfelseif directoryExists(expandPath("/taffy_resources"))>
+			<cfreturn "/taffy_resources" />
 		</cfif>
 
 		<!--- if all else fails, fall through to guessing where /resources lives --->
 		<cfset local.indexcfmpath = cgi.script_name />
-		<cfset local.resourcesPath = listDeleteAt(local.indexcfmpath, listLen(local.indexcfmpath, "/"), "/") & "/resources" />
+		<cfset local.resourcesPath = listDeleteAt(local.indexcfmpath, listLen(local.indexcfmpath, "/"), "/") & "/taffy_resources" />
 
 		<cfif GetContextRoot() NEQ "">
 			<cfset local.resourcesPath = ReReplace(local.resourcesPath,"^#GetContextRoot()#","")>
@@ -1267,14 +1269,16 @@
 		<cfset var beanFactoryMeta = getMetadata(arguments.bf) />
 		<cfif lcase(left(beanFactoryMeta.name, 10)) eq "coldspring">
 			<cfreturn getBeanListFromColdSpring( arguments.bf ) />
-		<cfelseif beanFactoryMeta.name contains "ioc">
+		<cfelseif beanFactoryMeta.name contains "ioc" OR beanFactoryMeta.name contains "aop">
 			<!--- this isn't a perfect test (contains "ioc") but it's all we can do for now... --->
+			<!--- If we want AOP with full FW/1 then we need to sniff for ioc extended to: "aop" --->
 			<cfset local.beanInfo = arguments.bf.getBeanInfo().beanInfo />
 			<cfset local.beanList = "" />
 			<cfloop collection="#local.beanInfo#" item="local.beanName">
 				<cfif structKeyExists(local.beanInfo[local.beanName],'name')
-					  AND local.beanName NEQ local.beanInfo[local.beanName].name
+					  AND local.beanName EQ local.beanInfo[local.beanName].name
 					  AND isInstanceOf(arguments.bf.getBean(local.beanName),'taffy.core.resource')>
+                                          <!--- not sure what 'NEQ' eliminates; everything, it seems --->
 					<cfset local.beanList = listAppend(local.beanList,local.beanName) />
 				</cfif>
 			</cfloop>
