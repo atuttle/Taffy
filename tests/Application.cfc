@@ -12,25 +12,33 @@ component {
 	this.mappings["/tests"] = variables.testsPath;
 	this.mappings["/resources"] = variables.testsPath & "resources";
 
+	// Also set component paths for Lucee 6 compatibility
+	this.componentPaths = [
+		{
+			"physical": variables.rootPath,
+			"archive": "",
+			"primary": "physical",
+			"inspectTemplate": "always"
+		}
+	];
+
 	function onApplicationStart() {
+		// Initialize minimal Taffy context for tests that need it
+		application._taffy = {
+			settings: {
+				serializer: "core.nativeJsonSerializer",
+				noDataSends204NoContent: false
+			},
+			factory: new core.factory(),
+			compat: {
+				queryToArray: "missing",
+				queryToStruct: "missing"
+			}
+		};
 		return true;
 	}
 
 	function onRequestStart(targetPath) {
-		// Initialize minimal Taffy context for tests that need it
-		if (!structKeyExists(application, "_taffy")) {
-			application._taffy = {
-				settings: {
-					serializer: "taffy.core.nativeJsonSerializer",
-					noDataSends204NoContent: false
-				},
-				factory: createObject("component", "taffy.core.factory").init(),
-				compat: {
-					queryToArray: "missing",
-					queryToStruct: "missing"
-				}
-			};
-		}
 		return true;
 	}
 

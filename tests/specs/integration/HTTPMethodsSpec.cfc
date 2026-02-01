@@ -4,10 +4,10 @@ component extends="testbox.system.BaseSpec" {
 		// Initialize application scope with minimal settings required by resource.cfc
 		application._taffy = {
 			settings: {
-				serializer: "taffy.core.nativeJsonSerializer",
+				serializer: "core.nativeJsonSerializer",
 				noDataSends204NoContent: false
 			},
-			factory: new taffy.core.factory(),
+			factory: new core.factory(),
 			compat: {
 				queryToArray: "missing",
 				queryToStruct: "missing"
@@ -148,9 +148,9 @@ component extends="testbox.system.BaseSpec" {
 
 			describe("Resource inheritance", function() {
 
-				it("should extend taffy.core.resource", function() {
+				it("should extend core.resource", function() {
 					var resource = new tests.resources.MockSimpleResource();
-					expect(resource).toBeInstanceOf("taffy.core.resource");
+					expect(resource).toBeInstanceOf("core.resource");
 				});
 
 				it("should have access to rep() method from parent", function() {
@@ -170,14 +170,14 @@ component extends="testbox.system.BaseSpec" {
 				it("should execute GET and return serializer", function() {
 					var resource = new tests.resources.MockSimpleResource();
 					var result = resource.get();
-					expect(result).toBeInstanceOf("taffy.core.baseSerializer");
+					expect(result).toBeInstanceOf("core.baseSerializer");
 					expect(result.getData().method).toBe("GET");
 				});
 
 				it("should execute POST with arguments", function() {
 					var resource = new tests.resources.MockSimpleResource();
 					var result = resource.post(name = "TestItem");
-					expect(result).toBeInstanceOf("taffy.core.baseSerializer");
+					expect(result).toBeInstanceOf("core.baseSerializer");
 					expect(result.getData().name).toBe("TestItem");
 					expect(result.getStatus()).toBe(201);
 				});

@@ -1,4 +1,4 @@
-component extends="taffy.core.resource" taffy:uri="/users/{userId}/orders/{orderId}" {
+component extends="core.resource" taffy:uri="/users/{userId}/orders/{orderId}" {
 
 	/**
 	 * GET /users/{userId}/orders/{orderId} - Returns order for a user

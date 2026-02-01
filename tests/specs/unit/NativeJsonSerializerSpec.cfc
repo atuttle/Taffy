@@ -4,10 +4,10 @@ component extends="testbox.system.BaseSpec" {
 		// Initialize application scope with minimal settings
 		application._taffy = {
 			settings: {
-				serializer: "taffy.core.nativeJsonSerializer",
+				serializer: "core.nativeJsonSerializer",
 				noDataSends204NoContent: false
 			},
-			factory: new taffy.core.factory(),
+			factory: new core.factory(),
 			compat: {
 				queryToArray: "missing",
 				queryToStruct: "missing"
@@ -20,13 +20,13 @@ component extends="testbox.system.BaseSpec" {
 		describe("NativeJsonSerializer", function() {
 
 			beforeEach(function() {
-				variables.serializer = new taffy.core.nativeJsonSerializer();
+				variables.serializer = new core.nativeJsonSerializer();
 			});
 
 			describe("inheritance", function() {
 
 				it("should extend baseSerializer", function() {
-					expect(serializer).toBeInstanceOf("taffy.core.baseSerializer");
+					expect(serializer).toBeInstanceOf("core.baseSerializer");
 				});
 
 				it("should have all baseSerializer methods", function() {
@@ -158,7 +158,7 @@ component extends="testbox.system.BaseSpec" {
 				it("should force numeric strings to serialize as strings", function() {
 					// The forceString function adds chr(2) which is then stripped by getAsJson
 					// This ensures numeric-looking strings serialize as strings, not numbers
-					var resource = new taffy.core.resource();
+					var resource = new core.resource();
 					var forcedString = resource.forceString("12345");
 
 					// The chr(2) prefix forces CF to treat this as a string during serialization

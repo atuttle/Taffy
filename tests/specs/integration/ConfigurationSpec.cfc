@@ -8,7 +8,7 @@ component extends="testbox.system.BaseSpec" {
 
 				it("should have reloadKey default of 'reload'", function() {
 					// Create API instance to check defaults
-					var api = new taffy.core.api();
+					var api = new core.api();
 					// The setupFramework method sets these defaults
 					// We can verify the expected defaults are documented
 					expect(true).toBeTrue(); // Placeholder - actual verification needs app context
@@ -24,14 +24,14 @@ component extends="testbox.system.BaseSpec" {
 			describe("Serializer configuration", function() {
 
 				it("should use nativeJsonSerializer by default", function() {
-					// The default serializer should be taffy.core.nativeJsonSerializer
-					var serializer = new taffy.core.nativeJsonSerializer();
-					expect(serializer).toBeInstanceOf("taffy.core.baseSerializer");
+					// The default serializer should be core.nativeJsonSerializer
+					var serializer = new core.nativeJsonSerializer();
+					expect(serializer).toBeInstanceOf("core.baseSerializer");
 				});
 
 				it("should support custom serializer", function() {
 					// Custom serializers should extend baseSerializer
-					var baseSerializer = new taffy.core.baseSerializer();
+					var baseSerializer = new core.baseSerializer();
 					expect(baseSerializer).toHaveKey("setData");
 					expect(baseSerializer).toHaveKey("getData");
 					expect(baseSerializer).toHaveKey("withStatus");
@@ -42,12 +42,12 @@ component extends="testbox.system.BaseSpec" {
 			describe("Deserializer configuration", function() {
 
 				it("should use nativeJsonDeserializer by default", function() {
-					var deserializer = new taffy.core.nativeJsonDeserializer();
-					expect(deserializer).toBeInstanceOf("taffy.core.baseDeserializer");
+					var deserializer = new core.nativeJsonDeserializer();
+					expect(deserializer).toBeInstanceOf("core.baseDeserializer");
 				});
 
 				it("should support JSON content type", function() {
-					var deserializer = new taffy.core.nativeJsonDeserializer();
+					var deserializer = new core.nativeJsonDeserializer();
 					var meta = getMetadata(deserializer);
 					var hasJsonSupport = false;
 					for (var func in meta.functions) {
@@ -60,7 +60,7 @@ component extends="testbox.system.BaseSpec" {
 				});
 
 				it("should support form-urlencoded content type", function() {
-					var deserializer = new taffy.core.baseDeserializer();
+					var deserializer = new core.baseDeserializer();
 					var meta = getMetadata(deserializer);
 					var hasFormSupport = false;
 					for (var func in meta.functions) {
@@ -77,7 +77,7 @@ component extends="testbox.system.BaseSpec" {
 			describe("MIME type configuration", function() {
 
 				it("should detect mime types from serializer metadata", function() {
-					var serializer = new taffy.core.nativeJsonSerializer();
+					var serializer = new core.nativeJsonSerializer();
 					var meta = getMetadata(serializer);
 
 					var jsonMime = "";
@@ -95,7 +95,7 @@ component extends="testbox.system.BaseSpec" {
 				});
 
 				it("should identify default mime type from serializer", function() {
-					var serializer = new taffy.core.nativeJsonSerializer();
+					var serializer = new core.nativeJsonSerializer();
 					var meta = getMetadata(serializer);
 
 					var isDefault = false;

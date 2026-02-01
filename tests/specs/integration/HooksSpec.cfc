@@ -7,12 +7,12 @@ component extends="testbox.system.BaseSpec" {
 			describe("onTaffyRequest hook", function() {
 
 				it("should be defined in api.cfc", function() {
-					var api = new taffy.core.api();
+					var api = new core.api();
 					expect(api).toHaveKey("onTaffyRequest");
 				});
 
 				it("should accept required parameters", function() {
-					var api = new taffy.core.api();
+					var api = new core.api();
 					var meta = getMetadata(api);
 					var hookFunc = "";
 					for (var func in meta.functions) {
@@ -39,7 +39,7 @@ component extends="testbox.system.BaseSpec" {
 				});
 
 				it("should return true by default", function() {
-					var api = new taffy.core.api();
+					var api = new core.api();
 					var result = api.onTaffyRequest(
 						verb = "GET",
 						cfc = "testResource",
@@ -57,12 +57,12 @@ component extends="testbox.system.BaseSpec" {
 			describe("onTaffyRequestEnd hook", function() {
 
 				it("should be defined in api.cfc", function() {
-					var api = new taffy.core.api();
+					var api = new core.api();
 					expect(api).toHaveKey("onTaffyRequestEnd");
 				});
 
 				it("should accept required parameters", function() {
-					var api = new taffy.core.api();
+					var api = new core.api();
 					var meta = getMetadata(api);
 					var hookFunc = "";
 					for (var func in meta.functions) {
@@ -85,7 +85,7 @@ component extends="testbox.system.BaseSpec" {
 				});
 
 				it("should return true by default", function() {
-					var api = new taffy.core.api();
+					var api = new core.api();
 					var result = api.onTaffyRequestEnd(
 						verb = "GET",
 						cfc = "testResource",
@@ -106,33 +106,33 @@ component extends="testbox.system.BaseSpec" {
 			describe("Caching hooks", function() {
 
 				it("should have validCacheExists hook", function() {
-					var api = new taffy.core.api();
+					var api = new core.api();
 					expect(api).toHaveKey("validCacheExists");
 				});
 
 				it("validCacheExists should return false by default", function() {
-					var api = new taffy.core.api();
+					var api = new core.api();
 					var result = api.validCacheExists(cacheKey = "test-key");
 					expect(result).toBeFalse();
 				});
 
 				it("should have setCachedResponse hook", function() {
-					var api = new taffy.core.api();
+					var api = new core.api();
 					expect(api).toHaveKey("setCachedResponse");
 				});
 
 				it("should have getCachedResponse hook", function() {
-					var api = new taffy.core.api();
+					var api = new core.api();
 					expect(api).toHaveKey("getCachedResponse");
 				});
 
 				it("should have getCacheKey hook", function() {
-					var api = new taffy.core.api();
+					var api = new core.api();
 					expect(api).toHaveKey("getCacheKey");
 				});
 
 				it("getCacheKey should generate key from request params", function() {
-					var api = new taffy.core.api();
+					var api = new core.api();
 					var requestArgs = { id: 123 };
 					var result = api.getCacheKey(
 						cfc = "testResource",
@@ -147,12 +147,12 @@ component extends="testbox.system.BaseSpec" {
 			describe("getEnvironment hook", function() {
 
 				it("should be defined in api.cfc", function() {
-					var api = new taffy.core.api();
+					var api = new core.api();
 					expect(api).toHaveKey("getEnvironment");
 				});
 
 				it("should return empty string by default", function() {
-					var api = new taffy.core.api();
+					var api = new core.api();
 					var result = api.getEnvironment();
 					expect(result).toBe("");
 				});
@@ -162,8 +162,8 @@ component extends="testbox.system.BaseSpec" {
 			describe("Hook extensibility", function() {
 
 				it("should allow overriding onTaffyRequest in subclass", function() {
-					// Any class extending taffy.core.api can override hooks
-					var api = new taffy.core.api();
+					// Any class extending core.api can override hooks
+					var api = new core.api();
 					// The base api has the hook that can be overridden
 					expect(api).toHaveKey("onTaffyRequest");
 					// Verify it's a function that can be overridden
@@ -175,12 +175,12 @@ component extends="testbox.system.BaseSpec" {
 			describe("Basic auth helper", function() {
 
 				it("should have getBasicAuthCredentials method", function() {
-					var api = new taffy.core.api();
+					var api = new core.api();
 					expect(api).toHaveKey("getBasicAuthCredentials");
 				});
 
 				it("getBasicAuthCredentials should return struct with username and password", function() {
-					var api = new taffy.core.api();
+					var api = new core.api();
 					var result = api.getBasicAuthCredentials();
 					expect(result).toBeStruct();
 					expect(result).toHaveKey("username");
@@ -188,7 +188,7 @@ component extends="testbox.system.BaseSpec" {
 				});
 
 				it("should return empty credentials when no auth header", function() {
-					var api = new taffy.core.api();
+					var api = new core.api();
 					var result = api.getBasicAuthCredentials();
 					expect(result.username).toBe("");
 					expect(result.password).toBe("");
@@ -199,34 +199,34 @@ component extends="testbox.system.BaseSpec" {
 			describe("Helper methods", function() {
 
 				it("should have getHostname helper", function() {
-					var api = new taffy.core.api();
+					var api = new core.api();
 					expect(api).toHaveKey("getHostname");
 					var hostname = api.getHostname();
 					expect(len(hostname)).toBeGT(0);
 				});
 
 				it("should have addHeaders helper", function() {
-					var api = new taffy.core.api();
+					var api = new core.api();
 					expect(api).toHaveKey("addHeaders");
 				});
 
 				it("should have rep helper for responses", function() {
-					var api = new taffy.core.api();
+					var api = new core.api();
 					expect(api).toHaveKey("rep");
 				});
 
 				it("should have representationOf helper", function() {
-					var api = new taffy.core.api();
+					var api = new core.api();
 					expect(api).toHaveKey("representationOf");
 				});
 
 				it("should have noData helper", function() {
-					var api = new taffy.core.api();
+					var api = new core.api();
 					expect(api).toHaveKey("noData");
 				});
 
 				it("should have noContent helper", function() {
-					var api = new taffy.core.api();
+					var api = new core.api();
 					expect(api).toHaveKey("noContent");
 				});
 

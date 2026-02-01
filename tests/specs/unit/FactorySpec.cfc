@@ -5,7 +5,7 @@ component extends="testbox.system.BaseSpec" {
 		describe("Factory", function() {
 
 			beforeEach(function() {
-				variables.factory = new taffy.core.factory();
+				variables.factory = new core.factory();
 			});
 
 			describe("init()", function() {
@@ -22,7 +22,7 @@ component extends="testbox.system.BaseSpec" {
 
 				it("should return this for method chaining", function() {
 					var result = factory.init();
-					expect(result).toBeInstanceOf("taffy.core.factory");
+					expect(result).toBeInstanceOf("core.factory");
 				});
 
 			});
