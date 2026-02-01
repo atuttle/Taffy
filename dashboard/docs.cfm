@@ -207,13 +207,23 @@
 	</div><!-- /container -->
 
 	<script type="text/javascript">
-		<cfinclude template="jquery.min.js" />
-		<cfinclude template="bootstrap.min.js" />
 		<cfinclude template="highlight.min.js" />
-		<cfinclude template="dash.js" />
 
-		$(function(){
+		document.addEventListener('DOMContentLoaded', function(){
 			hljs.initHighlighting();
+
+			// Accordion toggle for collapse panels
+			document.querySelectorAll('[data-toggle="collapse"]').forEach(function(trigger) {
+				trigger.addEventListener('click', function(e) {
+					e.preventDefault();
+					var targetId = this.getAttribute('href').replace('#', '');
+					var target = document.getElementById(targetId);
+					if (target) {
+						target.classList.toggle('collapse');
+						target.classList.toggle('in');
+					}
+				});
+			});
 		});
 	</script>
 </body>
