@@ -66,22 +66,19 @@ component extends="testbox.system.BaseSpec" {
 
 			describe("encode.string()", function() {
 
-				beforeEach(function() {
-					variables.testableResource = new tests.resources.TestableResource();
-				});
-
 				it("should add control character prefix to force string serialization", function() {
-					var result = testableResource.testEncodeString("12345");
+					// forceString is public (no access modifier), encode.string is just a reference to it
+					var result = resource.forceString("12345");
 					expect(left(result, 1)).toBe(chr(2));
 				});
 
 				it("should preserve the original value after prefix", function() {
-					var result = testableResource.testEncodeString("12345");
+					var result = resource.forceString("12345");
 					expect(right(result, 5)).toBe("12345");
 				});
 
 				it("should work with numeric-looking strings", function() {
-					var result = testableResource.testEncodeString("00123");
+					var result = resource.forceString("00123");
 					expect(len(result)).toBe(6); // chr(2) + "00123"
 				});
 
@@ -90,19 +87,19 @@ component extends="testbox.system.BaseSpec" {
 			describe("qToArray() - internal query to array conversion", function() {
 
 				beforeEach(function() {
-					variables.testableResource = new tests.resources.TestableResource();
+					makePublic(resource, "qToArray");
 				});
 
 				it("should convert query to array of structs", function() {
 					var q = sampleData.getSampleQuery();
-					var result = testableResource.testQToArray(q);
+					var result = resource.qToArray(q);
 					expect(result).toBeArray();
 					expect(arrayLen(result)).toBe(3);
 				});
 
 				it("should preserve column values in structs", function() {
 					var q = sampleData.getSampleQuery();
-					var result = testableResource.testQToArray(q);
+					var result = resource.qToArray(q);
 					// Find the row with id=1
 					var found = false;
 					for (var row in result) {
@@ -118,14 +115,14 @@ component extends="testbox.system.BaseSpec" {
 
 				it("should handle empty query", function() {
 					var q = queryNew("id,name", "integer,varchar");
-					var result = testableResource.testQToArray(q);
+					var result = resource.qToArray(q);
 					expect(result).toBeArray();
 					expect(arrayLen(result)).toBe(0);
 				});
 
 				it("should support callback function for row transformation", function() {
 					var q = sampleData.getSingleRowQuery();
-					var result = testableResource.testQToArray(q, function(row) {
+					var result = resource.qToArray(q, function(row) {
 						row.transformed = true;
 						return row;
 					});
@@ -137,12 +134,12 @@ component extends="testbox.system.BaseSpec" {
 			describe("qToStruct() - internal query to struct conversion", function() {
 
 				beforeEach(function() {
-					variables.testableResource = new tests.resources.TestableResource();
+					makePublic(resource, "qToStruct");
 				});
 
 				it("should convert single-row query to struct", function() {
 					var q = sampleData.getSingleRowQuery();
-					var result = testableResource.testQToStruct(q);
+					var result = resource.qToStruct(q);
 					expect(result).toBeStruct();
 					expect(result.id).toBe(1);
 					expect(result.name).toBe("Test User");
@@ -151,13 +148,13 @@ component extends="testbox.system.BaseSpec" {
 				it("should throw error for multi-row query", function() {
 					var q = sampleData.getSampleQuery(); // Has 3 rows
 					expect(function() {
-						testableResource.testQToStruct(q);
+						resource.qToStruct(q);
 					}).toThrow();
 				});
 
 				it("should handle query with all column types", function() {
 					var q = sampleData.getSingleRowQuery();
-					var result = testableResource.testQToStruct(q);
+					var result = resource.qToStruct(q);
 					expect(structKeyExists(result, "id")).toBeTrue();
 					expect(structKeyExists(result, "name")).toBeTrue();
 					expect(structKeyExists(result, "email")).toBeTrue();
@@ -165,7 +162,7 @@ component extends="testbox.system.BaseSpec" {
 
 				it("should support callback function for value transformation", function() {
 					var q = sampleData.getSingleRowQuery();
-					var result = testableResource.testQToStruct(q, function(colName, value) {
+					var result = resource.qToStruct(q, function(colName, value) {
 						if (colName == "name") {
 							return uCase(value);
 						}
