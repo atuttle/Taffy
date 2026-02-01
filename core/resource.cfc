@@ -1,157 +1,133 @@
-<cfcomponent hint="base class for taffy REST components">
+component hint="base class for taffy REST components" {
 
-	<cffunction name="forceString">
-		<cfargument name="data" required="true" hint="the data that is being forced to serialize as a string" />
-		<cfreturn chr(2) & arguments.data />
-	</cffunction>
+	public function forceString(required data) hint="the data that is being forced to serialize as a string" {
+		return chr(2) & arguments.data;
+	}
 
-	<cfset variables.encode = structNew() />
-	<cfset variables.encode.string = forceString />
+	variables.encode = {};
+	variables.encode.string = forceString;
 
-	<!--- helper functions --->
-	<cffunction name="representationOf" access="public" output="false" hint="returns an object capable of serializing the data in a variety of formats">
-		<cfargument name="data" required="true" hint="any simple or complex data that should be returned for the request" />
-		<cfreturn getRepInstance().setData(arguments.data) />
-	</cffunction>
+	public function representationOf(required data) output="false" hint="returns an object capable of serializing the data in a variety of formats" {
+		return getRepInstance().setData(arguments.data);
+	}
 
-	<cffunction name="rep" access="public" output="false" hint="alias for representationOf">
-		<cfargument name="data" required="true" />
-		<cfreturn representationOf(arguments.data) />
-	</cffunction>
+	public function rep(required data) output="false" hint="alias for representationOf" {
+		return representationOf(arguments.data);
+	}
 
-	<cffunction name="noData" access="private" output="false" hint="use this function to return only headers to the consumer, no data">
-		<cfreturn getRepInstance().noData() />
-	</cffunction>
+	private function noData() output="false" hint="use this function to return only headers to the consumer, no data" {
+		return getRepInstance().noData();
+	}
 
-	<cffunction name="noContent" access="private" output="false" hint="use this function to return only headers to the consumer, no data">
-		<cfreturn getRepInstance().noContent() />
-	</cffunction>
+	private function noContent() output="false" hint="use this function to return only headers to the consumer, no data" {
+		return getRepInstance().noContent();
+	}
 
-	<cffunction name="streamFile" access="private" output="false" hint="Use this function to specify a file name (eg c:\tmp\kitten.jpg) to be streamed to the client. When you use this method it is *required* that you also use .withMime() to specify the mime type.">
-		<cfargument name="fileName" required="true" hint="fully qualified file path (eg c:\tmp\kitten.jpg)" />
-		<cfreturn getRepInstance().setFileName(arguments.fileName) />
-	</cffunction>
+	private function streamFile(required fileName) output="false" hint="Use this function to specify a file name (eg c:\tmp\kitten.jpg) to be streamed to the client. When you use this method it is *required* that you also use .withMime() to specify the mime type." {
+		return getRepInstance().setFileName(arguments.fileName);
+	}
 
-	<cffunction name="streamBinary" access="private" output="false" hint="Use this function to stream binary data, like a generated PDF object, to the client. When you use this method it is *required* that you also use .withMime() to specify the mime type.">
-		<cfargument name="binaryData" required="true" hint="binary file data (eg a PDF object) that you want to return to the client" />
-		<cfreturn getRepInstance().setFileData(arguments.binaryData) />
-	</cffunction>
+	private function streamBinary(required binaryData) output="false" hint="Use this function to stream binary data, like a generated PDF object, to the client. When you use this method it is *required* that you also use .withMime() to specify the mime type." {
+		return getRepInstance().setFileData(arguments.binaryData);
+	}
 
-	<cffunction name="streamImage" access="private" output="false" hint="Use this function to stream binary data, like a generated PDF object, to the client. When you use this method it is *required* that you also use .withMime() to specify the mime type.">
-		<cfargument name="binaryData" required="true" hint="binary file data (eg a PDF object or image data) that you want to return to the client" />
-		<cfreturn getRepInstance().setImageData(arguments.binaryData) />
-	</cffunction>
+	private function streamImage(required binaryData) output="false" hint="Use this function to stream binary data, like a generated PDF object, to the client. When you use this method it is *required* that you also use .withMime() to specify the mime type." {
+		return getRepInstance().setImageData(arguments.binaryData);
+	}
 
-	<cffunction name="saveLog">
-		<cfargument name="exception" />
-		<cfset logger = createObject("component", application._taffy.settings.exceptionLogAdapter).init(
-				application._taffy.settings.exceptionLogAdapterConfig
-		) />
-		<cfset logger.saveLog(exception) />
-	</cffunction>
+	public function saveLog(exception) {
+		var logger = createObject("component", application._taffy.settings.exceptionLogAdapter).init(
+			application._taffy.settings.exceptionLogAdapterConfig
+		);
+		logger.saveLog(exception);
+	}
 
-	<cffunction name="qToArray" access="private" returntype="array" output="false">
-		<cfargument name="q" type="query" required="yes" />
-		<cfargument name="cb" type="any" required="no" />
-		<cfscript>
-			var local = {};
-			if (structKeyExists(server, "railo") or structKeyExists(server, "lucee")) {
-				local.Columns = listToArray(arguments.q.getColumnList(false));
-			}
-			else {
-				local.Columns = arguments.q.getMetaData().getColumnLabels();
-			}
-			local.QueryArray = ArrayNew(1);
-			for (local.RowIndex = 1; local.RowIndex <= arguments.q.RecordCount; local.RowIndex++){
-				local.Row = {};
-				local.numCols = ArrayLen( local.Columns );
-				for (local.ColumnIndex = 1; local.ColumnIndex <= local.numCols; local.ColumnIndex++){
-					local.ColumnName = local.Columns[ local.ColumnIndex ];
-					if( local.ColumnName NEQ "" ) {
-						local.Row[ local.ColumnName ] = arguments.q[ local.ColumnName ][ local.RowIndex ];
-					}
-				}
-				if ( structKeyExists( arguments, "cb" ) ) {
-					local.Row = cb( local.Row );
-				}
-				ArrayAppend( local.QueryArray, local.Row );
-			}
-			return( local.QueryArray );
-		</cfscript>
-	</cffunction>
-
-	<cfif application._taffy.compat.queryToArray eq "missing">
-		<cffunction name="queryToArray" access="private" returntype="struct" output="false">
-			<cfargument name="q" type="query" required="yes" />
-			<cfargument name="cb" type="any" required="no" />
-			<cfreturn qToArray(arguments.q, arguments.cb) />
-		</cffunction>
-	</cfif>
-
-	<cffunction name="qToStruct" access="private" returntype="struct" output="false">
-		<cfargument name="q" type="query" required="yes" />
-		<cfargument name="cb" type="any" required="no" />
-		<cfset var local = {} />
-
-		<cfif q.recordcount gt 1>
-			<cfthrow message="Unable to convert query resultset with more than one record to a simple struct, use queryToArray() instead" />
-		</cfif>
-
-		<cfscript>
-			if (structKeyExists(server, "railo") or structKeyExists(server, "lucee")) {
-				local.Columns = listToArray(arguments.q.getColumnList(false));
-			}
-			else {
-				local.Columns = arguments.q.getMetaData().getColumnLabels();
-			}
-
-			local.QueryStruct = {};
-			local.numCols = ArrayLen( local.Columns );
-
-			for (local.ColumnIndex = 1; local.ColumnIndex <= local.numCols; local.ColumnIndex++){
-				local.ColumnName = local.Columns[ local.ColumnIndex ];
-				if( local.ColumnName NEQ "" ) {
-					if ( structKeyExists( arguments, "cb" ) ) {
-						local.QueryStruct[ local.ColumnName ] = cb( local.ColumnName, arguments.q[ local.ColumnName ][1] );
-					} else {
-						local.QueryStruct[ local.ColumnName ] = arguments.q[ local.ColumnName ][1];
-					}
+	private array function qToArray(required query q, cb) output="false" {
+		var local = {};
+		if (structKeyExists(server, "railo") or structKeyExists(server, "lucee")) {
+			local.Columns = listToArray(arguments.q.getColumnList(false));
+		} else {
+			local.Columns = arguments.q.getMetaData().getColumnLabels();
+		}
+		local.QueryArray = [];
+		for (local.RowIndex = 1; local.RowIndex <= arguments.q.RecordCount; local.RowIndex++) {
+			local.Row = {};
+			local.numCols = arrayLen(local.Columns);
+			for (local.ColumnIndex = 1; local.ColumnIndex <= local.numCols; local.ColumnIndex++) {
+				local.ColumnName = local.Columns[local.ColumnIndex];
+				if (local.ColumnName != "") {
+					local.Row[local.ColumnName] = arguments.q[local.ColumnName][local.RowIndex];
 				}
 			}
+			if (structKeyExists(arguments, "cb")) {
+				local.Row = cb(local.Row);
+			}
+			arrayAppend(local.QueryArray, local.Row);
+		}
+		return local.QueryArray;
+	}
 
-			return( local.QueryStruct );
-		</cfscript>
-	</cffunction>
+	if (application._taffy.compat.queryToArray eq "missing") {
+		private struct function queryToArray(required query q, cb) output="false" {
+			return qToArray(arguments.q, arguments.cb);
+		}
+	}
 
-	<cfif application._taffy.compat.queryToStruct eq "missing">
-		<cffunction name="queryToStruct" access="private" returntype="struct" output="false">
-			<cfargument name="q" type="query" required="yes" />
-			<cfargument name="cb" type="any" required="no" />
-			<cfreturn qToStruct(arguments.q, arguments.cb) />
-		</cffunction>
-	</cfif>
+	private struct function qToStruct(required query q, cb) output="false" {
+		var local = {};
 
-	<!---
-		function that gets the representation class instance
-		-- if the argument is blank, we use the default from taffy settings
-		-- if the argument is a beanName, the bean is returned from the factory;
-		-- otherwise it is assumed to be a cfc path and that cfc instance is returned
-	--->
-	<cffunction name="getRepInstance" access="private" output="false">
-		<cfargument name="repClass" type="string" default="" />
-		<cfif repClass eq "">
-			<!--- recursion not the most efficient path here, but it's damn readable --->
-			<cfreturn getRepInstance(application._taffy.settings.serializer) />
-		<cfelseif application._taffy.factory.containsBean(arguments.repClass)>
-			<cfreturn application._taffy.factory.getBean(arguments.repClass) />
-		<cfelse>
-			<cfreturn createObject("component", arguments.repClass) />
-		</cfif>
-	</cffunction>
+		if (q.recordcount gt 1) {
+			throw(message="Unable to convert query resultset with more than one record to a simple struct, use queryToArray() instead");
+		}
 
-	<cffunction name="addDebugData" access="package" output="false">
-		<cfargument name="data" type="any" />
-		<cfset request.debugData = arguments.data />
-	</cffunction>
+		if (structKeyExists(server, "railo") or structKeyExists(server, "lucee")) {
+			local.Columns = listToArray(arguments.q.getColumnList(false));
+		} else {
+			local.Columns = arguments.q.getMetaData().getColumnLabels();
+		}
 
-</cfcomponent>
+		local.QueryStruct = {};
+		local.numCols = arrayLen(local.Columns);
+
+		for (local.ColumnIndex = 1; local.ColumnIndex <= local.numCols; local.ColumnIndex++) {
+			local.ColumnName = local.Columns[local.ColumnIndex];
+			if (local.ColumnName != "") {
+				if (structKeyExists(arguments, "cb")) {
+					local.QueryStruct[local.ColumnName] = cb(local.ColumnName, arguments.q[local.ColumnName][1]);
+				} else {
+					local.QueryStruct[local.ColumnName] = arguments.q[local.ColumnName][1];
+				}
+			}
+		}
+
+		return local.QueryStruct;
+	}
+
+	if (application._taffy.compat.queryToStruct eq "missing") {
+		private struct function queryToStruct(required query q, cb) output="false" {
+			return qToStruct(arguments.q, arguments.cb);
+		}
+	}
+
+	/**
+	 * function that gets the representation class instance
+	 * -- if the argument is blank, we use the default from taffy settings
+	 * -- if the argument is a beanName, the bean is returned from the factory;
+	 * -- otherwise it is assumed to be a cfc path and that cfc instance is returned
+	 */
+	private function getRepInstance(string repClass="") output="false" {
+		if (repClass eq "") {
+			// recursion not the most efficient path here, but it's damn readable
+			return getRepInstance(application._taffy.settings.serializer);
+		} else if (application._taffy.factory.containsBean(arguments.repClass)) {
+			return application._taffy.factory.getBean(arguments.repClass);
+		} else {
+			return createObject("component", arguments.repClass);
+		}
+	}
+
+	package function addDebugData(data) output="false" {
+		request.debugData = arguments.data;
+	}
+
+}

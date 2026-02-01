@@ -1,146 +1,131 @@
-﻿<!---
-	Adapter Path: taffy.bonus.LogToBugsnag
-	Configuration Options: (structure)
+/**
+ * Adapter Path: taffy.bonus.LogToBugsnag
+ * Configuration Options: (structure)
+ *
+ * variables.framework.exceptionLogAdapterConfig = {
+ *     apiKey = "c9d60ae4c7e70c4b6c4ebd3e8056d2b8",
+ *     appVersion = "1.1.3",
+ *     releaseStage = "production"
+ * };
+ *
+ * apiKey: The API Key associated with the project
+ * appVersion: The version number of the application which generated the error
+ * releaseStage: The release stage that this error occurred in (e.g "development", "staging" or "production")
+ */
+component implements="taffy.bonus.ILogAdapter" {
 
-	variables.framework.exceptionLogAdapterConfig = {
-		apiKey = "c9d60ae4c7e70c4b6c4ebd3e8056d2b8",
-		appVersion = "1.1.3",
-		releaseStage = "production"
-	};
+	/**
+	 * Initializes this logger
+	 */
+	public function init(config, tracker) hint="I accept a configuration structure to setup and return myself" {
+		variables.config = {};
+		structAppend(variables.config, arguments.config, true);
+		return this;
+	}
 
-	apiKey: The API Key associated with the project
-	appVersion: The version number of the application which generated the error
-	releaseStage: The release stage that this error occurred in (e.g "development", "staging" or "production")
---->
-<cfcomponent implements="taffy.bonus.ILogAdapter">
-	<!---
-		Initializes this logger
-	--->
-	<cffunction name="init" hint="I accept a configuration structure to setup and return myself">
-		<cfargument name="config" />
-		<cfargument name="tracker" />
+	/**
+	 * Logs or notifies the specified exception
+	 */
+	public function saveLog(exception) hint="I log or otherwise notify you of an exception" {
+		var payload = {};
 
-		<!--- copy settings into adapter instance data --->
-		<cfset variables.config = structNew() />
-		<cfset structAppend(variables.config, arguments.config, true) />
+		// Add Project API key to payload
+		payload["apiKey"] = variables.config.apiKey;
 
-		<cfreturn this />
-	</cffunction>
+		// Add notifier info to payload
+		payload["notifier"] = {};
+		payload["notifier"]["name"] = "Taffy";
+		payload["notifier"]["version"] = "1.0";
+		payload["notifier"]["url"] = "https://github.com/atuttle/Taffy";
 
-	<!---
-		Logs or notifies the specified exception
-	--->
-	<cffunction name="saveLog" hint="I log or otherwise notify you of an exception">
-		<cfargument name="exception" />
+		// Add exception details to payload
+		payload["events"] = [];
+		payload["events"][1] = {};
+		payload["events"][1]["payloadVersion"] = "2";
+		payload["events"][1]["exceptions"] = [];
+		payload["events"][1]["exceptions"][1] = convertException(arguments.exception);
 
-		<!--- Define local variables --->
-		<cfset var payload = structNew() />
+		// Add application details to payload
+		payload["events"][1]["app"] = {};
+		payload["events"][1]["app"]["appVersion"] = variables.config.appVersion;
+		payload["events"][1]["app"]["releaseStage"] = variables.config.releaseStage;
 
-		<!--- Add Project API key to payload --->
-		<cfset payload["apiKey"] = variables.config.apiKey />
+		// Add some metadata to payload
+		payload["events"][1]["metaData"] = {};
+		payload["events"][1]["metaData"]["request"] = {};
+		payload["events"][1]["metaData"]["request"]["remoteAddr"] = cgi.remote_addr;
+		payload["events"][1]["metaData"]["request"]["requestMethod"] = cgi.request_method;
+		payload["events"][1]["metaData"]["request"]["requestUrl"] = cgi.request_url;
 
-		<!--- Add notifier info to payload --->
-		<cfset payload["notifier"] = structNew() />
-		<cfset payload["notifier"]["name"] = "Taffy" />
-		<cfset payload["notifier"]["version"] = "1.0" />
-		<cfset payload["notifier"]["url"] = "https://github.com/atuttle/Taffy" />
+		// Send log to Bugsnag
+		cfhttp(url="https://notify.bugsnag.com", method="post") {
+			cfhttpparam(type="header", name="Content-Type", value="application/json");
+			cfhttpparam(type="body", value=serializeJSON(payload));
+		}
+	}
 
-		<!--- Add exception details to payload --->
-		<cfset payload["events"] = arrayNew(1) />
-		<cfset payload["events"][1] = structNew() />
-		<cfset payload["events"][1]["payloadVersion"] = "2" />
-		<cfset payload["events"][1]["exceptions"] = arrayNew(1) />
-		<cfset payload["events"][1]["exceptions"][1] = convertException(arguments.exception) />
+	/**
+	 * Converts the specified exception to be added to the payload
+	 */
+	private struct function convertException(required struct exception) output="false" {
+		var root = "";
+		var exceptionElement = {};
+		var tagContextElement = "";
 
-		<!--- Add application details to payload --->
-		<cfset payload["events"][1]["app"] = structNew() />
-		<cfset payload["events"][1]["app"]["appVersion"] = variables.config.appVersion />
-		<cfset payload["events"][1]["app"]["releaseStage"] = variables.config.releaseStage />
+		// Get the root exception
+		if (structKeyExists(exception, "rootCause")) {
+			root = arguments.exception.rootCause;
+		} else {
+			root = arguments.exception;
+		}
 
-		<!--- Add some metadata to payload --->
-		<cfset payload["events"][1]["metaData"] = structNew() />
-		<cfset payload["events"][1]["metaData"]["request"] = structNew() />
-		<cfset payload["events"][1]["metaData"]["request"]["remoteAddr"] = cgi.remote_addr />
-		<cfset payload["events"][1]["metaData"]["request"]["requestMethod"] = cgi.request_method />
-		<cfset payload["events"][1]["metaData"]["request"]["requestUrl"] = cgi.request_url />
+		// Add type and message to payload
+		exceptionElement["errorClass"] = root.type;
+		exceptionElement["message"] = root.message;
 
-		<!--- Send log to Bugsnag --->
-		<cfhttp url="https://notify.bugsnag.com" method="post">
-			<cfhttpparam type="header" name="Content-Type" value="application/json" />
-			<cfhttpparam type="body" value="#serializeJSON(payload)#" />
-		</cfhttp>
-	</cffunction>
+		// Build stack trace
+		exceptionElement["stacktrace"] = [];
+		for (tagContextElement in root.TagContext) {
+			arrayAppend(exceptionElement["stacktrace"], convertTagContextElement(tagContextElement));
+		}
 
-	<!---
-		Converts the specified exception to be added to the payload
-	--->
-	<cffunction name="convertException" access="private" returntype="struct" output="false">
-		<cfargument name="exception" type="struct" required="true" />
+		return exceptionElement;
+	}
 
-		<!--- Define local variables --->
-		<cfset var root = "" />
-		<cfset var exceptionElement = structNew() />
-		<cfset var tagContextElement = "" />
+	/**
+	 * Converts the specified Tag Context element to be included in the stack trace array
+	 */
+	private struct function convertTagContextElement(required struct tagContextElement) output="false" {
+		var stackTraceElement = {};
 
-		<!--- Get the root exception --->
-		<cfif structKeyExists(exception, "rootCause")>
-			<cfset root = arguments.exception.rootCause />
-		<cfelse>
-			<cfset root = arguments.exception />
-		</cfif>
+		// Add stack trace data
+		stackTraceElement["file"] = arguments.tagContextElement.template;
+		stackTraceElement["lineNumber"] = arguments.tagContextElement.line;
+		stackTraceElement["columnNumber"] = arguments.tagContextElement.column;
+		stackTraceElement["method"] = "Unknown function";
 
-		<!--- Add type and message to payload --->
-		<cfset exceptionElement["errorClass"] = root.type />
-		<cfset exceptionElement["message"] = root.message />
+		// Add code details
+		if (structKeyExists(arguments.tagContextElement, "codePrintPlain")) {
+			stackTraceElement["code"] = convertCodePrint(arguments.tagContextElement.codePrintPlain);
+		}
 
-		<!--- Build stack trace --->
-		<cfset exceptionElement["stacktrace"] = arrayNew(1) />
-		<cfloop array="#root.TagContext#" index="tagContextElement">
-			<cfset arrayAppend(exceptionElement["stacktrace"], convertTagContextElement(tagContextElement)) />
-		</cfloop>
+		return stackTraceElement;
+	}
 
-		<cfreturn exceptionElement />
-	</cffunction>
+	/**
+	 * Converts the specified code details to be included to the stack trace element
+	 */
+	private struct function convertCodePrint(required string codePrintText) output="false" {
+		var codeLines = {};
+		var split = listToArray(arguments.codePrintText, chr(10));
+		var line = "";
 
-	<!---
-		Converts the specified Tag Context element to be included in the strack trace array
-	---->
-	<cffunction name="convertTagContextElement" access="private" returntype="struct" output="false">
-		<cfargument name="tagContextElement" type="struct" required="true" />
+		// Add code lines
+		for (line in split) {
+			structInsert(codeLines, listFirst(line, ":"), trim(listRest(line, ":")));
+		}
 
-		<!--- Define local variables --->
-		<cfset var stackTraceElement = structNew() />
+		return codeLines;
+	}
 
-		<!--- Add stack trace data --->
-		<cfset stackTraceElement["file"] = arguments.tagContextElement.template />
-		<cfset stackTraceElement["lineNumber"] = arguments.tagContextElement.line />
-		<cfset stackTraceElement["columnNumber"] = arguments.tagContextElement.column />
-		<cfset stackTraceElement["method"] = "Unknown function" />
-
-		<!--- Add code details --->
-		<cfif structKeyExists(arguments.tagContextElement, "codePrintPlain")>
-			<cfset stackTraceElement["code"] = convertCodePrint(arguments.tagContextElement.codePrintPlain) />
-		</cfif>
-
-		<cfreturn stackTraceElement />
-	</cffunction>
-
-	<!---
-		Converts the specified code details to be included to the strack trace element
-	--->
-	<cffunction name="convertCodePrint" access="private" returntype="struct" output="false">
-		<cfargument name="codePrintText" type="string" required="true" />
-
-		<!--- Define local variables --->
-		<cfset var codeLines = structNew() />
-		<cfset var split = listToArray(arguments.codePrintText, chr(10)) />
-		<cfset var line = "" />
-
-		<!--- Add code lines --->
-		<cfloop array="#split#" index="line">
-			<cfset structInsert(codeLines, listFirst(line, ":"), trim(listRest(line, ":"))) />
-		</cfloop>
-
-		<cfreturn codeLines />
-	</cffunction>
-</cfcomponent>
+}

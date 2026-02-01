@@ -1,20 +1,17 @@
-<cfcomponent implements="taffy.bonus.ILogAdapter">
+component implements="taffy.bonus.ILogAdapter" {
 
-	<cffunction name="init">
-		<cfargument name="config" />
-		<cfargument name="tracker" hint="unused" default="" />
-		<cfreturn this />
-	</cffunction>
+	public function init(config, tracker="") hint="unused tracker" {
+		return this;
+	}
 
-	<cffunction name="saveLog">
-		<cfargument name="exception" />
-		<cfcontent type="text/html" />
-		<cfheader statuscode="500" statustext="Unhandled API Error" />
-		<cfdump var="#arguments#" />
-		<cfif isDefined('request.debugData')>
-			<cfdump var="#request.debugData#" label="debug data" />
-		</cfif>
-		<cfabort />
-	</cffunction>
+	public function saveLog(exception) {
+		cfcontent(type="text/html");
+		cfheader(statuscode="500", statustext="Unhandled API Error");
+		writeDump(arguments);
+		if (isDefined('request.debugData')) {
+			writeDump(var=request.debugData, label="debug data");
+		}
+		abort;
+	}
 
-</cfcomponent>
+}
