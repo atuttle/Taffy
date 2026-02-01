@@ -1,5 +1,12 @@
 {
+    "name":"taffy-dev",
+    "web":{
+        "http":{
+            "port":8080
+        }
+    },
     "app":{
-        "cfengine":""
-    }
+        "cfengine":"lucee@5"
+    },
+    "openBrowser":false
 }

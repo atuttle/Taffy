@@ -56,9 +56,13 @@
     "testbox": {
       "runner": [
         {
-          "default": "http://localhost/runner.cfm"
+          "default": "http://localhost:8080/tests/runner.cfm"
         }
       ],
-      "directory": "tests.specs"
+      "directory": "tests/specs",
+      "bundles": "",
+      "labels": "",
+      "excludes": "",
+      "verbose": true
     }
 }
