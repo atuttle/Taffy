@@ -1,61 +1,53 @@
-<cfcomponent implements="taffy.bonus.ILogAdapter">
+component implements="taffy.bonus.ILogAdapter" {
 
-	<cffunction name="init">
-		<cfargument name="config" />
-		<cfargument name="tracker" hint="unused" default="" />
+	public function init(config, tracker="") hint="unused tracker" {
+		variables.config = {};
+		structAppend(variables.config, arguments.config, true);
+		return this;
+	}
 
-		<!--- copy settings into adapter instance data --->
-		<cfset variables.config = {}>
-		<cfset structAppend( variables.config, arguments.config, true ) />
+	public function saveLog(exception) {
+		var local = {};
 
-		<cfreturn this />
-	</cffunction>
+		variables.config = removeEmailPrefix(variables.config);
 
-	<cffunction name="saveLog">
-		<cfargument name="exception" />
+		// to conform to the cfmail attribute name and be backward compatible with emailSubj
+		variables.config.subject = variables.config.subj;
 
-		<cfset var local = StructNew() />
+		local.attributeCollection = variables.config;
 
-		<cfset variables.config = removeEmailPrefix(variables.config)>
+		cfmail(attributeCollection=local.attributeCollection) {
+			if (variables.config.type eq "text") {
+				writeOutput("Exception Report
 
-		<!--- to conform to the cfmail attribute name and be backward compatible with emailSubj --->
-		<cfset variables.config.subject = variables.config.subj>
+Exception Timestamp: #dateformat(now(), 'yyyy-mm-dd')# #timeformat(now(), 'HH:MM:SS tt')#
 
-		<cfset local.attributeCollection = variables.config>
+");
+				writeDump(var=arguments.exception, format="text");
+				if (isDefined('request.debugData')) {
+					writeDump(var=request.debugData, label="debug data", format="text");
+				}
+			} else {
+				writeOutput("<h2>Exception Report</h2>
+<p><strong>Exception Timestamp:</strong> #dateformat(now(), 'yyyy-mm-dd')# #timeformat(now(), 'HH:MM:SS tt')#</p>");
+				writeDump(arguments.exception);
+				if (isDefined('request.debugData')) {
+					writeDump(var=request.debugData, label="debug data");
+				}
+			}
+		}
+	}
 
-		<cfmail attributeCollection="#local.attributeCollection#">
-			<cfif variables.config.type eq "text">
-				Exception Report
+	private struct function removeEmailPrefix(required struct configAttributes) output="false" hint="removes all email prefix from the config attributes" {
+		var configAttributeName = "";
+		var configAttributeValue = "";
+		var newConfig = {};
+		var configAttributeNameWithoutEmailPrefix = "";
+		for (configAttributeName in arguments.configAttributes) {
+			configAttributeNameWithoutEmailPrefix = replaceNoCase(configAttributeName, "email", "", "one");
+			newConfig[configAttributeNameWithoutEmailPrefix] = arguments.configAttributes[configAttributeName];
+		}
+		return newConfig;
+	}
 
-				Exception Timestamp: <cfoutput>#dateformat(now(), 'yyyy-mm-dd')# #timeformat(now(), 'HH:MM:SS tt')#</cfoutput>
-
-				<cfdump var="#arguments.exception#" format="text" />
-				<cfif isDefined('request.debugData')>
-					<cfdump var="#request.debugData#" label="debug data" format="text"/>
-				</cfif>
-			<cfelse>
-				<h2>Exception Report</h2>
-				<p><strong>Exception Timestamp:</strong> <cfoutput>#dateformat(now(), 'yyyy-mm-dd')# #timeformat(now(), 'HH:MM:SS tt')#</cfoutput></p>
-				<cfdump var="#arguments.exception#" />
-				<cfif isDefined('request.debugData')>
-					<cfdump var="#request.debugData#" label="debug data" />
-				</cfif>
-			</cfif>
-		</cfmail>
-	</cffunction>
-
-	<cffunction name="removeEmailPrefix" output="false" access="private" returntype="struct" hint="removes all email prefix from the config attributes">
-		<cfargument name="configAttributes" required="true" type="struct" />
-
-		<cfset var configAttributeName="" />
-		<cfset var configAttributeValue = "" />
-		<cfset var newConfig = {} />
-		<cfloop collection="#arguments.configAttributes#" item="configAttributeName">
-			<cfset configAttributeNameWithoutEmailPrefix = replaceNoCase(configAttributeName, "email", "", "one") />
-			<cfset newConfig[configAttributeNameWithoutEmailPrefix] = arguments.configAttributes[configAttributeName] />
-		</cfloop>
-
-		<cfreturn newConfig />
-	</cffunction>
-
-</cfcomponent>
+}
