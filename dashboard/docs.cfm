@@ -24,12 +24,19 @@
 			<h3>Resources:</h3>
 			<div class="panel-group" id="resourcesAccordion">
 				<cfoutput>
+					<cfset local.tmpResourceGroup = "">
+					<cfset local.currentResourceGroup = "">
 					<cfloop from="1" to="#arrayLen(application._taffy.uriMatchOrder)#" index="local.resource">
 						<cfset local.currentResource = application._taffy.endpoints[application._taffy.uriMatchOrder[local.resource]] />
 						<cfset local.bean = application._taffy.factory.getBean(local.currentResource.beanName) />
 						<cfset local.beanMeta = getMetaData(local.bean) />
 						<cfif structKeyExists(local.beanMeta, "taffy_docs_hide") OR structKeyExists(local.beanMeta, "taffy:docs:hide")>
 							<cfscript>continue;</cfscript>
+						</cfif>
+						<cfset local.currentResourceGroup =  ListFirst(local.currentResource.srcURI,"/")>
+						<cfif local.currentResourceGroup NEQ local.tmpResourceGroup>
+							<cfset local.tmpResourceGroup = local.currentResourceGroup>
+							<h4>#local.tmpResourceGroup#</h4>
 						</cfif>
 						<div class="panel panel-default">
 							<div class="panel-heading">
@@ -40,7 +47,7 @@
 										<cfelseif structKeyExists(local.beanMeta, "taffy_docs_name")>
 											#local.beanMeta['taffy_docs_name']#
 										<cfelse>
-											#local.currentResource.beanName#
+											#ReplaceNoCase(local.currentResource.beanName,local.tmpResourceGroup,"")#
 										</cfif>
 									</a>
 									<cfloop list="DELETE|warning,PATCH|warning,PUT|warning,POST|danger,GET|primary" index="local.verb">
