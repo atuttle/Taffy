@@ -734,3 +734,11 @@ textarea.form-input {
 .mt-4 {
 	margin-top: 1rem;
 }
+
+/* Collapse (for docs.cfm) */
+.collapse {
+	display: none;
+}
+.collapse.in {
+	display: block;
+}

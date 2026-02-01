@@ -4,210 +4,455 @@ if (!String.prototype.trim) {
 	};
 }
 
-$(function(){
+document.addEventListener('DOMContentLoaded', function(){
 
-	// Request body visibility is now handled in Dashboard.cfm accordion click handler
-	//hide request body form field for GET/DELETE on method change
-	$(".resource .reqMethod").on('change', function(){
-		var resource = $(this).closest('.resource');
-		var method = resource.find('.reqMethod option:checked').html();
-		if (method === 'GET' || method === 'DELETE' || method == 'OPTIONS'){
-			resource.find('.reqBody').hide('fast');
-		}else{
-			var args = window.taffy.resources[resource.data('beanName')][method.toLowerCase()];
-			var ta = resource.find('.reqBody').show('fast').find('textarea');
-			ta.val(JSON.stringify(args, null, 3));
-			resource.find('.queryParams').find('input').val('');
-		}
+	// hljs setup (if available)
+	if (typeof hljs !== 'undefined') {
+		hljs.configure({ ignoreUnescapedHTML: true });
+
+		// Format JSON in sample responses
+		document.querySelectorAll('.json-format').forEach(function(el) {
+			try {
+				var json = JSON.parse(el.textContent);
+				el.textContent = JSON.stringify(json, null, 3);
+			} catch(e) {}
+		});
+
+		hljs.highlightAll();
+	}
+
+	// Modal handling (native dialog)
+	document.querySelectorAll('[data-modal-target]').forEach(function(el) {
+		el.addEventListener('click', function() {
+			var modalId = this.dataset.modalTarget;
+			document.getElementById(modalId).showModal();
+		});
 	});
 
-	$(".addParam").click(function(){
-		var resource = $(this).closest('.resource')
-			,params = resource.find('.queryParams');
-		var tmpl = '<div class="qparam"><input class="form-input paramName" placeholder="name" /><span class="text-muted">=</span><input class="form-input paramValue" placeholder="value" /><button class="btn btn-ghost delParam" tabindex="-1">-</button></div>';
-		params.append(tmpl);
+	document.querySelectorAll('.modal .modal-close').forEach(function(el) {
+		el.addEventListener('click', function() {
+			this.closest('.modal').close();
+		});
 	});
 
-	$(".resource").on('click', '.delParam', function(){
-		var row = $(this).closest('.qparam');
-		row.remove();
+	// Close modal on backdrop click
+	document.querySelectorAll('.modal').forEach(function(modal) {
+		modal.addEventListener('click', function(e) {
+			if (e.target === this) {
+				this.close();
+			}
+		});
+	});
+
+	// Resource accordion
+	document.querySelectorAll('.resource-header').forEach(function(el) {
+		el.addEventListener('click', function() {
+			var targetId = this.dataset.target;
+			var content = document.getElementById(targetId);
+			var wasOpen = content.classList.contains('open');
+			content.classList.toggle('open');
+
+			// On open, show/hide request body based on method
+			if (!wasOpen) {
+				var resource = content.querySelector('.resource');
+				var method = resource.querySelector('.reqMethod option:checked').textContent;
+				if (method === 'GET' || method === 'DELETE' || method === 'OPTIONS') {
+					resource.querySelector('.reqBody').style.display = 'none';
+					resource.querySelector('.queryParams').classList.add('active');
+				} else {
+					var args = window.taffy.resources[resource.dataset.beanName];
+					if (args && args[method.toLowerCase()]) {
+						var reqBody = resource.querySelector('.reqBody');
+						reqBody.style.display = '';
+						var ta = reqBody.querySelector('textarea');
+						ta.value = JSON.stringify(args[method.toLowerCase()], null, 3);
+					} else {
+						resource.querySelector('.reqBody').style.display = '';
+					}
+					resource.querySelector('.queryParams').classList.remove('active');
+				}
+			}
+		});
+	});
+
+	// Doc accordion
+	document.querySelectorAll('.doc-accordion-trigger').forEach(function(el) {
+		el.addEventListener('click', function() {
+			var targetId = this.dataset.target;
+			document.getElementById(targetId).classList.toggle('open');
+			this.classList.toggle('open');
+		});
+	});
+
+	// Tab handling
+	document.querySelectorAll('.tab-btn').forEach(function(el) {
+		el.addEventListener('click', function() {
+			var tabGroup = this.closest('.tabs');
+			var targetId = this.dataset.tab;
+
+			tabGroup.querySelectorAll('.tab-btn').forEach(function(btn) {
+				btn.classList.remove('active');
+			});
+			this.classList.add('active');
+
+			tabGroup.querySelectorAll('.tab-pane').forEach(function(pane) {
+				pane.classList.remove('active');
+			});
+			document.getElementById(targetId).classList.add('active');
+		});
+	});
+
+	// Reload button
+	var reloadBtn = document.getElementById('reload');
+	if (reloadBtn && window.taffy && window.taffy.config) {
+		reloadBtn.addEventListener('click', function() {
+			var cfg = window.taffy.config;
+			var reloadUrl = cfg.scriptName + '?dashboard&' + cfg.reloadKey + '=' + cfg.reloadPassword;
+			var btn = this;
+			btn.textContent = 'Reloading...';
+			btn.disabled = true;
+
+			fetch(reloadUrl)
+				.then(function(response) {
+					if (response.ok) {
+						document.getElementById('alerts').insertAdjacentHTML('beforeend', '<div id="reloadSuccess" class="alert alert-success">API Cache Successfully Reloaded. Refresh to see changes.</div>');
+						btn.disabled = false;
+						btn.textContent = 'Reload API Cache';
+						setTimeout(function() {
+							var el = document.getElementById('reloadSuccess');
+							if (el) el.remove();
+						}, 2000);
+					} else {
+						throw new Error('Reload failed');
+					}
+				})
+				.catch(function() {
+					document.getElementById('alerts').insertAdjacentHTML('beforeend', '<div id="reloadFail" class="alert alert-danger">API Cache Reload Failed!</div>');
+					btn.disabled = false;
+					btn.textContent = 'Reload API Cache';
+					setTimeout(function() {
+						var el = document.getElementById('reloadFail');
+						if (el) el.remove();
+					}, 2000);
+				});
+		});
+	}
+
+	// Resource search
+	var searchInput = document.getElementById('resourceSearch');
+	if (searchInput) {
+		searchInput.addEventListener('keyup', filterResources);
+		searchInput.addEventListener('keydown', function(e) {
+			if (e.keyCode == 27) {
+				this.value = '';
+				filterResources();
+			}
+		});
+	}
+
+	// Request body visibility on method change
+	document.querySelectorAll(".resource .reqMethod").forEach(function(el) {
+		el.addEventListener('change', function(){
+			var resource = this.closest('.resource');
+			var method = resource.querySelector('.reqMethod option:checked').textContent;
+			if (method === 'GET' || method === 'DELETE' || method == 'OPTIONS'){
+				resource.querySelector('.reqBody').style.display = 'none';
+			}else{
+				var args = window.taffy.resources[resource.dataset.beanName][method.toLowerCase()];
+				var reqBody = resource.querySelector('.reqBody');
+				reqBody.style.display = '';
+				var ta = reqBody.querySelector('textarea');
+				ta.value = JSON.stringify(args, null, 3);
+				resource.querySelectorAll('.queryParams input').forEach(function(inp) {
+					inp.value = '';
+				});
+			}
+		});
+	});
+
+	document.querySelectorAll(".addParam").forEach(function(el) {
+		el.addEventListener('click', function(){
+			var resource = this.closest('.resource');
+			var params = resource.querySelector('.queryParams');
+			var tmpl = '<div class="qparam"><input class="form-input paramName" placeholder="name" /><span class="text-muted">=</span><input class="form-input paramValue" placeholder="value" /><button class="btn btn-ghost delParam" tabindex="-1">-</button></div>';
+			params.insertAdjacentHTML('beforeend', tmpl);
+		});
+	});
+
+	document.querySelectorAll(".resource").forEach(function(resource) {
+		resource.addEventListener('click', function(e){
+			if (e.target.classList.contains('delParam')) {
+				var row = e.target.closest('.qparam');
+				row.remove();
+			}
+		});
 	});
 
 	//interpolate resource uri token values as they're typed
-	$(".resource").on('keyup', 'input', function(e){
-		var $this = $(this)
-			,resource = $this.closest('.resource')
-			,tokens = params( resource.find('.reqTokens form').serialize() )
-			,q = qParams(resource)
-			,uri = resource.data('uri')
+	document.querySelectorAll(".resource").forEach(function(resource) {
+		resource.addEventListener('keyup', function(e){
+			if (!e.target.matches('input')) return;
+			var form = resource.querySelector('.reqTokens form');
+			var tokens = form ? params(new FormData(form)) : {};
+			var q = qParams(resource);
+			var uri = resource.dataset.uri;
 
-		for (var t in tokens){
-			if (tokens[t] === '')
-				delete tokens[t];
-		}
-		var result = uri.supplant(tokens);
-		result += (q.length) ? '?' + q : '';
-		resource.find('.resourceUri').val(result);
+			for (var t in tokens){
+				if (tokens[t] === '')
+					delete tokens[t];
+			}
+			var result = uri.supplant(tokens);
+			result += (q.length) ? '?' + q : '';
+			resource.querySelector('.resourceUri').value = result;
+		});
 	});
 
-	$(".submitRequest").click(function(){
-		var submit = $(this)
-			,resource = submit.closest('.resource')
-			,reset = resource.find('.resetRequest')
-			,loading = resource.find('.progress')
-			,response = resource.find('.response')
-			,basicAuth = resource.find(".basicAuth");
+	document.querySelectorAll(".submitRequest").forEach(function(el) {
+		el.addEventListener('click', function(){
+			var submit = this;
+			var resource = submit.closest('.resource');
+			var reset = resource.querySelector('.resetRequest');
+			var loading = resource.querySelector('.progress');
+			var response = resource.querySelector('.response');
+			var basicAuth = resource.querySelector(".basicAuth");
 
-		//validate tokens
-		resource.find('.has-error').removeClass('has-error');
-		var tokenErrors = resource.find('.tokenErrors');
-		var tokens = resource.find('.reqTokens input');
-		tokenErrors.empty();
-		for (var t=0;t<tokens.length;t++){
-			var tok = $(tokens[t]);
-			if (tok.val().length === 0){
-				tok.closest('.token-row').addClass('has-error').focus();
-				tokenErrors.append('<div class="alert alert-danger">' + tok.attr('name') + ' is required</div>');
+			//validate tokens
+			resource.querySelectorAll('.has-error').forEach(function(el) {
+				el.classList.remove('has-error');
+			});
+			var tokenErrors = resource.querySelector('.tokenErrors');
+			var tokens = resource.querySelectorAll('.reqTokens input');
+			if (tokenErrors) tokenErrors.innerHTML = '';
+			for (var t=0;t<tokens.length;t++){
+				var tok = tokens[t];
+				if (tok.value.length === 0){
+					tok.closest('.token-row').classList.add('has-error');
+					tok.focus();
+					if (tokenErrors) tokenErrors.insertAdjacentHTML('beforeend', '<div class="alert alert-danger">' + tok.name + ' is required</div>');
+				}
 			}
-		}
-		if (resource.find('.reqTokens .has-error').length > 0){
-			return false;
-		}
-
-		loading.addClass('show');
-		submit.attr('disabled','disabled');
-
-		response.removeClass('show');
-
-		//interpolate the full request path
-		var uri = resource.data('uri')
-			,form = params( resource.find('.reqTokens form').serialize() )
-			,path = uri.supplant(form);
-
-		var verb = resource.find('.reqMethod option:checked').val();
-		var body = (verb === 'GET' || verb === 'DELETE') ? qParams(resource) : resource.find('.reqBody textarea').val();
-		var reqHeaders = resource.find('.requestHeaders').val().replace(/\r/g, '').split('\n');
-		var headers = {
-			Accept: resource.find('.reqFormat option:checked').val()
-			,"Content-Type": (verb === 'GET' || verb === 'DELETE') ? "application/x-www-form-urlencoded" : "application/json"
-		};
-		for (var h in reqHeaders){
-			var kv = reqHeaders[h].trim().split(':');
-			if (kv[0].trim().length == 0){
-				continue;
+			if (resource.querySelectorAll('.reqTokens .has-error').length > 0){
+				return false;
 			}
-			if (kv.length == 2){
-				headers[ kv[0].trim() ] = kv[1].trim();
-			}else if (kv.length == 1){
-				headers [kv[0].trim() ] = "";
-			}else{
-				var k = kv.shift().trim();
-				var v = kv.join(':').trim();
-				headers[ k ] = v;
-			}
-		}
 
-		var basicAuthUsername = basicAuth.find("input[name=username]").val();
-		var basicAuthPassword = basicAuth.find("input[name=password]").val();
+			loading.classList.add('show');
+			submit.disabled = true;
 
-		if(basicAuthUsername.length && basicAuthPassword.length){
-			headers["Authorization"] =  "Basic " + Base64.encode(basicAuthUsername + ":" + basicAuthPassword);
-		}
+			response.classList.remove('show');
 
-		submitRequest(verb, path, headers, body, function(timeSpent, status, headers, body){
-			loading.removeClass('show');
-			submit.removeAttr('disabled');
-			reset.show();
-			headers = parseHeaders(headers);
+			//interpolate the full request path
+			var uri = resource.dataset.uri;
+			var form = resource.querySelector('.reqTokens form');
+			var formParams = form ? params(new FormData(form)) : {};
+			var path = uri.supplant(formParams);
 
-			if (headers['content-type'].indexOf('application/json') > -1 || headers['content-type'].indexOf('text/json') > -1 || headers['content-type'].indexOf('application/vnd.api+json') > -1){
-				//indentation!
-				if (body.length){
-					body = JSON.stringify(JSON.parse(body), null, 3);
-					// only do syntax highlighting if hljs is defined
-					if (typeof hljs === 'undefined') {
-						body = body.split('\n')
-									.join('<br/>')
-									.replace(/\s/g,'&nbsp;');
-					} else {
-						// syntax highlight json and then replace spaces at the start of each line (or after <br/>) with &nbsp;
-						body = hljs.highlight("json", body).value;
-						body = body.split('\n')
-									.join('<br/>')
-									.replace(/(\<br\/\>)(\s+)/g, function(match, p1, p2, offset, string){
-										return [p1, p2.replace(/\s/g,'&nbsp;')].join('');
-									});
-					}
+			var verb = resource.querySelector('.reqMethod option:checked').value;
+			var body = (verb === 'GET' || verb === 'DELETE') ? qParams(resource) : resource.querySelector('.reqBody textarea').value;
+			var reqHeaders = resource.querySelector('.requestHeaders').value.replace(/\r/g, '').split('\n');
+			var headers = {
+				Accept: resource.querySelector('.reqFormat option:checked').value
+				,"Content-Type": (verb === 'GET' || verb === 'DELETE') ? "application/x-www-form-urlencoded" : "application/json"
+			};
+			for (var h in reqHeaders){
+				var kv = reqHeaders[h].trim().split(':');
+				if (kv[0].trim().length == 0){
+					continue;
+				}
+				if (kv.length == 2){
+					headers[ kv[0].trim() ] = kv[1].trim();
+				}else if (kv.length == 1){
+					headers [kv[0].trim() ] = "";
+				}else{
+					var k = kv.shift().trim();
+					var v = kv.join(':').trim();
+					headers[ k ] = v;
 				}
 			}
 
-			var headerRow = response.find('.response-headers');
-			headerRow.empty();
-			response.addClass('show');
-			var sortable = [];
-			for (var h in headers){
-				sortable.push(h);
-			}
-			sortable.sort();
-			for (var h in sortable){
-				headerRow.append('<div><strong>' + sortable[h] + ':</strong> ' + headers[sortable[h]] + '</div>');
+			var basicAuthUsername = basicAuth.querySelector("input[name=username]").value;
+			var basicAuthPassword = basicAuth.querySelector("input[name=password]").value;
+
+			if(basicAuthUsername.length && basicAuthPassword.length){
+				headers["Authorization"] =  "Basic " + Base64.encode(basicAuthUsername + ":" + basicAuthPassword);
 			}
 
-			response.find('.response-time').html('Request took ' + timeSpent + 'ms');
-			response.find('.response-status').html(status);
-			response.find('.responseBody').html(body);
+			submitRequest(verb, path, headers, body, function(timeSpent, status, headers, body){
+				loading.classList.remove('show');
+				submit.disabled = false;
+				reset.style.display = '';
+				headers = parseHeaders(headers);
+
+				if (headers['content-type'] && (headers['content-type'].indexOf('application/json') > -1 || headers['content-type'].indexOf('text/json') > -1 || headers['content-type'].indexOf('application/vnd.api+json') > -1)){
+					//indentation!
+					if (body.length){
+						body = JSON.stringify(JSON.parse(body), null, 3);
+						// only do syntax highlighting if hljs is defined
+						if (typeof hljs === 'undefined') {
+							body = body.split('\n')
+										.join('<br/>')
+										.replace(/\s/g,'&nbsp;');
+						} else {
+							// syntax highlight json and then replace spaces at the start of each line (or after <br/>) with &nbsp;
+							body = hljs.highlight(body, {language: "json"}).value;
+							body = body.split('\n')
+										.join('<br/>')
+										.replace(/(\<br\/\>)(\s+)/g, function(match, p1, p2, offset, string){
+											return [p1, p2.replace(/\s/g,'&nbsp;')].join('');
+										});
+						}
+					}
+				}
+
+				var headerRow = response.querySelector('.response-headers');
+				headerRow.innerHTML = '';
+				response.classList.add('show');
+				var sortable = [];
+				for (var h in headers){
+					sortable.push(h);
+				}
+				sortable.sort();
+				for (var h in sortable){
+					headerRow.insertAdjacentHTML('beforeend', '<div><strong>' + sortable[h] + ':</strong> ' + headers[sortable[h]] + '</div>');
+				}
+
+				response.querySelector('.response-time').innerHTML = 'Request took ' + timeSpent + 'ms';
+				response.querySelector('.response-status').innerHTML = status;
+				response.querySelector('.responseBody').innerHTML = body;
+			});
+
 		});
-
 	});
 
-	$(".resetRequest").click(function(){
-		var reset = $(this)
-			,resource = reset.closest('.resource')
-			,response = resource.find('.response')
-			,tokens = resource.find('.reqTokens form input')
-			,params = resource.find('.queryParams input')
-			,uri = resource.data('uri');
+	document.querySelectorAll(".resetRequest").forEach(function(el) {
+		el.addEventListener('click', function(){
+			var reset = this;
+			var resource = reset.closest('.resource');
+			var response = resource.querySelector('.response');
+			var tokens = resource.querySelectorAll('.reqTokens form input');
+			var paramInputs = resource.querySelectorAll('.queryParams input');
+			var uri = resource.dataset.uri;
 
-		response.removeClass('show');
-		reset.hide();
-		resource.find('.resourceUri').val(uri);
+			response.classList.remove('show');
+			reset.style.display = 'none';
+			resource.querySelector('.resourceUri').value = uri;
 
-		tokens.each(function(){
-			$(this).val('');
+			tokens.forEach(function(inp){
+				inp.value = '';
+			});
+			paramInputs.forEach(function(inp){
+				inp.value = '';
+			});
 		});
-		params.each(function(){
-			$(this).val('');
-		})
 	});
 
 });
 
 function qParams(resource){
 	var validParams = [];
-	resource.find('.qparam').each(function(){
-		var $this = $(this), n = $this.find('.paramName'), v = $this.find('.paramValue');
-		var nameLen = n.val().length, valLen = v.val().length;
+	resource.querySelectorAll('.qparam').forEach(function(el){
+		var n = el.querySelector('.paramName'), v = el.querySelector('.paramValue');
+		var nameLen = n.value.length, valLen = v.value.length;
 		if (nameLen && valLen){
-			validParams.push(encodeURIComponent(n.val()) + '=' + encodeURIComponent(v.val()));
-			$this.removeClass('has-error');
+			validParams.push(encodeURIComponent(n.value) + '=' + encodeURIComponent(v.value));
+			el.classList.remove('has-error');
 		}else{
-			$this.addClass('has-error');
+			el.classList.add('has-error');
 		}
 	});
 	return validParams.join('&');
 }
 
 function toggleStackTrace(id){
-	console.log('toggling %s', id);
-	$('#' + id).toggle();
+	var el = document.getElementById(id);
+	if (el) el.classList.toggle('show');
 }
 
-function params(query){
-	var parameters = {}, parameter;
-	if (query.length > 1){
-		query = query.split('&');
+function filterResources(){
+	var filter = document.getElementById('resourceSearch').value.toUpperCase();
+	document.querySelectorAll('.resource-panel').forEach(function(panel) {
+		var text = panel.querySelector('.resource-name').textContent;
+		panel.style.display = text.toUpperCase().indexOf(filter) > -1 ? '' : 'none';
+	});
+}
+
+function getCookie(name) {
+	var nameEQ = name + '=', ca = document.cookie.split(';'), i = 0, c;
+	for(;i < ca.length;i++) {
+		c = ca[i];
+		while (c[0]==' ') c = c.substring(1);
+		if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length);
+	}
+	return null;
+}
+
+function submitRequest(verb, resource, headers, body, callback){
+	var cfg = window.taffy.config;
+	var url = window.location.protocol + '//' + window.location.host;
+	var endpointURLParam = cfg.endpointURLParam;
+	var endpoint = resource.split('?')[0];
+	var contentType = null;
+
+	if (cfg.csrfCookieName && cfg.csrfHeaderName) {
+		var csrfCookie = getCookie(cfg.csrfCookieName);
+		if (csrfCookie) {
+			headers[cfg.csrfHeaderName] = csrfCookie;
+		}
+	}
+
+	url += cfg.scriptName + '?' + endpointURLParam + '=' + encodeURIComponent(endpoint);
+	if (resource.indexOf('?') && resource.split('?')[1]) {
+		url += '&' + resource.split('?')[1];
+	}
+
+	if (body && typeof body === 'string') {
+		try {
+			JSON.parse(body);
+			contentType = "application/json";
+		} catch (e) {}
+	}
+
+	var before = Date.now();
+
+	var fetchOptions = {
+		method: verb,
+		headers: headers,
+		cache: 'no-store'
+	};
+
+	if (body && verb !== 'GET' && verb !== 'HEAD') {
+		fetchOptions.body = body;
+		if (contentType) {
+			fetchOptions.headers['Content-Type'] = contentType;
+		}
+	}
+
+	fetch(url, fetchOptions)
+		.then(function(response) {
+			return response.text().then(function(text) {
+				var after = Date.now(), t = after - before;
+				var headersStr = '';
+				response.headers.forEach(function(value, key) {
+					headersStr += key + ': ' + value + '\n';
+				});
+				callback(t, response.status + " " + response.statusText, headersStr, text);
+			});
+		})
+		.catch(function(error) {
+			var after = Date.now(), t = after - before;
+			callback(t, "0 Network Error", "", error.message || "Request failed");
+		});
+}
+
+function params(formData){
+	var parameters = {};
+	if (formData instanceof FormData) {
+		formData.forEach(function(value, key) {
+			parameters[key] = value;
+		});
+	} else if (typeof formData === 'string' && formData.length > 1) {
+		var query = formData.split('&');
 		for (var i = 0; i < query.length; i++) {
-			parameter = query[i].split("=");
+			var parameter = query[i].split("=");
 			if (parameter.length === 1) { parameter[1] = ""; }
 			parameters[decodeURIComponent(parameter[0])] = decodeURIComponent(parameter[1]);
 		}
@@ -217,6 +462,7 @@ function params(query){
 
 function parseHeaders(h){
 	var out = {};
+	if (!h) return out;
 	var chunks = h.toLowerCase().split('\n');
 	for (var i=0,j=chunks.length; i<j; i++){
 		var bits = chunks[i].split(': ');
@@ -383,88 +629,86 @@ function expandingFormElements(){
 		var parent_visible_modifier_class = '.active';
 
 		var nextTabIndex = 1;
-		$('input,select,textarea,button').not('[type=hidden]').each(function(elem){
-			var $elem = $( this );
-			if ( $elem.parents( invisible_parent_class ).length > 0 ){
+		document.querySelectorAll('input,select,textarea,button').forEach(function(elem){
+			if (elem.type === 'hidden') return;
+			var invisibleParent = elem.closest(invisible_parent_class);
+			if (invisibleParent){
 				//could be invisible...
-				if ( $elem.parents( invisible_parent_class + parent_visible_modifier_class ).length > 0 ){
+				if (invisibleParent.classList.contains('active')){
 					//is visible, give it a tab index
-					$elem.attr( 'tabindex', nextTabIndex );
+					elem.tabIndex = nextTabIndex;
 					nextTabIndex++;
 				}
 			}else{
-				$elem.attr( 'tabindex', nextTabIndex );
+				elem.tabIndex = nextTabIndex;
 				nextTabIndex++;
 			}
 		});
 	}
 
 	var handleExpansion = function(e){
-		var $this = $(this)
-		   ,$target = $( $this.data('target') )
-		   ,isVisible = $target.hasClass('active');
+		var el = this;
+		var target = document.querySelector(el.dataset.target);
+		if (!target) return;
+		var isVisible = target.classList.contains('active');
 
-		if ( $this.is('a') ){
-
+		if (el.tagName === 'A'){
 			e.preventDefault();
 			if (isVisible){
-				$target.removeClass('active');
-				$this.closest('.hide-on-expand').show('fast');
+				target.classList.remove('active');
+				var hideOnExpand = el.closest('.hide-on-expand');
+				if (hideOnExpand) hideOnExpand.style.display = '';
 			}else{
-				$target.addClass('active');
-				$this.closest('.hide-on-expand').hide('fast');
+				target.classList.add('active');
+				var hideOnExpand = el.closest('.hide-on-expand');
+				if (hideOnExpand) hideOnExpand.style.display = 'none';
 			}
 			updateTabindexes();
 			return false;
 
-		}else if ( $this.is('input[type=checkbox]') ){
-
-			if ( $this.prop('checked') ){
-				$target.addClass('active');
+		}else if (el.type === 'checkbox'){
+			if (el.checked){
+				target.classList.add('active');
 			}else{
-				$target.removeClass('active');
+				target.classList.remove('active');
 			}
 
-		}else if ( $this.is('input[type=radio]') ){
-
-			var expand = $this.data('expand') && $this.is(':checked');
-
-			if ( expand ){
-				$target.addClass('active');
+		}else if (el.type === 'radio'){
+			var expand = el.dataset.expand && el.checked;
+			if (expand){
+				target.classList.add('active');
 			}else{
-				$target.removeClass('active');
+				target.classList.remove('active');
 			}
 
-		}else if ( $this.is('select') ){
-
-			var selectedOption = $this.find('option:selected');
-			var expand = selectedOption.data('expand');
-
-			if ( expand ){
-				$target.addClass('active');
+		}else if (el.tagName === 'SELECT'){
+			var selectedOption = el.options[el.selectedIndex];
+			var expand = selectedOption && selectedOption.dataset.expand;
+			if (expand){
+				target.classList.add('active');
 			}else{
-				$target.removeClass('active');
+				target.classList.remove('active');
 			}
 
-		}else if ( $this.is('input[type=text]') ){
-
-			if ( $this.val().trim().length > 0 ){
-				$target.addClass('active');
+		}else if (el.type === 'text'){
+			if (el.value.trim().length > 0){
+				target.classList.add('active');
 			}else{
-				$target.removeClass('active');
+				target.classList.remove('active');
 			}
-
 		}
 
 		updateTabindexes();
 	}
 
-	$('a.expander').on('click', handleExpansion);
-	$('input.expander,select.expander').on('keyup change', handleExpansion);
-
-	//initialize starting state of text fields
-	$('input.expander,select.expander').each(function(){
-		handleExpansion.apply(this);
+	document.querySelectorAll('a.expander').forEach(function(el) {
+		el.addEventListener('click', handleExpansion);
+	});
+	document.querySelectorAll('input.expander,select.expander').forEach(function(el) {
+		el.addEventListener('keyup', handleExpansion);
+		el.addEventListener('change', handleExpansion);
+		// initialize starting state
+		handleExpansion.call(el);
 	});
 }
 expandingFormElements();

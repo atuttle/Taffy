@@ -10,9 +10,31 @@
 	</style>
 </head>
 <body>
+	<cfoutput>
 	<script>
-		window.taffy = { resources: {} };
+		window.taffy = {
+			resources: {},
+			config: {
+				scriptName: '#jsStringFormat(cgi.script_name)#',
+				reloadKey: '#jsStringFormat(application._taffy.settings.reloadKey)#',
+				reloadPassword: '#jsStringFormat(application._taffy.settings.reloadPassword)#',
+				endpointURLParam: '#jsStringFormat(application._taffy.settings.endpointURLParam)#',
+				<cfif Len(application._taffy.settings.csrfToken.cookieName) AND Len(application._taffy.settings.csrfToken.headerName)>
+				<cfif structKeyExists(GetFunctionList(), "encodeForJavascript")>
+				csrfCookieName: '#encodeForJavascript(application._taffy.settings.csrfToken.cookieName)#',
+				csrfHeaderName: '#encodeForJavascript(application._taffy.settings.csrfToken.headerName)#'
+				<cfelse>
+				csrfCookieName: '#jsStringFormat(application._taffy.settings.csrfToken.cookieName)#',
+				csrfHeaderName: '#jsStringFormat(application._taffy.settings.csrfToken.headerName)#'
+				</cfif>
+				<cfelse>
+				csrfCookieName: '',
+				csrfHeaderName: ''
+				</cfif>
+			}
+		};
 	</script>
+	</cfoutput>
 
 	<div style="max-width: 1200px; margin: 0 auto; padding: 1.5rem;">
 
@@ -508,181 +530,8 @@
 	</div>
 
 	<script type="text/javascript">
-		<cfinclude template="jquery.min.js" />
 		<cfinclude template="highlight.min.js" />
 		<cfinclude template="dash.js" />
-
-		$(function() {
-			hljs.configure({ ignoreUnescapedHTML: true });
-
-			// Format JSON in sample responses
-			$('.json-format').each(function() {
-				try {
-					var json = JSON.parse($(this).text());
-					$(this).text(JSON.stringify(json, null, 3));
-				} catch(e) {}
-			});
-
-			hljs.highlightAll();
-
-			// Modal handling (native dialog)
-			$('[data-modal-target]').on('click', function() {
-				var modalId = $(this).data('modal-target');
-				document.getElementById(modalId).showModal();
-			});
-
-			$('.modal .modal-close').on('click', function() {
-				$(this).closest('.modal')[0].close();
-			});
-
-			// Close modal on backdrop click
-			$('.modal').on('click', function(e) {
-				if (e.target === this) {
-					this.close();
-				}
-			});
-
-			// Resource accordion
-			$('.resource-header').on('click', function() {
-				var targetId = $(this).data('target');
-				var $content = $('#' + targetId);
-				var wasOpen = $content.hasClass('open');
-				$content.toggleClass('open');
-
-				// On open, show/hide request body based on method
-				if (!wasOpen) {
-					var resource = $content.find('.resource');
-					var method = resource.find('.reqMethod option:checked').text();
-					if (method === 'GET' || method === 'DELETE' || method === 'OPTIONS') {
-						resource.find('.reqBody').hide();
-						resource.find('.queryParams').addClass('active');
-					} else {
-						var args = window.taffy.resources[resource.data('beanName')];
-						if (args && args[method.toLowerCase()]) {
-							var ta = resource.find('.reqBody').show().find('textarea');
-							ta.val(JSON.stringify(args[method.toLowerCase()], null, 3));
-						} else {
-							resource.find('.reqBody').show();
-						}
-						resource.find('.queryParams').removeClass('active');
-					}
-				}
-			});
-
-			// Doc accordion
-			$('.doc-accordion-trigger').on('click', function() {
-				var targetId = $(this).data('target');
-				$('#' + targetId).toggleClass('open');
-				$(this).toggleClass('open');
-			});
-
-			// Tab handling
-			$('.tab-btn').on('click', function() {
-				var $this = $(this);
-				var $tabGroup = $this.closest('.tabs');
-				var targetId = $this.data('tab');
-
-				$tabGroup.find('.tab-btn').removeClass('active');
-				$this.addClass('active');
-
-				$tabGroup.find('.tab-pane').removeClass('active');
-				$('#' + targetId).addClass('active');
-			});
-
-			// Reload button
-			var baseurl = '<cfoutput>#cgi.script_name#?dashboard</cfoutput>';
-			$('#reload').on('click', function() {
-				var reloadUrl = baseurl + '<cfoutput>&#application._taffy.settings.reloadKey#=#application._taffy.settings.reloadPassword#</cfoutput>';
-				var $btn = $(this);
-				$btn.text('Reloading...').prop('disabled', true);
-
-				$.get(reloadUrl)
-					.done(function() {
-						$('#alerts').append('<div id="reloadSuccess" class="alert alert-success">API Cache Successfully Reloaded. Refresh to see changes.</div>');
-						$btn.prop('disabled', false).text('Reload API Cache');
-						setTimeout(function() { $('#reloadSuccess').remove(); }, 2000);
-					})
-					.fail(function() {
-						$('#alerts').append('<div id="reloadFail" class="alert alert-danger">API Cache Reload Failed!</div>');
-						$btn.prop('disabled', false).text('Reload API Cache');
-						setTimeout(function() { $('#reloadFail').remove(); }, 2000);
-					});
-			});
-		});
-
-		function submitRequest( verb, resource, headers, body, callback ){
-			var url = window.location.protocol + '//' +  window.location.host;
-			var endpointURLParam = '<cfoutput>#jsStringFormat(application._taffy.settings.endpointURLParam)#</cfoutput>';
-			var endpoint = resource.split('?')[0];
-			var dType = null;
-
-			<cfif Len(application._taffy.settings.csrfToken.cookieName) AND Len(application._taffy.settings.csrfToken.headerName)>
-				<cfif structKeyExists(GetFunctionList(), "encodeForJavascript")>
-					<cfset local.csrfCookieName = encodeForJavascript(application._taffy.settings.csrfToken.cookieName)>
-					<cfset local.csrfHeaderName = encodeForJavascript(application._taffy.settings.csrfToken.headerName)>
-				<cfelse>
-					<cfset local.csrfCookieName = jsStringFormat(application._taffy.settings.csrfToken.cookieName)>
-					<cfset local.csrfHeaderName = jsStringFormat(application._taffy.settings.csrfToken.headerName)>
-				</cfif>
-				var csrfCookie = getCookie('<cfoutput>#local.csrfCookieName#</cfoutput>');
-				if (csrfCookie) {
-					headers['<cfoutput>#local.csrfHeaderName#</cfoutput>'] = csrfCookie;
-				}
-			</cfif>
-
-			url += '<cfoutput>#cgi.SCRIPT_NAME#</cfoutput>' + '?' + endpointURLParam + '=' + encodeURIComponent(endpoint);
-			if( resource.indexOf('?') && resource.split('?')[1] ){
-				url += '&' + resource.split('?')[1];
-			}
-
-			if( body && typeof body === 'string' ){
-				try {
-					JSON.parse(body);
-					dType = "application/json";
-				} catch (e) {}
-			}
-
-			var before = Date.now();
-
-			$.ajax({
-				type: verb,
-				url: url,
-				cache: false,
-				headers: headers,
-				data: body,
-				contentType: dType
-			}).always(function(a,b,c){
-				var after = Date.now(), t = after-before;
-				var xhr = (a && a.getAllResponseHeaders) ? a : c;
-				callback(t, xhr.status + " " + xhr.statusText, xhr.getAllResponseHeaders(), xhr.responseText);
-			});
-		}
-
-		function getCookie(name) {
-			var nameEQ = name + '=', ca = document.cookie.split(';'), i = 0, c;
-			for(;i < ca.length;i++) {
-				c = ca[i];
-				while (c[0]==' ') c = c.substring(1);
-				if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length);
-			}
-			return null;
-		}
-
-		function filterResources(){
-			var filter = $('#resourceSearch').val().toUpperCase();
-			$('.resource-panel').each(function() {
-				var text = $(this).find('.resource-name').text();
-				$(this).toggle(text.toUpperCase().indexOf(filter) > -1);
-			});
-		}
-
-		$('#resourceSearch').on('keyup', filterResources).on('keydown', function(e){
-			if (e.keyCode == 27) { $(this).val(''); filterResources(); }
-		});
-
-		function toggleStackTrace(id) {
-			$('#' + id).toggleClass('show');
-		}
 	</script>
 </body>
 </html>
