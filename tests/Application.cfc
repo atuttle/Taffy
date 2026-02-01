@@ -24,7 +24,7 @@ component {
 					serializer: "taffy.core.nativeJsonSerializer",
 					noDataSends204NoContent: false
 				},
-				factory: new taffy.core.factory(),
+				factory: createObject("component", "taffy.core.factory").init(),
 				compat: {
 					queryToArray: "missing",
 					queryToStruct: "missing"
