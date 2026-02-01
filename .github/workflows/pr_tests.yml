@@ -42,9 +42,9 @@ jobs:
 
       - name: Start Server
         run: |
-          # Hide cfconfig for Lucee 7 (CFConfig doesn't support it yet)
+          # Uninstall CFConfig for Lucee 7 (CFConfig doesn't support it yet)
           if [[ "${{ matrix.cfengine }}" == "lucee@7" ]]; then
-            mv .cfconfig.json .cfconfig.json.bak
+            box uninstall commandbox-cfconfig --system
           fi
           box server start cfengine=${{ matrix.cfengine }} port=8080 --debug
           # Wait for server to be ready
