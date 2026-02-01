@@ -1,4 +1,4 @@
-component extends="taffy.core.baseDeserializer" {
+component extends="baseDeserializer" {
 
 	public function getFromJson(body) output="false" taffy_mime="application/json,text/json" hint="get data from json" {
 		var data = 0;
