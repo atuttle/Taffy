@@ -40,6 +40,9 @@ jobs:
       - name: Install Dependencies
         run: box install
 
+      - name: Update CFConfig
+        run: box install commandbox-cfconfig
+
       - name: Start Server
         run: |
           box server start cfengine=${{ matrix.cfengine }} port=8080 --debug
