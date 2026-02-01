@@ -40,12 +40,14 @@ jobs:
       - name: Install Dependencies
         run: box install
 
-      - name: Update CFConfig
-        run: box install commandbox-cfconfig
-
       - name: Start Server
         run: |
-          box server start cfengine=${{ matrix.cfengine }} port=8080 --debug
+          # Skip cfconfig for Lucee 7 (CFConfig doesn't support it yet)
+          if [[ "${{ matrix.cfengine }}" == "lucee@7" ]]; then
+            box server start cfengine=${{ matrix.cfengine }} port=8080 cfconfigfile="" --debug
+          else
+            box server start cfengine=${{ matrix.cfengine }} port=8080 --debug
+          fi
           # Wait for server to be ready
           sleep 10
           # Verify server is running
