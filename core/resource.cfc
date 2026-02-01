@@ -67,7 +67,8 @@ component hint="base class for taffy REST components" {
 		return local.QueryArray;
 	}
 
-	if (application._taffy.compat.queryToArray eq "missing") {
+	variables.funcs = getFunctionList();
+	if (!structKeyExists(variables.funcs, "queryToArray")) {
 		private struct function queryToArray(required query q, cb) output="false" {
 			return qToArray(arguments.q, arguments.cb);
 		}
@@ -103,7 +104,7 @@ component hint="base class for taffy REST components" {
 		return local.QueryStruct;
 	}
 
-	if (application._taffy.compat.queryToStruct eq "missing") {
+	if (!structKeyExists(variables.funcs, "queryToStruct")) {
 		private struct function queryToStruct(required query q, cb) output="false" {
 			return qToStruct(arguments.q, arguments.cb);
 		}
