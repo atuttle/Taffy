@@ -6,20 +6,7 @@ if (!String.prototype.trim) {
 
 $(function(){
 
-	//hide request body form field for GET/DELETE on accordion open
-	$("#resources").on('shown.bs.collapse', function(e){
-		var resource = $("#resources .in .resource");
-		var method = resource.find('.reqMethod option:checked').html();
-		if (method === 'GET' || method === 'DELETE'){
-			resource.find('.reqBody').hide('fast');
-			resource.find('.queryParams').addClass('active');
-		}else{
-			var args = window.taffy.resources[resource.data('beanName')][method.toLowerCase()];
-			var ta = resource.find('.reqBody').show('fast').find('textarea');
-			ta.val(JSON.stringify(args, null, 3));
-			resource.find('.queryParams').removeClass('active');
-		}
-	});
+	// Request body visibility is now handled in Dashboard.cfm accordion click handler
 	//hide request body form field for GET/DELETE on method change
 	$(".resource .reqMethod").on('change', function(){
 		var resource = $(this).closest('.resource');
@@ -37,12 +24,12 @@ $(function(){
 	$(".addParam").click(function(){
 		var resource = $(this).closest('.resource')
 			,params = resource.find('.queryParams');
-		var tmpl = '<div class="qparam row form-group"><div class="col-md-4"><input class="form-control input-small paramName" /></div><div class="col-md-1 micro">=</div><div class="col-md-4"><input class="form-control input-small paramValue" /></div><div class="col-md-2"><button class="btn delParam" tabindex="-1">-</button></div></div>';
+		var tmpl = '<div class="qparam"><input class="form-input paramName" placeholder="name" /><span class="text-muted">=</span><input class="form-input paramValue" placeholder="value" /><button class="btn btn-ghost delParam" tabindex="-1">-</button></div>';
 		params.append(tmpl);
 	});
 
 	$(".resource").on('click', '.delParam', function(){
-		var row = $(this).closest('.row');
+		var row = $(this).closest('.qparam');
 		row.remove();
 	});
 
@@ -79,7 +66,7 @@ $(function(){
 		for (var t=0;t<tokens.length;t++){
 			var tok = $(tokens[t]);
 			if (tok.val().length === 0){
-				tok.closest('.form-group').addClass('has-error').focus();
+				tok.closest('.token-row').addClass('has-error').focus();
 				tokenErrors.append('<div class="alert alert-danger">' + tok.attr('name') + ' is required</div>');
 			}
 		}
@@ -87,10 +74,10 @@ $(function(){
 			return false;
 		}
 
-		loading.show();
+		loading.addClass('show');
 		submit.attr('disabled','disabled');
 
-		response.hide();
+		response.removeClass('show');
 
 		//interpolate the full request path
 		var uri = resource.data('uri')
@@ -128,7 +115,7 @@ $(function(){
 		}
 
 		submitRequest(verb, path, headers, body, function(timeSpent, status, headers, body){
-			loading.hide();
+			loading.removeClass('show');
 			submit.removeAttr('disabled');
 			reset.show();
 			headers = parseHeaders(headers);
@@ -154,20 +141,20 @@ $(function(){
 				}
 			}
 
-			var headerRow = response.find('.responseHeaders');
+			var headerRow = response.find('.response-headers');
 			headerRow.empty();
-			response.show();
+			response.addClass('show');
 			var sortable = [];
 			for (var h in headers){
 				sortable.push(h);
 			}
 			sortable.sort();
 			for (var h in sortable){
-				headerRow.append('<div class="row"><div class="col-md-5 headerName">' + sortable[h] + ':</div><div class="col-md-7 headerVal">' + headers[sortable[h]] + '</div></div>');
+				headerRow.append('<div><strong>' + sortable[h] + ':</strong> ' + headers[sortable[h]] + '</div>');
 			}
 
-			response.find('.responseTime').html('Request took ' + timeSpent + 'ms');
-			response.find('.responseStatus').html(status);
+			response.find('.response-time').html('Request took ' + timeSpent + 'ms');
+			response.find('.response-status').html(status);
 			response.find('.responseBody').html(body);
 		});
 
@@ -181,7 +168,7 @@ $(function(){
 			,params = resource.find('.queryParams input')
 			,uri = resource.data('uri');
 
-		response.hide();
+		response.removeClass('show');
 		reset.hide();
 		resource.find('.resourceUri').val(uri);
 
