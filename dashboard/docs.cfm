@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<link rel="icon" href="https://fav.farm/🍬" />
 	<style>
-		<cfinclude template="dash.css" />
+		<cfinclude template="dashboard.css" />
 		<cfinclude template="highlight-github.min.css" />
 	</style>
 </head>
