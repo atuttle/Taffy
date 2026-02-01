@@ -158,8 +158,8 @@ component extends="testbox.system.BaseSpec" {
 				it("should force numeric strings to serialize as strings", function() {
 					// The forceString function adds chr(2) which is then stripped by getAsJson
 					// This ensures numeric-looking strings serialize as strings, not numbers
-					var testableResource = new tests.resources.TestableResource();
-					var forcedString = testableResource.testEncodeString("12345");
+					var resource = new taffy.core.resource();
+					var forcedString = resource.forceString("12345");
 
 					// The chr(2) prefix forces CF to treat this as a string during serialization
 					expect(left(forcedString, 1)).toBe(chr(2));
