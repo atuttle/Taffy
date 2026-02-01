@@ -20,6 +20,7 @@ jobs:
         cfengine:
           - lucee@5
           - lucee@6
+          - lucee@7
 
     steps:
       - name: Checkout Repository

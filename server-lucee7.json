@@ -1,0 +1,12 @@
+{
+    "name":"taffy-lucee7",
+    "web":{
+        "http":{
+            "port":8087
+        }
+    },
+    "app":{
+        "cfengine":"lucee@7"
+    },
+    "openBrowser":false
+}
