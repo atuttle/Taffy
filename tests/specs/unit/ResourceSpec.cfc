@@ -4,10 +4,10 @@ component extends="testbox.system.BaseSpec" {
 		// Initialize application scope with minimal settings
 		application._taffy = {
 			settings: {
-				serializer: "taffy.core.nativeJsonSerializer",
+				serializer: "core.nativeJsonSerializer",
 				noDataSends204NoContent: false
 			},
-			factory: new taffy.core.factory(),
+			factory: new core.factory(),
 			compat: {
 				queryToArray: "missing",
 				queryToStruct: "missing"
@@ -23,14 +23,14 @@ component extends="testbox.system.BaseSpec" {
 		describe("Resource", function() {
 
 			beforeEach(function() {
-				variables.resource = new taffy.core.resource();
+				variables.resource = new core.resource();
 			});
 
 			describe("rep() / representationOf()", function() {
 
 				it("should return a serializer instance with data", function() {
 					var result = resource.rep({ message: "test" });
-					expect(result).toBeInstanceOf("taffy.core.baseSerializer");
+					expect(result).toBeInstanceOf("core.baseSerializer");
 					expect(result.getData().message).toBe("test");
 				});
 

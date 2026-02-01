@@ -1,4 +1,4 @@
-component extends="taffy.core.resource" taffy:uri="/custom" {
+component extends="core.resource" taffy:uri="/custom" {
 
 	/**
 	 * Standard GET method

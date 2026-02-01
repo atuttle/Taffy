@@ -1,4 +1,4 @@
-component extends="taffy.core.resource" taffy:uri="/simple" {
+component extends="core.resource" taffy:uri="/simple" {
 
 	/**
 	 * GET /simple - Returns a simple response

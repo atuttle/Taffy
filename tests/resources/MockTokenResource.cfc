@@ -1,4 +1,4 @@
-component extends="taffy.core.resource" taffy:uri="/items/{id}" {
+component extends="core.resource" taffy:uri="/items/{id}" {
 
 	/**
 	 * GET /items/{id} - Returns an item by ID

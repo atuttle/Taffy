@@ -4,17 +4,17 @@ component extends="testbox.system.BaseSpec" {
 		// Initialize application scope with minimal settings required by resource.cfc
 		application._taffy = {
 			settings: {
-				serializer: "taffy.core.nativeJsonSerializer",
+				serializer: "core.nativeJsonSerializer",
 				noDataSends204NoContent: false
 			},
-			factory: new taffy.core.factory(),
+			factory: new core.factory(),
 			compat: {
 				queryToArray: "missing",
 				queryToStruct: "missing"
 			}
 		};
 		// Create a mock API instance for testing URI methods
-		variables.api = new taffy.core.api();
+		variables.api = new core.api();
 	}
 
 	function run() {

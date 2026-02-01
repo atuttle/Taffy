@@ -5,13 +5,13 @@ component extends="testbox.system.BaseSpec" {
 		describe("NativeJsonDeserializer", function() {
 
 			beforeEach(function() {
-				variables.deserializer = new taffy.core.nativeJsonDeserializer();
+				variables.deserializer = new core.nativeJsonDeserializer();
 			});
 
 			describe("inheritance", function() {
 
 				it("should extend baseDeserializer", function() {
-					expect(deserializer).toBeInstanceOf("taffy.core.baseDeserializer");
+					expect(deserializer).toBeInstanceOf("core.baseDeserializer");
 				});
 
 				it("should have getFromForm from parent", function() {

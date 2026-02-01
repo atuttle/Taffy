@@ -5,7 +5,7 @@ component extends="testbox.system.BaseSpec" {
 		describe("BaseDeserializer", function() {
 
 			beforeEach(function() {
-				variables.deserializer = new taffy.core.baseDeserializer();
+				variables.deserializer = new core.baseDeserializer();
 			});
 
 			describe("getFromForm()", function() {

@@ -14,7 +14,7 @@ component extends="testbox.system.BaseSpec" {
 		describe("BaseSerializer", function() {
 
 			beforeEach(function() {
-				variables.serializer = new taffy.core.baseSerializer();
+				variables.serializer = new core.baseSerializer();
 			});
 
 			describe("setData() and getData()", function() {
@@ -42,7 +42,7 @@ component extends="testbox.system.BaseSpec" {
 
 				it("should return this for method chaining", function() {
 					var result = serializer.setData("test");
-					expect(result).toBeInstanceOf("taffy.core.baseSerializer");
+					expect(result).toBeInstanceOf("core.baseSerializer");
 				});
 
 				it("should set type to textual (1) when setting data", function() {
@@ -91,7 +91,7 @@ component extends="testbox.system.BaseSpec" {
 
 				it("should return this for method chaining", function() {
 					var result = serializer.withStatus(200);
-					expect(result).toBeInstanceOf("taffy.core.baseSerializer");
+					expect(result).toBeInstanceOf("core.baseSerializer");
 				});
 
 				it("should handle all 2xx status codes", function() {
@@ -161,7 +161,7 @@ component extends="testbox.system.BaseSpec" {
 
 				it("should return this for method chaining", function() {
 					var result = serializer.withHeaders({});
-					expect(result).toBeInstanceOf("taffy.core.baseSerializer");
+					expect(result).toBeInstanceOf("core.baseSerializer");
 				});
 
 				it("should return empty struct when no headers set", function() {
@@ -177,7 +177,7 @@ component extends="testbox.system.BaseSpec" {
 				it("should return serializer instance when noDataSends204NoContent is false", function() {
 					application._taffy.settings.noDataSends204NoContent = false;
 					var result = serializer.noData();
-					expect(result).toBeInstanceOf("taffy.core.baseSerializer");
+					expect(result).toBeInstanceOf("core.baseSerializer");
 				});
 
 				it("should return 204 status when noDataSends204NoContent is true", function() {
@@ -220,7 +220,7 @@ component extends="testbox.system.BaseSpec" {
 
 					it("should return this for method chaining", function() {
 						var result = serializer.setFileName("/path/to/file.pdf");
-						expect(result).toBeInstanceOf("taffy.core.baseSerializer");
+						expect(result).toBeInstanceOf("core.baseSerializer");
 					});
 
 				});
@@ -269,7 +269,7 @@ component extends="testbox.system.BaseSpec" {
 
 					it("should return this for method chaining", function() {
 						var result = serializer.withMime("image/jpeg");
-						expect(result).toBeInstanceOf("taffy.core.baseSerializer");
+						expect(result).toBeInstanceOf("core.baseSerializer");
 					});
 
 				});
@@ -288,7 +288,7 @@ component extends="testbox.system.BaseSpec" {
 
 					it("should return this for method chaining", function() {
 						var result = serializer.andDelete(true);
-						expect(result).toBeInstanceOf("taffy.core.baseSerializer");
+						expect(result).toBeInstanceOf("core.baseSerializer");
 					});
 
 				});

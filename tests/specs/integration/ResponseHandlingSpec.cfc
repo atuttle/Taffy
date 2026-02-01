@@ -4,10 +4,10 @@ component extends="testbox.system.BaseSpec" {
 		// Set up minimal application context
 		application._taffy = {
 			settings: {
-				serializer: "taffy.core.nativeJsonSerializer",
+				serializer: "core.nativeJsonSerializer",
 				noDataSends204NoContent: false
 			},
-			factory: new taffy.core.factory(),
+			factory: new core.factory(),
 			compat: {
 				queryToArray: "missing",
 				queryToStruct: "missing"
@@ -36,28 +36,28 @@ component extends="testbox.system.BaseSpec" {
 				});
 
 				it("should support 404 Not Found", function() {
-					var serializer = new taffy.core.nativeJsonSerializer();
+					var serializer = new core.nativeJsonSerializer();
 					serializer.setData({ error: "Resource not found" }).withStatus(404);
 					expect(serializer.getStatus()).toBe(404);
 					expect(serializer.getStatusText()).toBe("Not Found");
 				});
 
 				it("should support 400 Bad Request", function() {
-					var serializer = new taffy.core.nativeJsonSerializer();
+					var serializer = new core.nativeJsonSerializer();
 					serializer.setData({ error: "Invalid input" }).withStatus(400);
 					expect(serializer.getStatus()).toBe(400);
 					expect(serializer.getStatusText()).toBe("Bad Request");
 				});
 
 				it("should support 500 Internal Server Error", function() {
-					var serializer = new taffy.core.nativeJsonSerializer();
+					var serializer = new core.nativeJsonSerializer();
 					serializer.setData({ error: "Something went wrong" }).withStatus(500);
 					expect(serializer.getStatus()).toBe(500);
 					expect(serializer.getStatusText()).toBe("Internal Server Error");
 				});
 
 				it("should support custom status text", function() {
-					var serializer = new taffy.core.nativeJsonSerializer();
+					var serializer = new core.nativeJsonSerializer();
 					serializer.withStatus(299, "Custom Success");
 					expect(serializer.getStatus()).toBe(299);
 					expect(serializer.getStatusText()).toBe("Custom Success");
@@ -68,7 +68,7 @@ component extends="testbox.system.BaseSpec" {
 			describe("Response headers", function() {
 
 				it("should set custom headers", function() {
-					var serializer = new taffy.core.nativeJsonSerializer();
+					var serializer = new core.nativeJsonSerializer();
 					serializer.setData({ id: 123 })
 						.withHeaders({ "X-Request-Id": "abc123" });
 					var headers = serializer.getHeaders();
@@ -76,7 +76,7 @@ component extends="testbox.system.BaseSpec" {
 				});
 
 				it("should set Location header for created resources", function() {
-					var serializer = new taffy.core.nativeJsonSerializer();
+					var serializer = new core.nativeJsonSerializer();
 					serializer.setData({ id: 456 })
 						.withStatus(201)
 						.withHeaders({ "Location": "/items/456" });
@@ -84,7 +84,7 @@ component extends="testbox.system.BaseSpec" {
 				});
 
 				it("should set multiple headers", function() {
-					var serializer = new taffy.core.nativeJsonSerializer();
+					var serializer = new core.nativeJsonSerializer();
 					serializer.withHeaders({
 						"X-Rate-Limit": "100",
 						"X-Rate-Remaining": "99",
@@ -101,7 +101,7 @@ component extends="testbox.system.BaseSpec" {
 			describe("JSON serialization", function() {
 
 				it("should serialize response data as JSON", function() {
-					var serializer = new taffy.core.nativeJsonSerializer();
+					var serializer = new core.nativeJsonSerializer();
 					serializer.setData({ message: "Hello", count: 42 });
 					var json = serializer.getAsJson();
 					expect(isJSON(json)).toBeTrue();
@@ -111,7 +111,7 @@ component extends="testbox.system.BaseSpec" {
 				});
 
 				it("should serialize nested structures", function() {
-					var serializer = new taffy.core.nativeJsonSerializer();
+					var serializer = new core.nativeJsonSerializer();
 					serializer.setData({
 						user: {
 							name: "John",
@@ -126,7 +126,7 @@ component extends="testbox.system.BaseSpec" {
 				});
 
 				it("should serialize array responses", function() {
-					var serializer = new taffy.core.nativeJsonSerializer();
+					var serializer = new core.nativeJsonSerializer();
 					serializer.setData([
 						{ id: 1, name: "Item 1" },
 						{ id: 2, name: "Item 2" }
@@ -138,7 +138,7 @@ component extends="testbox.system.BaseSpec" {
 				});
 
 				it("should handle boolean values correctly", function() {
-					var serializer = new taffy.core.nativeJsonSerializer();
+					var serializer = new core.nativeJsonSerializer();
 					serializer.setData({
 						active: true,
 						deleted: false
@@ -155,7 +155,7 @@ component extends="testbox.system.BaseSpec" {
 
 				it("noData() should return empty response when setting is false", function() {
 					application._taffy.settings.noDataSends204NoContent = false;
-					var serializer = new taffy.core.nativeJsonSerializer();
+					var serializer = new core.nativeJsonSerializer();
 					var result = serializer.noData();
 					// Should still be 200 with empty data
 					expect(result.getStatus()).toBe(200);
@@ -163,7 +163,7 @@ component extends="testbox.system.BaseSpec" {
 
 				it("noData() should return 204 when setting is true", function() {
 					application._taffy.settings.noDataSends204NoContent = true;
-					var serializer = new taffy.core.nativeJsonSerializer();
+					var serializer = new core.nativeJsonSerializer();
 					var result = serializer.noData();
 					expect(result.getStatus()).toBe(204);
 					// Reset setting
@@ -171,14 +171,14 @@ component extends="testbox.system.BaseSpec" {
 				});
 
 				it("noContent() should return 204", function() {
-					var serializer = new taffy.core.nativeJsonSerializer();
+					var serializer = new core.nativeJsonSerializer();
 					var result = serializer.noContent();
 					expect(result.getStatus()).toBe(204);
 					expect(result.getStatusText()).toBe("No Content");
 				});
 
 				it("noContent() should set Content-Type to text/plain", function() {
-					var serializer = new taffy.core.nativeJsonSerializer();
+					var serializer = new core.nativeJsonSerializer();
 					var result = serializer.noContent();
 					var headers = result.getHeaders();
 					expect(headers["Content-Type"]).toBe("text/plain");
@@ -189,25 +189,25 @@ component extends="testbox.system.BaseSpec" {
 			describe("Response type detection", function() {
 
 				it("should identify textual response type", function() {
-					var serializer = new taffy.core.nativeJsonSerializer();
+					var serializer = new core.nativeJsonSerializer();
 					serializer.setData({ message: "test" });
 					expect(serializer.getType()).toBe("textual");
 				});
 
 				it("should identify filename response type", function() {
-					var serializer = new taffy.core.nativeJsonSerializer();
+					var serializer = new core.nativeJsonSerializer();
 					serializer.setFileName("/path/to/file.pdf");
 					expect(serializer.getType()).toBe("filename");
 				});
 
 				it("should identify filedata response type", function() {
-					var serializer = new taffy.core.nativeJsonSerializer();
+					var serializer = new core.nativeJsonSerializer();
 					serializer.setFileData(toBinary(toBase64("test data")));
 					expect(serializer.getType()).toBe("filedata");
 				});
 
 				it("should identify imagedata response type", function() {
-					var serializer = new taffy.core.nativeJsonSerializer();
+					var serializer = new core.nativeJsonSerializer();
 					serializer.setImageData(toBinary(toBase64("image data")));
 					expect(serializer.getType()).toBe("imagedata");
 				});
@@ -217,7 +217,7 @@ component extends="testbox.system.BaseSpec" {
 			describe("File streaming responses", function() {
 
 				it("should configure file download response", function() {
-					var serializer = new taffy.core.nativeJsonSerializer();
+					var serializer = new core.nativeJsonSerializer();
 					serializer.setFileName("/path/to/report.pdf")
 						.withMime("application/pdf");
 
@@ -228,7 +228,7 @@ component extends="testbox.system.BaseSpec" {
 
 				it("should configure binary data response", function() {
 					var binaryData = toBinary(toBase64("PDF content here"));
-					var serializer = new taffy.core.nativeJsonSerializer();
+					var serializer = new core.nativeJsonSerializer();
 					serializer.setFileData(binaryData)
 						.withMime("application/pdf");
 
@@ -237,7 +237,7 @@ component extends="testbox.system.BaseSpec" {
 				});
 
 				it("should configure file delete after download", function() {
-					var serializer = new taffy.core.nativeJsonSerializer();
+					var serializer = new core.nativeJsonSerializer();
 					serializer.setFileName("/tmp/temp-report.pdf")
 						.withMime("application/pdf")
 						.andDelete(true);
