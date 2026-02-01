@@ -19,7 +19,7 @@
         }
     ],
     "devDependencies":{
-        "testbox":"^4.2.1+400",
+        "testbox":"^6.5.0",
         "commandbox-cfconfig":"^1.0.2",
         "di1":"git+https://github.com/framework-one/di1.git",
         "hoth":"git+https://github.com/aarongreenlee/Hoth.git",
