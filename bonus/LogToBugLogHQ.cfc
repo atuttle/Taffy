@@ -1,62 +1,54 @@
-<cfcomponent implements="taffy.bonus.ILogAdapter">
+component implements="taffy.bonus.ILogAdapter" {
 
-	<cffunction name="init">
-		<cfargument name="config" />
-		<cfargument name="tracker" />
+	public function init(config, tracker) {
+		if (structKeyExists(arguments, "tracker")) {
+			// used to inject mocking object for testing
+			variables.blhq = arguments.tracker;
+		} else {
+			var svc = "bugLog.client.bugLogService";
+			if (structKeyExists(arguments.config, "service")) {
+				svc = arguments.config.service;
+			}
 
-<!--- <cfdump var="#arguments.config#" abort="true" /> --->
-		<cfif structKeyExists(arguments, "tracker")>
-			<!--- used to inject mocking object for testing --->
-			<cfset variables.blhq = arguments.tracker />
-		<cfelse>
-			<cfset var svc = "bugLog.client.bugLogService" />
-			<cfif structKeyExists( arguments.config, "service" )>
-				<cfset svc = arguments.config.service />
-			</cfif>
+			variables.blhq = createObject("component", svc);
+			variables.blhq.init(argumentCollection=arguments.config);
+		}
 
-			<cfset variables.blhq = createObject("component", svc) />
-			<cfset variables.blhq.init(
-				argumentCollection=arguments.config
-			) />
-		</cfif>
+		param name="arguments.config.message" default="Exception trapped in API";
+		variables.message = arguments.config.message;
 
-		<cfparam name="arguments.config.message" default="Exception trapped in API" />
-		<cfset variables.message = arguments.config.message />
+		return this;
+	}
 
-		<cfreturn this />
-	</cffunction>
+	public function saveLog(exception) {
+		var msg = '';
 
-	<cffunction name="saveLog">
-		<cfargument name="exception" />
+		if (structKeyExists(exception, 'rootcause') && structKeyExists(exception.rootcause, 'cause') && structKeyExists(exception.rootcause.cause, 'message')) {
+			msg = exception.rootcause.cause.message;
+		} else if (structKeyExists(exception, 'cause') && structKeyExists(exception.cause, 'message')) {
+			msg = exception.cause.message;
+		} else if (structKeyExists(exception, 'message')) {
+			msg = exception.message;
+		} else {
+			msg = variables.message;
+		}
 
-		<cfset var msg = '' />
+		// You can use addDebugData() in resources to set this value
+		if (structKeyExists(request, "debugData") and !structKeyExists(exception, "extraInfo")) {
+			exception.extraInfo = request.debugData;
+		}
 
-		<cfif structKeyExists(exception, 'rootcause') && structKeyExists(exception.rootcause, 'cause') && structKeyExists(exception.rootcause.cause, 'message')>
-			<cfset msg = exception.rootcause.cause.message />
-		<cfelseif structKeyExists(exception, 'cause') && structKeyExists(exception.cause, 'message')>
-			<cfset msg = exception.cause.message />
-		<cfelseif structKeyExists(exception, 'message')>
-			<cfset msg = exception.message />
-		<cfelse>
-			<cfset msg = variables.message />
-		</cfif>
+		var reqHeaders = getHTTPRequestData().headers;
+		var reqBody = getHTTPRequestData().content;
+		// on input with content-type "application/json" CF seems to expose it as binary data. Here we convert it back to plain text
+		if (isBinary(reqBody)) {
+			reqBody = charsetEncode(reqBody, "UTF-8");
+		}
+		if (isJson(reqBody)) {
+			reqBody = deserializeJson(reqBody);
+		}
 
-		<!--- You can use addDebugData() in resources to set this value --->
-		<cfif structKeyExists(request, "debugData") and not structKeyExists(exception, "extraInfo")>
-			<cfset exception.extraInfo = request.debugData />
-		</cfif>
+		variables.blhq.notifyService(msg, arguments.exception, { request_body: reqBody, request_headers: reqHeaders });
+	}
 
-		<cfset var reqHeaders = getHTTPRequestData().headers />
-		<cfset var reqBody = getHTTPRequestData().content />
-		<!--- on input with content-type "application/json" CF seems to expose it as binary data. Here we convert it back to plain text --->
-		<cfif isBinary(reqBody)>
-			<cfset reqBody = charsetEncode(reqBody, "UTF-8") />
-		</cfif>
-		<cfif isJson(reqBody)>
-			<cfset reqBody = deserializeJson( reqBody ) />
-		</cfif>
-
-		<cfset variables.blhq.notifyService(msg, arguments.exception, { request_body: reqBody, request_headers: reqHeaders }) />
-	</cffunction>
-
-</cfcomponent>
+}

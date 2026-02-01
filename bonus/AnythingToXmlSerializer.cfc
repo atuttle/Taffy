@@ -1,15 +1,7 @@
-<cfcomponent extends="taffy.core.baseSerializer">
+component extends="taffy.core.baseSerializer" {
 
-	<!--- remove because causing tests to fail 
-	<cfset variables.anythingToXml = application.anythingToXml />
-	--->
+	public function getAsXML() output="false" taffy_mime="application/xml" taffy_default="true" {
+		return application.anythingToXml.toXml(variables.data);
+	}
 
-	<cffunction
-		name="getAsXML"
-		output="false"
-		taffy:mime="application/xml"
-		taffy:default="true">
-			<cfreturn application.anythingToXml.toXml(variables.data) />
-	</cffunction>
-
-</cfcomponent>
+}
