@@ -7,7 +7,7 @@
 
 **PROBLEM:** Creating REST APIs with the native functionality in ColdFusion 10+ and Lucee is verbose, complex, and developer-hostile. Or maybe you're still on an older version of ColdFusion.
 
-**SOLUTION:** A framework that focuses on Developer Experience and helps you "fall into a pit of success". **You've come to the right place.** Taffy is low friction, simple to get started, and compatible as far back as ColdFusion 8. CF8 was released in 2007! 😱
+**SOLUTION:** A framework that focuses on Developer Experience and helps you "fall into a pit of success". **You've come to the right place.** Taffy is low friction, and simple to get started.
 
 ---
 
@@ -21,8 +21,8 @@
 
 ## Currently Supported Versions
 
-- Taffy 3.6.x+
-- Taffy 2.2.x
+- Taffy 4.0.0+
+- Taffy 3.8.x+
 
 If you file a bug or ask for support please indicate which version of Taffy you're using. If it's an older release, we usually ask you to upgrade. Officially, we promise to support the current and previous **minor** releases and the last **minor** release of the previous **major** release. To the best of our abilities Taffy follows the versioning guidelines defined in [semver](https://semver.org/).
 
@@ -44,7 +44,7 @@ Features and bug fixes are coordinated via the [GitHub issues list](https://gith
 
 ## Community
 
-The most active place where Taffy users and contributors gather is in the **#taffy** channel of the [CFML Slack][4]. It's a great place to ask for help. We also have [a mailing list][1], but it hasn't been used much since the CFML Slack came around.
+The most active place where Taffy users and contributors gather is in the **#taffy** channel of the [CFML Slack][4]. It's a great place to ask for help.
 
 ## Need serious help?
 
@@ -62,7 +62,6 @@ If your problem is too big or too private to ask for help in a chat room, [I am 
 >
 > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-[1]: https://groups.google.com/forum/#!forum/taffy-users
 [3]: https://github.com/atuttle/Taffy/wiki
 [4]: https://cfml-slack.herokuapp.com
-[5]: https://twitter.com/adamtuttle
+[5]: https://bsky.app/profile/adamtuttle.codes

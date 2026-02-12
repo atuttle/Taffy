@@ -1,6 +1,9 @@
 /* Base styles */
 body {
-	font-family: system-ui, -apple-system, sans-serif;
+	font-family:
+		system-ui,
+		-apple-system,
+		sans-serif;
 	background-color: #f3f4f6;
 	color: #111827;
 	line-height: 1.5;
@@ -140,9 +143,10 @@ textarea.form-input {
 
 .resource-header {
 	display: flex;
+	flex-wrap: wrap;
 	align-items: center;
 	justify-content: space-between;
-	gap: 1rem;
+	gap: 0.5rem 1rem;
 	padding: 0.75rem 1rem;
 	cursor: pointer;
 	transition: background-color 0.15s;
@@ -158,9 +162,11 @@ textarea.form-input {
 
 .resource-meta {
 	display: flex;
+	flex-wrap: wrap;
 	align-items: center;
+	justify-content: flex-end;
 	gap: 0.5rem;
-	flex-shrink: 0;
+	flex: 1 1 auto;
 }
 
 .resource-uri {
@@ -168,6 +174,7 @@ textarea.form-input {
 	font-size: 0.875rem;
 	font-weight: 700;
 	color: #059669;
+	word-break: break-all;
 }
 
 /* HTTP method badges */
@@ -180,12 +187,30 @@ textarea.form-input {
 	text-transform: uppercase;
 }
 
-.verb-get { background-color: #059669; color: white; }
-.verb-post { background-color: #d97706; color: white; }
-.verb-put { background-color: #2563eb; color: white; }
-.verb-patch { background-color: #2563eb; color: white; }
-.verb-delete { background-color: #dc2626; color: white; }
-.verb-disabled { background-color: #e5e7eb; color: #6b7280; }
+.verb-get {
+	background-color: #059669;
+	color: white;
+}
+.verb-post {
+	background-color: #d97706;
+	color: white;
+}
+.verb-put {
+	background-color: #2563eb;
+	color: white;
+}
+.verb-patch {
+	background-color: #2563eb;
+	color: white;
+}
+.verb-delete {
+	background-color: #dc2626;
+	color: white;
+}
+.verb-disabled {
+	background-color: #e5e7eb;
+	color: #6b7280;
+}
 
 /* Resource content */
 .resource-content {
@@ -291,6 +316,7 @@ textarea.form-input {
 	font-weight: 600;
 	color: #111827;
 	margin-bottom: 0.75rem;
+	margin-top: 0;
 }
 
 .section-subtitle {
@@ -434,8 +460,13 @@ textarea.form-input {
 	animation: pulse 1.5s ease-in-out infinite;
 }
 @keyframes pulse {
-	0%, 100% { opacity: 1; }
-	50% { opacity: 0.5; }
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.5;
+	}
 }
 
 /* Alerts */
@@ -733,12 +764,4 @@ textarea.form-input {
 }
 .mt-4 {
 	margin-top: 1rem;
-}
-
-/* Collapse (for docs.cfm) */
-.collapse {
-	display: none;
-}
-.collapse.in {
-	display: block;
 }

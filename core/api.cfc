@@ -589,7 +589,7 @@ component hint="Your Application.cfc should extend this class" {
 		param name="variables.framework" default={};
 		request.taffyReloaded = true;
 		local._taffy = {};
-		local._taffy.version = "3.8.0";
+		local._taffy.version = "4.0.0";
 		local._taffy.endpoints = {};
 
 		// default settings
