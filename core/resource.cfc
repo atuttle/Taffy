@@ -117,14 +117,17 @@ component hint="base class for taffy REST components" {
 	 * -- otherwise it is assumed to be a cfc path and that cfc instance is returned
 	 */
 	private function getRepInstance(string repClass="") output="false" {
+		var rep = "";
 		if (repClass eq "") {
 			// recursion not the most efficient path here, but it's damn readable
 			return getRepInstance(application._taffy.settings.serializer);
 		} else if (application._taffy.factory.containsBean(arguments.repClass)) {
-			return application._taffy.factory.getBean(arguments.repClass);
+			rep = application._taffy.factory.getBean(arguments.repClass);
 		} else {
-			return createObject("component", arguments.repClass);
+			rep = createObject("component", arguments.repClass);
 		}
+		rep.setNoDataSends204NoContent(application._taffy.settings.noDataSends204NoContent);
+		return rep;
 	}
 
 	package function addDebugData(data) output="false" {

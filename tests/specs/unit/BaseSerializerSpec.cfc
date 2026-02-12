@@ -1,14 +1,5 @@
 component extends="testbox.system.BaseSpec" {
 
-	function beforeAll() {
-		// Initialize application scope with minimal settings for noData() to work
-		application._taffy = {
-			settings: {
-				noDataSends204NoContent: false
-			}
-		};
-	}
-
 	function run() {
 
 		describe("BaseSerializer", function() {
@@ -175,15 +166,21 @@ component extends="testbox.system.BaseSpec" {
 			describe("noData()", function() {
 
 				it("should return serializer instance when noDataSends204NoContent is false", function() {
-					application._taffy.settings.noDataSends204NoContent = false;
+					serializer.setNoDataSends204NoContent(false);
 					var result = serializer.noData();
 					expect(result).toBeInstanceOf("core.baseSerializer");
+					expect(result.getStatus()).toBe(200);
 				});
 
 				it("should return 204 status when noDataSends204NoContent is true", function() {
-					application._taffy.settings.noDataSends204NoContent = true;
+					serializer.setNoDataSends204NoContent(true);
 					var result = serializer.noData();
 					expect(result.getStatus()).toBe(204);
+				});
+
+				it("should default to false (no 204) without explicit configuration", function() {
+					var result = serializer.noData();
+					expect(result.getStatus()).toBe(200);
 				});
 
 			});

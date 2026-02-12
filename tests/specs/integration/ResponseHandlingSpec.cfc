@@ -154,20 +154,18 @@ component extends="testbox.system.BaseSpec" {
 			describe("noData() and noContent()", function() {
 
 				it("noData() should return empty response when setting is false", function() {
-					application._taffy.settings.noDataSends204NoContent = false;
 					var serializer = new core.nativeJsonSerializer();
+					serializer.setNoDataSends204NoContent(false);
 					var result = serializer.noData();
 					// Should still be 200 with empty data
 					expect(result.getStatus()).toBe(200);
 				});
 
 				it("noData() should return 204 when setting is true", function() {
-					application._taffy.settings.noDataSends204NoContent = true;
 					var serializer = new core.nativeJsonSerializer();
+					serializer.setNoDataSends204NoContent(true);
 					var result = serializer.noData();
 					expect(result.getStatus()).toBe(204);
-					// Reset setting
-					application._taffy.settings.noDataSends204NoContent = false;
 				});
 
 				it("noContent() should return 204", function() {
