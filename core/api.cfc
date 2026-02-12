@@ -736,7 +736,7 @@ component hint="Your Application.cfc should extend this class" {
 		requestObj.contentType = cgi.content_type;
 		if (len(requestObj.body) && requestObj.body != "null") {
 			if (findNoCase("multipart/form-data", requestObj.contentType)) {
-				// do nothing, to support the way railo handles multipart requests (just avoids the error condition below)
+				// do nothing, to support the way lucee handles multipart requests (just avoids the error condition below)
 				requestObj.queryString = cgi.query_string;
 			} else {
 				if (contentTypeIsSupported(requestObj.contentType)) {

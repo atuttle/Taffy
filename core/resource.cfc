@@ -44,7 +44,7 @@ component hint="base class for taffy REST components" {
 
 	private array function qToArray(required query q, cb) output="false" {
 		var local = {};
-		if (structKeyExists(server, "railo") or structKeyExists(server, "lucee")) {
+		if (structKeyExists(server, "lucee")) {
 			local.Columns = listToArray(arguments.q.getColumnList(false));
 		} else {
 			local.Columns = arguments.q.getMetaData().getColumnLabels();
@@ -81,7 +81,7 @@ component hint="base class for taffy REST components" {
 			throw(message="Unable to convert query resultset with more than one record to a simple struct, use queryToArray() instead");
 		}
 
-		if (structKeyExists(server, "railo") or structKeyExists(server, "lucee")) {
+		if (structKeyExists(server, "lucee")) {
 			local.Columns = listToArray(arguments.q.getColumnList(false));
 		} else {
 			local.Columns = arguments.q.getMetaData().getColumnLabels();
