@@ -45,6 +45,10 @@ jobs:
           # Uninstall CFConfig for Lucee 7 (CFConfig doesn't support it yet)
           if [[ "${{ matrix.cfengine }}" == "lucee@7" ]]; then
             box uninstall commandbox-cfconfig --system
+            # CFConfig normally applies the /Taffy CFML mapping from .cfconfig.json.
+            # Without it, extends="taffy.core.api" can't resolve at compile time.
+            # A symlink lets the webroot resolve taffy.core.api naturally.
+            ln -s . taffy
           fi
           box server start cfengine=${{ matrix.cfengine }} port=8080 --debug
           # Wait for server to be ready
