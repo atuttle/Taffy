@@ -20,7 +20,7 @@ component extends="testbox.system.BaseSpec" {
 		var result = {};
 		var fullURL = variables.baseURL & "?endpoint=" & arguments.uri;
 
-		cfhttp(url=fullURL, method=arguments.method, result="result", timeout=10) {
+		cfhttp(url=fullURL, method=arguments.method, result="result", timeout=10, charset="utf-8") {
 			cfhttpparam(type="header", name="Content-Type", value="application/json");
 			cfhttpparam(type="header", name="Accept", value="application/json");
 			for (var h in arguments.headers) {
@@ -34,11 +34,11 @@ component extends="testbox.system.BaseSpec" {
 		result.data = {};
 		if (structKeyExists(result, "fileContent")) {
 			var body = result.fileContent;
-			// Lucee 5 may return fileContent as a byte array; coerce to string
-			if (isBinary(body)) {
-				body = toString(body, "utf-8");
+			if (!isSimpleValue(body)) {
+				body = toString(body);
 			}
-			if (isSimpleValue(body) && isJSON(body)) {
+			body = trim(body);
+			if (len(body) && isJSON(body)) {
 				result.data = deserializeJSON(body);
 			}
 		}

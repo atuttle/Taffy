@@ -5,7 +5,8 @@ component {
 
 	// Set up mappings for tests
 	variables.testsPath = getDirectoryFromPath(getCurrentTemplatePath());
-	variables.rootPath = getDirectoryFromPath(variables.testsPath);
+	// Strip trailing slash before calling getDirectoryFromPath to reliably get parent dir across engines
+	variables.rootPath = getDirectoryFromPath(left(variables.testsPath, len(variables.testsPath) - 1));
 
 	this.mappings["/taffy"] = variables.rootPath;
 	this.mappings["/testbox"] = variables.testsPath & "testbox";

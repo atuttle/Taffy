@@ -3,10 +3,14 @@ component extends="taffy.core.api" {
 	this.name = "TaffyE2ETestAPI_" & hash(getCurrentTemplatePath());
 	this.sessionManagement = false;
 
-	this.mappings["/resources"] = getDirectoryFromPath(getCurrentTemplatePath()) & "resources";
+	variables.testApiPath = getDirectoryFromPath(getCurrentTemplatePath());
+	variables.rootPath = getDirectoryFromPath(left(variables.testApiPath, len(variables.testApiPath) - 1));
+	variables.rootPath = getDirectoryFromPath(left(variables.rootPath, len(variables.rootPath) - 1));
+
+	this.mappings["/taffy"] = variables.rootPath;
+	this.mappings["/resources"] = variables.testApiPath & "resources";
 
 	variables.framework = {
-		reloadOnEveryRequest: true,
 		disableDashboard: true,
 		disabledDashboardRedirect: "",
 		returnExceptionsAsJson: true
