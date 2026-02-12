@@ -81,7 +81,7 @@ component output="false" {
 			local.beanPath = filePathToBeanPath(row.directory, row.name, arguments.resourcesPath, arguments.resourcesBasePath);
 			try {
 				local.objBean = createObject("component", local.beanPath);
-				if (isInstanceOf(local.objBean, "taffy.core.baseSerializer")) {
+				if (isSerializerInstance(local.objBean)) {
 					this.transients[local.beanName] = local.beanPath;
 				} else {
 					this.beans[local.beanName] = local.objBean;
@@ -169,6 +169,22 @@ component output="false" {
 		if (structKeyExists(arguments.metaData, "extends") and isStruct(arguments.metaData.extends)) {
 			_recurse_ResolveDependencies(arguments.bean, arguments.metaData.extends);
 		}
+	}
+
+	/**
+	 * Walks the inheritance chain to check if obj extends baseSerializer.
+	 * Replaces isInstanceOf() which fails on Lucee when extends resolves
+	 * to a relative path instead of a mapping-prefixed path.
+	 */
+	private boolean function isSerializerInstance(required any obj) output="false" {
+		if (!isObject(arguments.obj)) return false;
+		var meta = getMetadata(arguments.obj);
+		while (structKeyExists(meta, "name")) {
+			if (listLast(meta.name, ".") == "baseSerializer") return true;
+			if (!structKeyExists(meta, "extends")) break;
+			meta = meta.extends;
+		}
+		return false;
 	}
 
 	private function throwError() {
