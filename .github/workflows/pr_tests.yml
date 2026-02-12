@@ -1,22 +1,75 @@
-name: Run tests for all PRs
+name: Run Tests
+
 on:
   push:
     branches:
-      - feature/github-actions
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
 
 jobs:
   test:
-    runs-on: ubuntu-20.04
+    name: Tests on ${{ matrix.cfengine }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        cfengine:
+          - lucee@5
+          - lucee@6
+          - lucee@7
+
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-      - name: Checkout Code
-        id: git-checkout
-        uses: actions/checkout@v2
-
-      - name: Install dependencies
-        uses: pixl8/github-action-box-install@v2
-
-      - name: Run tests
-        uses: pixl8/github-action-box-test@v3
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
-          output_file: /tests/test-results.txt
+          distribution: "temurin"
+          java-version: "11"
+
+      - name: Setup CommandBox
+        uses: Ortus-Solutions/setup-commandbox@v2.0.1
+        with:
+          version: "6.2.0"
+
+      - name: Install Dependencies
+        run: box install
+
+      - name: Start Server
+        run: |
+          # Uninstall CFConfig for Lucee 7 (CFConfig doesn't support it yet)
+          if [[ "${{ matrix.cfengine }}" == "lucee@7" ]]; then
+            box uninstall commandbox-cfconfig --system
+            # CFConfig normally applies the /Taffy CFML mapping from .cfconfig.json.
+            # Without it, extends="taffy.core.api" can't resolve at compile time.
+            # A symlink lets the webroot resolve taffy.core.api naturally.
+            ln -s . taffy
+          fi
+          box server start cfengine=${{ matrix.cfengine }} port=8080 --debug
+          # Wait for server to be ready
+          sleep 10
+          # Verify server is running
+          curl -s http://localhost:8080/ || echo "Server may not have dashboard enabled"
+
+      - name: Run Tests
+        run: |
+          box testbox run runner="http://localhost:8080/tests/runner.cfm" verbose=true
+
+      - name: Stop Server
+        if: always()
+        run: box server stop
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.cfengine }}
+          path: |
+            tests/results/
+            .logs/
+          if-no-files-found: ignore

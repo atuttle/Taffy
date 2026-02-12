@@ -77,13 +77,13 @@ You can see that the taffy folder is a sibling to Application.cfc. This allows A
 
 Next, if your Application.cfc and `/resources/` folder aren't in the web-root (e.g. they're inside something like `/api/`) then you'll need to do one of the following:
 
-* Add an [application-specific mapping](http://livedocs.adobe.com/coldfusion/8/htmldocs/help.html?content=appFramework_04.html) for `/resources` so that Taffy can find your resources to initialize the routes.
+- Add an [application-specific mapping](http://livedocs.adobe.com/coldfusion/8/htmldocs/help.html?content=appFramework_04.html) for `/resources` so that Taffy can find your resources to initialize the routes.
 
-	```js
-	this.mappings["/resources"] = expandPath("../api/resources");
-	```
-* You can specify the path to your resource components using the [`resourcesCFCPath`](#resourcescfcpath) setting to specify the dotted path to your resource folder. This will allow you to store your resource components in the directory of your choosing.
+  ```js
+  this.mappings["/resources"] = expandPath("../api/resources");
+  ```
 
+- You can specify the path to your resource components using the [`resourcesCFCPath`](#resourcescfcpath) setting to specify the dotted path to your resource folder. This will allow you to store your resource components in the directory of your choosing.
 
 You'll also need to add a mapping for `/taffy` so that the resources can extend `taffy.core.resource` (since the taffy folder isn't a child of the resources folder):
 
@@ -370,7 +370,7 @@ Default values:
 
 ```js
 variables.framework = {
-	resourcesCFCPath = "", 
+	resourcesCFCPath = "",
 	reloadKey = "reload",
 	reloadPassword = "true",
 	reloadOnEveryRequest = false,
@@ -419,10 +419,10 @@ variables.framework = {
 
 #### resourcesCFCPath
 
-**Available in:** Taffy 3.8+<br/>
+**Available in:** Taffy 4.0+<br/>
 **Type:** String<br/>
 **Default:** ""<br/>
-**Description:** By default, Taffy will attempt to load your resource components from either a child folder named `resources` or from a CF mapping named `resources`. You can use this setting to define an explicit path to your resource components using the "dotted" path of your resource folder (e.g. `myapp.api.rest-cfcs`). 
+**Description:** By default, Taffy will attempt to load your resource components from either a child folder named `resources` or from a CF mapping named `resources`. You can use this setting to define an explicit path to your resource components using the "dotted" path of your resource folder (e.g. `myapp.api.rest-cfcs`).
 
 #### reloadKey
 
@@ -590,22 +590,22 @@ variables.framework.allowCrossDomain =
 
 #### exposeTaffyHeaders
 
-**Available in:** Taffy 3.8+<br/>
+**Available in:** Taffy 4.0+<br/>
 **Type:** Boolean<br/>
 **Default:** true<br/>
 **Description:** Determines if the standard Taffy debug HTTP response headers should be included with each request. The Taffy debug headers are:
 
-* `X-TAFFY-RELOADED` — Determines if the Taffy configuration was reloaded on the request.
-* `X-TIME-TO-RELOAD` — The time it took for Taffy to initialize.
-* `X-TIME-IN-PARSE` — The time it took to parse the request.
-* `X-TIME-IN-ONTAFFYREQUEST` — The time spent in the `onTaffyRequest` method.
-* `X-TIME-IN-RESOURCE` — The time spent executing the requested resource.
-* `X-TIME-IN-CACHE-CHECK` — The time spent checking for a cached response. 
-* `X-TIME-IN-CACHE-GET` — The time spent to retrieve a cached response.
-* `X-TIME-IN-CACHE-SAVE` — The time spent to save a cached response.
-* `X-TIME-IN-SERIALIZE` — The time spent serializing the response.
-* `X-TIME-IN-TAFFY` — The time spent executing the Taffy internals.
-* `X-TIME-IN-ONTAFFYREQUESTEND` — The time spent in the `onTaffyRequestEnd` method.
+- `X-TAFFY-RELOADED` — Determines if the Taffy configuration was reloaded on the request.
+- `X-TIME-TO-RELOAD` — The time it took for Taffy to initialize.
+- `X-TIME-IN-PARSE` — The time it took to parse the request.
+- `X-TIME-IN-ONTAFFYREQUEST` — The time spent in the `onTaffyRequest` method.
+- `X-TIME-IN-RESOURCE` — The time spent executing the requested resource.
+- `X-TIME-IN-CACHE-CHECK` — The time spent checking for a cached response.
+- `X-TIME-IN-CACHE-GET` — The time spent to retrieve a cached response.
+- `X-TIME-IN-CACHE-SAVE` — The time spent to save a cached response.
+- `X-TIME-IN-SERIALIZE` — The time spent serializing the response.
+- `X-TIME-IN-TAFFY` — The time spent executing the Taffy internals.
+- `X-TIME-IN-ONTAFFYREQUESTEND` — The time spent in the `onTaffyRequestEnd` method.
 
 Setting this to `false` will prevent these response headers from being written to the HTTP stream.
 
@@ -652,8 +652,8 @@ Global headers are static. You set them on application initialization and they d
 
 **Available in:** Taffy 1.2+<br/>
 **Type:** String<br/>
-**Default:** "taffy.bonus.LogToEmail"<br/>
-**Description:** CFC dot-notation path to the exception logging adapter you want to use. Default adapter simply emails all exceptions. See [Exception Logging Adapters](https://github.com/atuttle/Taffy/wiki/Exception-Logging-Adapters) for more details.
+**Default:** "taffy.bonus.LogToDevNull"<br/>
+**Description:** CFC dot-notation path to the exception logging adapter you want to use. Default adapter discards all exceptions silently. See [Exception Logging Adapters](https://github.com/atuttle/Taffy/wiki/Exception-Logging-Adapters) for more details.
 
 #### exceptionLogAdapterConfig
 
@@ -1054,7 +1054,7 @@ Data can be of any type, including complex data types like queries, structures, 
 
 What you pass to this method is simply handed off to the logging adapter. You may use one of the included adapters (LogToEmail, LogToBuglogHQ, LogToLog, or LogToHoth), or a custom logging adapter. If you write a custom logging adapter, it should implement the `taffy.bonus.ILogAdapter` interface.
 
-If you don't configure a logging adapter, the default is LogToEmail, but the default `from` and `to` email addresses are not useful. See [Exception Log Adapters](https://github.com/atuttle/Taffy/wiki/Exception-Logging-Adapters) for more information on configuring logging adapters.
+If you don't configure a logging adapter, the default is LogToDevNull, which silently discards exceptions. See [Exception Log Adapters](https://github.com/atuttle/Taffy/wiki/Exception-Logging-Adapters) for more information on configuring logging adapters.
 
 #### streamBinary()
 

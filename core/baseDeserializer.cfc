@@ -1,57 +1,47 @@
-<cfcomponent output="false" hint="a helper class to decode input data">
+component output="false" hint="a helper class to decode input data" {
 
-	<!--- the most basic of input handlers, available in all APIs --->
-	<cffunction name="getFromForm" output="false" taffy:mime="application/x-www-form-urlencoded" hint="get data from form post">
-		<cfargument name="body" hint="the textual request body" />
-		<cfset var response = {} />
-		<cfset var pairs = listToArray(arguments.body, "&") />
-		<cfset var pair = "" />
-		<cfset var kv = [] />
-		<cfset var ix = 0 />
-		<cfset var k = "" />
-		<cfset var v = "" />
+	public function getFromForm(body) output="false" taffy_mime="application/x-www-form-urlencoded" hint="get data from form post" {
+		var response = {};
+		var pairs = listToArray(arguments.body, "&");
+		var pair = "";
+		var kv = [];
+		var ix = 0;
+		var k = "";
+		var v = "";
 
-		<cfif not find('=', arguments.body)>
-			<cfset throwError(400, "You've indicated that you're sending form-encoded data but it doesn't appear to be valid. Aborting request.") />
-		</cfif>
+		if (!find('=', arguments.body)) {
+			throwError(400, "You've indicated that you're sending form-encoded data but it doesn't appear to be valid. Aborting request.");
+		}
 
-		<cfloop from="1" to="#arrayLen(pairs)#" index="ix">
-			<cfset pair = pairs[ix] />
-			<cfset kv = listToArray(pair, "=", true) />
-			<cfset k = kv[1] />
-			<cfset v = urlDecode( kv[2] ) />
-			<cfif structKeyExists( response, k )>
-				<cfset response[k] = listAppend(response[k], v)>
-			<cfelse>
-				<cfset response[k] = v>
-			</cfif>
-		</cfloop>
+		for (ix = 1; ix <= arrayLen(pairs); ix++) {
+			pair = pairs[ix];
+			kv = listToArray(pair, "=", true);
+			k = kv[1];
+			v = urlDecode(kv[2]);
+			if (structKeyExists(response, k)) {
+				response[k] = listAppend(response[k], v);
+			} else {
+				response[k] = v;
+			}
+		}
 
-		<cfreturn response />
-	</cffunction>
+		return response;
+	}
 
-	<!--- ============================ --->
-	<!--- Helpers                      --->
-	<!--- ============================ --->
+	private void function throwError(numeric statusCode=500, required string msg, struct headers={}) output="false" {
+		cfcontent(reset="true");
+		addHeaders(arguments.headers);
+		cfheader(statuscode=arguments.statusCode, statustext=arguments.msg);
+		abort;
+	}
 
-	<cffunction name="throwError" access="private" output="false" returntype="void">
-		<cfargument name="statusCode" type="numeric" default="500" />
-		<cfargument name="msg" type="string" required="true" hint="message to return to api consumer" />
-		<cfargument name="headers" type="struct" required="false" default="#structNew()#" />
-		<cfcontent reset="true" />
-		<cfset addHeaders(arguments.headers) />
-		<cfheader statuscode="#arguments.statusCode#" statustext="#arguments.msg#" />
-		<cfabort />
-	</cffunction>
+	private void function addHeaders(required struct headers) output="false" {
+		var h = '';
+		if (!structIsEmpty(arguments.headers)) {
+			for (h in arguments.headers) {
+				cfheader(name=h, value=arguments.headers[h]);
+			}
+		}
+	}
 
-	<cffunction name="addHeaders" access="private" output="false" returntype="void">
-		<cfargument name="headers" type="struct" required="true" />
-		<cfset var h = '' />
-		<cfif !structIsEmpty(arguments.headers)>
-			<cfloop list="#structKeyList(arguments.headers)#" index="h">
-				<cfheader name="#h#" value="#arguments.headers[h]#" />
-			</cfloop>
-		</cfif>
-	</cffunction>
-
-</cfcomponent>
+}

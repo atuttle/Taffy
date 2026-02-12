@@ -1,13 +1,10 @@
-<cfcomponent implements="taffy.bonus.ILogAdapter">
+component implements="taffy.bonus.ILogAdapter" {
 
-	<cffunction name="init">
-		<cfargument name="config" />
-		<cfargument name="tracker" />
-		<cfreturn this />
-	</cffunction>
+	public function init(config, tracker) {
+		return this;
+	}
 
-	<cffunction name="saveLog">
-		<cfargument name="exception" />
-	</cffunction>
+	public function saveLog(exception) {
+	}
 
-</cfcomponent>
+}

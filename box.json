@@ -1,64 +1,82 @@
 {
-    "name":"Taffy",
-    "shortDescription":"REST Web Service framework for ColdFusion and Lucee",
-    "slug":"taffy",
-    "author":"Adam Tuttle",
-    "version":"3.8.0",
-    "homepage":"https://taffy.io/",
-    "documentation":"https://docs.taffy.io/",
-    "type":"mvc",
-    "repository":{
-        "type":"git",
-        "url":"https://github.com/atuttle/Taffy.git"
-    },
-    "bugs":"https://github.com/atuttle/Taffy/issues",
-    "license":[
-        {
-            "type":"MIT",
-            "url":"https://raw.githubusercontent.com/atuttle/Taffy/main/LICENSE.TXT"
-        }
-    ],
-    "devDependencies":{
-        "testbox":"^4.2.1+400",
-        "commandbox-cfconfig":"^1.0.2",
-        "di1":"git+https://github.com/framework-one/di1.git",
-        "hoth":"git+https://github.com/aarongreenlee/Hoth.git",
-        "BugLogHQ":"git+https://github.com/oarevalo/BugLogHQ.git"
-    },
-    "installPaths":{
-        "testbox":"tests/testbox/",
-        "di1":"tests/di1/",
-        "Hoth":"tests/Hoth/",
-        "BugLogHQ":"tests/BugLogHQ/"
-    },
-    "engines":[
-        {
-            "type":"lucee",
-            "version":">=4.5.x"
-        },
-        {
-            "type":"adobe",
-            "version":">=8.0.0"
-        }
-    ],
-    "ignore":[
-        "examples/",
-        "lib/",
-        "snippets/",
-        "tests/",
-        ".cfconfig.json",
-        ".gitignore",
-        ".travis.yml",
-        "CONTRIBUTING.md",
-        "build.xml",
-        "server.json"
-    ],
-    "testbox": {
-      "runner": [
-        {
-          "default": "http://localhost/runner.cfm"
-        }
-      ],
-      "directory": "tests.specs"
-    }
+	"name": "Taffy",
+	"shortDescription": "REST Web Service framework for ColdFusion and Lucee",
+	"slug": "taffy",
+	"author": "Adam Tuttle",
+	"version": "4.0.0",
+	"homepage": "https://taffy.io/",
+	"documentation": "https://docs.taffy.io/",
+	"type": "mvc",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/atuttle/Taffy.git"
+	},
+	"bugs": "https://github.com/atuttle/Taffy/issues",
+	"license": [
+		{
+			"type": "MIT",
+			"url": "https://raw.githubusercontent.com/atuttle/Taffy/main/LICENSE.TXT"
+		}
+	],
+	"devDependencies": {
+		"testbox": "^6.5.0",
+		"commandbox-cfconfig": "^1.0.2",
+		"di1": "git+https://github.com/framework-one/di1.git",
+		"hoth": "git+https://github.com/aarongreenlee/Hoth.git",
+		"BugLogHQ": "git+https://github.com/oarevalo/BugLogHQ.git"
+	},
+	"installPaths": {
+		"testbox": "tests/testbox/",
+		"di1": "tests/di1/",
+		"Hoth": "tests/Hoth/",
+		"BugLogHQ": "tests/BugLogHQ/"
+	},
+	"engines": [
+		{
+			"type": "lucee",
+			"version": ">=5.x.x"
+		},
+		{
+			"type": "adobe",
+			"version": ">=2016"
+		}
+	],
+	"ignore": [
+		"examples/",
+		"lib/",
+		"snippets/",
+		"tests/",
+		".cfconfig.json",
+		".gitignore",
+		".travis.yml",
+		"CONTRIBUTING.md",
+		"build.xml",
+		"server.json"
+	],
+	"testbox": {
+		"runner": [
+			{
+				"default": "http://localhost:8080/tests/runner.cfm"
+			}
+		],
+		"directory": "tests/specs",
+		"bundles": "",
+		"labels": "",
+		"excludes": "",
+		"verbose": true
+	},
+	"scripts": {
+		"start:all": "server start serverConfigFile=server-lucee5.json && server start serverConfigFile=server-lucee6.json && server start serverConfigFile=server-lucee7.json",
+		"start:lucee5": "server start serverConfigFile=server-lucee5.json",
+		"start:lucee6": "server start serverConfigFile=server-lucee6.json",
+		"start:lucee7": "server start serverConfigFile=server-lucee7.json",
+		"stop:lucee5": "server stop name=taffy-lucee5",
+		"stop:lucee6": "server stop name=taffy-lucee6",
+		"stop:lucee7": "server stop name=taffy-lucee7",
+		"stop:all": "server stop --all",
+		"test:all": "testbox run runner=http://localhost:8085/tests/runner.cfm && testbox run runner=http://localhost:8086/tests/runner.cfm && testbox run runner=http://localhost:8087/tests/runner.cfm",
+		"test:lucee5": "testbox run runner=http://localhost:8085/tests/runner.cfm",
+		"test:lucee6": "testbox run runner=http://localhost:8086/tests/runner.cfm",
+		"test:lucee7": "testbox run runner=http://localhost:8087/tests/runner.cfm"
+	}
 }

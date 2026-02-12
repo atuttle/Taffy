@@ -7,20 +7,12 @@
 
 <cfswitch expression="#url.a#">
 
-	<cfcase value="jquery.min.js">
-		<cfcontent type="text/javascript" file="#expandPath('./jquery.min.js')#" reset="true" /><cfabort />
-	</cfcase>
-
-	<cfcase value="bootstrap.min.js">
-		<cfcontent type="text/javascript" file="#expandPath('./bootstrap.min.js')#" reset="true" /><cfabort />
-	</cfcase>
-
 	<cfcase value="dash.js">
 		<cfcontent type="text/javascript" file="#expandPath('./dash.js')#" reset="true" /><cfabort />
 	</cfcase>
 
-	<cfcase value="dash.css">
-		<cfcontent type="text/css" file="#expandPath('./dash.css')#" reset="true" /><cfabort />
+	<cfcase value="dashboard.css">
+		<cfcontent type="text/css" file="#expandPath('./dashboard.css')#" reset="true" /><cfabort />
 	</cfcase>
 
 	<cfcase value="loading.gif">
