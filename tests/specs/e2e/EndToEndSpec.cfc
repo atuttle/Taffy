@@ -32,8 +32,15 @@ component extends="testbox.system.BaseSpec" {
 		}
 
 		result.data = {};
-		if (structKeyExists(result, "fileContent") && isJSON(result.fileContent)) {
-			result.data = deserializeJSON(result.fileContent);
+		if (structKeyExists(result, "fileContent")) {
+			var body = result.fileContent;
+			// Lucee 5 may return fileContent as a byte array; coerce to string
+			if (isBinary(body)) {
+				body = toString(body, "utf-8");
+			}
+			if (isSimpleValue(body) && isJSON(body)) {
+				result.data = deserializeJSON(body);
+			}
 		}
 		return result;
 	}
