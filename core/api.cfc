@@ -335,7 +335,7 @@ component hint="Your Application.cfc should extend this class" {
 						}
 						// If the type returned is not an instance of baseSerializer, wrap it with a call to rep().
 						// This way we can directly return the object instead of a serializer from resource actions.
-						if (!isInstanceOf(_taffyRequest.result, "taffy.core.baseSerializer")) {
+						if (!isSerializerInstance(_taffyRequest.result)) {
 							_taffyRequest.result = rep(_taffyRequest.result);
 						}
 						if (ucase(_taffyRequest.verb) == "GET" && structKeyExists(local, "cacheKey")) {
@@ -674,7 +674,10 @@ component hint="Your Application.cfc should extend this class" {
 		}
 
 		// inspect the deserializer to find out what contentTypes are supported
-		local._taffy.contentTypes = getSupportedContentTypes(local._taffy.settings.deserializer);
+		local._taffy.contentTypes = getSupportedContentTypes(
+			local._taffy.settings.deserializer,
+			structKeyExists(local._taffy, "factory") ? local._taffy.factory : ""
+		);
 		// hot-swap!
 		application._taffy = local._taffy;
 
@@ -930,14 +933,24 @@ component hint="Your Application.cfc should extend this class" {
 		var fn = application._taffy.contentTypes[ct];
 		var args = {};
 		var result = {};
+		var deserializer = "";
 		args.body = arguments.body;
 
-		result = invoke(application._taffy.settings.deserializer, fn, args);
+		if (application._taffy.factory.containsBean(application._taffy.settings.deserializer)) {
+			deserializer = application._taffy.factory.getBean(application._taffy.settings.deserializer);
+		} else {
+			deserializer = createObject("component", application._taffy.settings.deserializer);
+		}
+		result = invoke(deserializer, fn, args);
 		return result;
 	}
 
-	private function getSupportedContentTypes(deserializer) output="false" hint="must be the full dot-notation path to the component" {
-		return _recurse_getSupportedContentTypes(getComponentMetadata(arguments.deserializer));
+	private function getSupportedContentTypes(deserializer, factory = "") output="false" {
+		if (isObject(arguments.factory) && arguments.factory.containsBean(arguments.deserializer)) {
+			return _recurse_getSupportedContentTypes(getMetadata(arguments.factory.getBean(arguments.deserializer)));
+		} else {
+			return _recurse_getSupportedContentTypes(getComponentMetadata(arguments.deserializer));
+		}
 	}
 
 	private function _recurse_getSupportedContentTypes(objMetaData) output="false" {
@@ -1285,6 +1298,17 @@ component hint="Your Application.cfc should extend this class" {
 		return arguments.data;
 	}
 
+	private boolean function isSerializerInstance(required any obj) output="false" {
+		if (!isObject(arguments.obj)) return false;
+		var meta = getMetadata(arguments.obj);
+		while (structKeyExists(meta, "name")) {
+			if (listLast(meta.name, ".") == "baseSerializer") return true;
+			if (!structKeyExists(meta, "extends")) break;
+			meta = meta.extends;
+		}
+		return false;
+	}
+
 	private boolean function mimeSupported(required string mimeExt) output="false" {
 		if (structKeyExists(application._taffy.settings.mimeExtensions, arguments.mimeExt)) {
 			return true;
@@ -1314,7 +1338,24 @@ component hint="Your Application.cfc should extend this class" {
 	}
 
 	private void function handleDashboardRequest() {
-		handleDashboardRequest();
+		if (!application._taffy.settings.disableDashboard) {
+			if (structKeyExists(url, "docs")) {
+				include "#application._taffy.settings.docsPath#";
+			} else {
+				include "../dashboard/dashboard.cfm";
+			}
+			abort;
+		} else {
+			if (len(application._taffy.settings.disabledDashboardRedirect)) {
+				location(url=application._taffy.settings.disabledDashboardRedirect, addtoken=false);
+				abort;
+			} else if (application._taffy.settings.showDocsWhenDashboardDisabled) {
+				include "#application._taffy.settings.docsPath#";
+				abort;
+			} else {
+				throwError(403, "Forbidden");
+			}
+		}
 	}
 
 	private boolean function isUnhandledPathRequest(targetPath) {
