@@ -7,6 +7,7 @@ component output="false" hint="a helper class to represent easily serializable d
 	variables.statusText = "OK";
 	variables.miscHeaders = {};
 	variables.deleteFile = false;
+	variables.noDataSends204NoContent = false;
 	// 1= textual, 2= filename, 3= file data
 	variables.type = 1;
 	variables.types = {};
@@ -93,8 +94,13 @@ component output="false" hint="a helper class to represent easily serializable d
 		return variables.data;
 	}
 
+	public function setNoDataSends204NoContent(required boolean value) output="false" {
+		variables.noDataSends204NoContent = arguments.value;
+		return this;
+	}
+
 	public function noData() output="false" hint="returns empty representation instance" {
-		if (application._taffy.settings.noDataSends204NoContent) {
+		if (variables.noDataSends204NoContent) {
 			return this.noContent();
 		} else {
 			return this;

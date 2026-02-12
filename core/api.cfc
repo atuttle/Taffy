@@ -1352,11 +1352,14 @@ component hint="Your Application.cfc should extend this class" {
 
 	private function newRepresentation() output="false" hint="private as of 3.0" {
 		var repClass = application._taffy.settings.serializer;
+		var rep = "";
 		if (application._taffy.factory.containsBean(repClass)) {
-			return application._taffy.factory.getBean(repClass);
+			rep = application._taffy.factory.getBean(repClass);
 		} else {
-			return createObject("component", repClass);
+			rep = createObject("component", repClass);
 		}
+		rep.setNoDataSends204NoContent(application._taffy.settings.noDataSends204NoContent);
+		return rep;
 	}
 
 	public function noData() output="false" {
