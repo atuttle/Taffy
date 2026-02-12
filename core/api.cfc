@@ -85,21 +85,7 @@ component hint="Your Application.cfc should extend this class" {
 				&& len(local.path) <= 1
 				&& listFindNoCase(cgi.script_name, "index.cfm", "/") == listLen(cgi.script_name, "/")
 			) {
-				if (!application._taffy.settings.disableDashboard) {
-					if (structKeyExists(url, "docs")) {
-						include template=application._taffy.settings.docsPath;
-					} else {
-						include "../dashboard/dashboard.cfm";
-					}
-					abort;
-				} else {
-					if (len(application._taffy.settings.disabledDashboardRedirect)) {
-						location(url=application._taffy.settings.disabledDashboardRedirect, addtoken=false);
-						abort;
-					} else if (application._taffy.settings.showDocsWhenDashboardDisabled == false) {
-						throwError(403, "Forbidden");
-					}
-				}
+				handleDashboardRequest();
 			}
 		} else {
 			// allow pass-thru for selected paths
@@ -203,24 +189,7 @@ component hint="Your Application.cfc should extend this class" {
 			&& len(cgi.path_info) <= 1
 			&& listFindNoCase(cgi.script_name, "index.cfm", "/") == listLen(cgi.script_name, "/")
 		) {
-			if (!application._taffy.settings.disableDashboard) {
-				if (structKeyExists(url, "docs")) {
-					include template=application._taffy.settings.docsPath;
-				} else {
-					include "../dashboard/dashboard.cfm";
-				}
-				abort;
-			} else {
-				if (len(application._taffy.settings.disabledDashboardRedirect)) {
-					location(url=application._taffy.settings.disabledDashboardRedirect, addtoken=false);
-					abort;
-				} else if (application._taffy.settings.showDocsWhenDashboardDisabled) {
-					include template=application._taffy.settings.docsPath;
-					abort;
-				} else {
-					throwError(403, "Forbidden");
-				}
-			}
+			handleDashboardRequest();
 		}
 
 		// get request details
@@ -1342,6 +1311,10 @@ component hint="Your Application.cfc should extend this class" {
 		if (structKeyExists(application._taffy.settings.mimeTypes, arguments.mimeExt)) {
 			return application._taffy.settings.mimeTypes[arguments.mimeExt];
 		}
+	}
+
+	private void function handleDashboardRequest() {
+		handleDashboardRequest();
 	}
 
 	private boolean function isUnhandledPathRequest(targetPath) {
