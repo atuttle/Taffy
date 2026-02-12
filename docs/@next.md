@@ -652,8 +652,8 @@ Global headers are static. You set them on application initialization and they d
 
 **Available in:** Taffy 1.2+<br/>
 **Type:** String<br/>
-**Default:** "taffy.bonus.LogToEmail"<br/>
-**Description:** CFC dot-notation path to the exception logging adapter you want to use. Default adapter simply emails all exceptions. See [Exception Logging Adapters](https://github.com/atuttle/Taffy/wiki/Exception-Logging-Adapters) for more details.
+**Default:** "taffy.bonus.LogToDevNull"<br/>
+**Description:** CFC dot-notation path to the exception logging adapter you want to use. Default adapter discards all exceptions silently. See [Exception Logging Adapters](https://github.com/atuttle/Taffy/wiki/Exception-Logging-Adapters) for more details.
 
 #### exceptionLogAdapterConfig
 
@@ -1054,7 +1054,7 @@ Data can be of any type, including complex data types like queries, structures, 
 
 What you pass to this method is simply handed off to the logging adapter. You may use one of the included adapters (LogToEmail, LogToBuglogHQ, LogToLog, or LogToHoth), or a custom logging adapter. If you write a custom logging adapter, it should implement the `taffy.bonus.ILogAdapter` interface.
 
-If you don't configure a logging adapter, the default is LogToEmail, but the default `from` and `to` email addresses are not useful. See [Exception Log Adapters](https://github.com/atuttle/Taffy/wiki/Exception-Logging-Adapters) for more information on configuring logging adapters.
+If you don't configure a logging adapter, the default is LogToDevNull, which silently discards exceptions. See [Exception Log Adapters](https://github.com/atuttle/Taffy/wiki/Exception-Logging-Adapters) for more information on configuring logging adapters.
 
 #### streamBinary()
 
