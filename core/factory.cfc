@@ -153,7 +153,7 @@ component output="false" {
 				if (len(local.fname) gt 3) {
 					local.propName = right(local.fname, len(local.fname)-3);
 					if (left(local.fname, 3) eq "set" and beanExists(local.propName, true, true)) {
-						evaluate("arguments.bean.#local.fname#(getBean('#local.propName#'))");
+						invoke(arguments.bean, local.fname, [getBean(local.propName)]);
 					}
 				}
 			}
@@ -171,7 +171,6 @@ component output="false" {
 		}
 	}
 
-	// proxy function for CF8 compatibility
 	private function throwError() {
 		cfthrow(attributecollection=arguments);
 	}
