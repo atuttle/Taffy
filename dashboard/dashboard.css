@@ -1,12 +1,20 @@
 /* Base styles */
 body {
 	font-family:
+		"Atkinson Hyperlegible",
 		system-ui,
 		-apple-system,
 		sans-serif;
 	background-color: #f3f4f6;
 	color: #111827;
 	line-height: 1.5;
+}
+
+button,
+input,
+select,
+textarea {
+	font-family: inherit;
 }
 
 /* Header */
@@ -119,7 +127,7 @@ body {
 }
 
 textarea.form-input {
-	font-family: ui-monospace, monospace;
+	font-family: "Atkinson Hyperlegible Mono", ui-monospace, monospace;
 	resize: vertical;
 	max-width: 100%;
 	box-sizing: border-box;
@@ -170,7 +178,7 @@ textarea.form-input {
 }
 
 .resource-uri {
-	font-family: ui-monospace, monospace;
+	font-family: "Atkinson Hyperlegible Mono", ui-monospace, monospace;
 	font-size: 0.875rem;
 	font-weight: 700;
 	color: #059669;
@@ -276,7 +284,7 @@ textarea.form-input {
 .runner-uri {
 	flex: 1;
 	min-width: 200px;
-	font-family: ui-monospace, monospace;
+	font-family: "Atkinson Hyperlegible Mono", ui-monospace, monospace;
 }
 
 /* Expandable sections */
@@ -379,7 +387,7 @@ textarea.form-input {
 }
 
 .response-headers {
-	font-family: ui-monospace, monospace;
+	font-family: "Atkinson Hyperlegible Mono", ui-monospace, monospace;
 	font-size: 0.75rem;
 	color: #4b5563;
 	white-space: pre-wrap;
@@ -413,7 +421,7 @@ textarea.form-input {
 	margin: 0;
 }
 .response-body code {
-	font-family: ui-monospace, monospace;
+	font-family: "Atkinson Hyperlegible Mono", ui-monospace, monospace;
 }
 .response-body code.hljs {
 	padding: 0;
@@ -682,7 +690,7 @@ textarea.form-input {
 	display: inline-block;
 	width: 4rem;
 	font-size: 0.75rem;
-	font-family: ui-monospace, monospace;
+	font-family: "Atkinson Hyperlegible Mono", ui-monospace, monospace;
 	color: #6b7280;
 	background-color: #e5e7eb;
 	padding: 0.125rem 0;
@@ -692,7 +700,7 @@ textarea.form-input {
 
 .param-name {
 	font-weight: 600;
-	font-family: ui-monospace, monospace;
+	font-family: "Atkinson Hyperlegible Mono", ui-monospace, monospace;
 	color: #111827;
 }
 
@@ -757,7 +765,7 @@ textarea.form-input {
 	color: #4b5563;
 }
 .font-mono {
-	font-family: ui-monospace, monospace;
+	font-family: "Atkinson Hyperlegible Mono", ui-monospace, monospace;
 }
 .mb-4 {
 	margin-bottom: 1rem;

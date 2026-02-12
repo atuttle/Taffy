@@ -628,6 +628,7 @@ component hint="Your Application.cfc should extend this class" {
 		local.defaultConfig.csrfToken = {};
 		local.defaultConfig.csrfToken.cookieName = "";
 		local.defaultConfig.csrfToken.headerName = "";
+		local.defaultConfig.allowGoogleFonts = true;
 
 		// status
 		local._taffy.status = {};
