@@ -69,7 +69,7 @@ component hint="base class for taffy REST components" {
 
 	variables.funcs = getFunctionList();
 	if (!structKeyExists(variables.funcs, "queryToArray")) {
-		private struct function queryToArray(required query q, cb) output="false" {
+		private array function queryToArray(required query q, cb) output="false" {
 			return qToArray(arguments.q, arguments.cb);
 		}
 	}
