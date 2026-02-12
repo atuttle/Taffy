@@ -341,7 +341,7 @@ component hint="Your Application.cfc should extend this class" {
 						m.cacheCheckTime = getTickCount() - m.cacheCheckTime;
 						m.cacheGetTime = getTickCount();
 						_taffyRequest.result = getCachedResponse(local.cacheKey);
-						m.cacheGetTime = m.cacheGetTime - getTickCount();
+						m.cacheGetTime = getTickCount() - m.cacheGetTime;
 					} else {
 						if (ucase(_taffyRequest.verb) == "GET") {
 							m.cacheCheckTime = getTickCount() - m.cacheCheckTime;
