@@ -146,12 +146,12 @@
 										<td>Exception Log Adapter Config:</td>
 										<td>
 											<a class="help-link" target="_blank" rel="noreferrer noopener" href="#getDocUrl('exceptionLogAdapterConfig')#">?</a>
-											<cfif isSimpleValue(application._taffy.settings.exceptionLogAdapterConfig)>
-												#application._taffy.settings.exceptionLogAdapterConfig#
+											<cfif isSimpleValue(application._taffy.settings.exceptionLogAdapterConfig) AND len(trim(application._taffy.settings.exceptionLogAdapterConfig)) EQ 0>
+												empty
+											<cfelseif isSimpleValue(application._taffy.settings.exceptionLogAdapterConfig)>
+												redacted
 											<cfelse>
-												<cfloop list="#structKeyList(application._taffy.settings.exceptionLogAdapterConfig)#" index="local.k">
-													<strong>#local.k#:</strong> #application._taffy.settings.exceptionLogAdapterConfig[local.k]#<br/>
-												</cfloop>
+												redacted
 											</cfif>
 										</td>
 									</tr>
