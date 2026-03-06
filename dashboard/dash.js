@@ -250,7 +250,9 @@ document.addEventListener('DOMContentLoaded', function(){
 			var path = uri.supplant(formParams);
 
 			var verb = resource.querySelector('.reqMethod option:checked').value;
-			var body = (verb === 'GET' || verb === 'DELETE') ? qParams(resource) : resource.querySelector('.reqBody textarea').value;
+			var q = qParams(resource);
+			var body = (verb === 'GET' || verb === 'DELETE') ? null : resource.querySelector('.reqBody textarea').value;
+			if (q.length) path += '?' + q;
 			var reqHeaders = resource.querySelector('.requestHeaders').value.replace(/\r/g, '').split('\n');
 			var headers = {
 				Accept: resource.querySelector('.reqFormat option:checked').value
