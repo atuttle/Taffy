@@ -113,6 +113,21 @@
 																<span class="param-type">#local.param.type#</span>
 															</cfif>
 															<span class="param-name">#local.param.name#</span>
+															<cfif structKeyExists(local.param, "taffy_minlength")>
+																<span class="param-constraint">min length: #local.param["taffy_minlength"]#</span>
+															</cfif>
+															<cfif structKeyExists(local.param, "taffy_maxlength")>
+																<span class="param-constraint">max length: #local.param["taffy_maxlength"]#</span>
+															</cfif>
+															<cfif structKeyExists(local.param, "taffy_min")>
+																<span class="param-constraint">min: #local.param["taffy_min"]#</span>
+															</cfif>
+															<cfif structKeyExists(local.param, "taffy_max")>
+																<span class="param-constraint">max: #local.param["taffy_max"]#</span>
+															</cfif>
+															<cfif structKeyExists(local.param, "taffy_pattern")>
+																<span class="param-constraint">pattern: #local.param["taffy_pattern"]#</span>
+															</cfif>
 															<cfif structKeyExists(local.param, "default")>
 																<span class="param-default">
 																	<cfif local.param.default eq "">(default: "")<cfelse>(default: #local.param.default#)</cfif>
