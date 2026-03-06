@@ -1,7 +1,7 @@
 /* Base styles */
 body {
 	font-family:
-		"Atkinson Hyperlegible",
+		'Atkinson Hyperlegible',
 		system-ui,
 		-apple-system,
 		sans-serif;
@@ -127,7 +127,7 @@ textarea {
 }
 
 textarea.form-input {
-	font-family: "Atkinson Hyperlegible Mono", ui-monospace, monospace;
+	font-family: 'Atkinson Hyperlegible Mono', ui-monospace, monospace;
 	resize: vertical;
 	max-width: 100%;
 	box-sizing: border-box;
@@ -178,7 +178,7 @@ textarea.form-input {
 }
 
 .resource-uri {
-	font-family: "Atkinson Hyperlegible Mono", ui-monospace, monospace;
+	font-family: 'Atkinson Hyperlegible Mono', ui-monospace, monospace;
 	font-size: 0.875rem;
 	font-weight: 700;
 	color: #059669;
@@ -284,7 +284,7 @@ textarea.form-input {
 .runner-uri {
 	flex: 1;
 	min-width: 200px;
-	font-family: "Atkinson Hyperlegible Mono", ui-monospace, monospace;
+	font-family: 'Atkinson Hyperlegible Mono', ui-monospace, monospace;
 }
 
 /* Expandable sections */
@@ -387,7 +387,7 @@ textarea.form-input {
 }
 
 .response-headers {
-	font-family: "Atkinson Hyperlegible Mono", ui-monospace, monospace;
+	font-family: 'Atkinson Hyperlegible Mono', ui-monospace, monospace;
 	font-size: 0.75rem;
 	color: #4b5563;
 	white-space: pre-wrap;
@@ -421,7 +421,7 @@ textarea.form-input {
 	margin: 0;
 }
 .response-body code {
-	font-family: "Atkinson Hyperlegible Mono", ui-monospace, monospace;
+	font-family: 'Atkinson Hyperlegible Mono', ui-monospace, monospace;
 }
 .response-body code.hljs {
 	padding: 0;
@@ -690,7 +690,7 @@ textarea.form-input {
 	display: inline-block;
 	width: 4rem;
 	font-size: 0.75rem;
-	font-family: "Atkinson Hyperlegible Mono", ui-monospace, monospace;
+	font-family: 'Atkinson Hyperlegible Mono', ui-monospace, monospace;
 	color: #6b7280;
 	background-color: #e5e7eb;
 	padding: 0.125rem 0;
@@ -700,13 +700,23 @@ textarea.form-input {
 
 .param-name {
 	font-weight: 600;
-	font-family: "Atkinson Hyperlegible Mono", ui-monospace, monospace;
+	font-family: 'Atkinson Hyperlegible Mono', ui-monospace, monospace;
 	color: #111827;
 }
 
 .param-default {
 	font-size: 0.75rem;
 	color: #6b7280;
+}
+
+.param-constraint {
+	display: inline-block;
+	font-size: 0.6875rem;
+	font-family: 'Atkinson Hyperlegible Mono', ui-monospace, monospace;
+	color: #1e40af;
+	background-color: #dbeafe;
+	padding: 0.0625rem 0.375rem;
+	border-radius: 0.25rem;
 }
 
 .param-hint {
@@ -765,7 +775,7 @@ textarea.form-input {
 	color: #4b5563;
 }
 .font-mono {
-	font-family: "Atkinson Hyperlegible Mono", ui-monospace, monospace;
+	font-family: 'Atkinson Hyperlegible Mono', ui-monospace, monospace;
 }
 .mb-4 {
 	margin-bottom: 1rem;
