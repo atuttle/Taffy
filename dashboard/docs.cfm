@@ -29,7 +29,14 @@
 		</header>
 
 		<section id="resources">
-			<h2 style="font-size: 1.25rem; font-weight: 600; margin: 0 0 1rem 0;">Resources:</h2>
+			<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+				<h2 style="font-size: 1.25rem; font-weight: 600; margin: 0;">Resources:</h2>
+				<div class="sort-picker" data-store-key="taffyDocsSort">
+					<button type="button" class="sort-btn active" data-sort="name">Name</button>
+					<button type="button" class="sort-btn" data-sort="uri">URI</button>
+					<button type="button" class="sort-btn" data-sort="match">Match Order</button>
+				</div>
+			</div>
 
 			<div id="resourcesAccordion">
 				<cfoutput>
@@ -40,17 +47,15 @@
 						<cfif structKeyExists(local.beanMeta, "taffy_docs_hide") OR structKeyExists(local.beanMeta, "taffy:docs:hide")>
 							<cfscript>continue;</cfscript>
 						</cfif>
-						<div class="resource-panel">
+						<cfset local.displayName = local.currentResource.beanName />
+						<cfif structKeyExists(local.beanMeta, "taffy:docs:name")>
+							<cfset local.displayName = local.beanMeta['taffy:docs:name'] />
+						<cfelseif structKeyExists(local.beanMeta, "taffy_docs_name")>
+							<cfset local.displayName = local.beanMeta['taffy_docs_name'] />
+						</cfif>
+						<div class="resource-panel" data-sort-name="#lCase(local.displayName)#" data-sort-uri="#lCase(local.currentResource.srcUri)#">
 							<div class="resource-header" data-target="#local.currentResource.beanName#">
-								<span class="resource-name">
-									<cfif structKeyExists(local.beanMeta, "taffy:docs:name")>
-										#local.beanMeta['taffy:docs:name']#
-									<cfelseif structKeyExists(local.beanMeta, "taffy_docs_name")>
-										#local.beanMeta['taffy_docs_name']#
-									<cfelse>
-										#local.currentResource.beanName#
-									</cfif>
-								</span>
+								<span class="resource-name">#local.displayName#</span>
 								<span class="resource-meta">
 									<code class="resource-uri">#local.currentResource.srcUri#</code>
 									<cfloop list="GET,POST,PUT,PATCH,DELETE" index="local.verb">
@@ -198,7 +203,7 @@
 				</div>
 			</cfif>
 
-			<div class="alert alert-info mt-4">Resources are listed in matching order. From top to bottom, the first URI to match the request is used.</div>
+			<div class="alert alert-info mt-4 match-order-hint" style="display: none;">Resources are listed in matching order. From top to bottom, the first URI to match the request is used.</div>
 		</section>
 
 	</div>
@@ -239,6 +244,60 @@
 					el.textContent = JSON.stringify(data, null, '  ');
 					hljs.highlightElement(el);
 				} catch(e) {}
+			});
+
+			// Resource sorting
+			document.querySelectorAll('.sort-picker').forEach(function(picker) {
+				var storeKey = picker.dataset.storeKey;
+				var accordion = picker.closest('section').querySelector('#resourcesAccordion');
+				if (!accordion) return;
+
+				var panels = Array.prototype.slice.call(accordion.querySelectorAll('.resource-panel'));
+				panels.forEach(function(panel, i) {
+					panel.dataset.sortMatch = i;
+				});
+
+				function sortPanels(mode) {
+					var sorted = panels.slice();
+					if (mode === 'name') {
+						sorted.sort(function(a, b) {
+							return (a.dataset.sortName || '').localeCompare(b.dataset.sortName || '');
+						});
+					} else if (mode === 'uri') {
+						sorted.sort(function(a, b) {
+							return (a.dataset.sortUri || '').localeCompare(b.dataset.sortUri || '');
+						});
+					} else {
+						sorted.sort(function(a, b) {
+							return Number(a.dataset.sortMatch) - Number(b.dataset.sortMatch);
+						});
+					}
+					sorted.forEach(function(panel) {
+						accordion.appendChild(panel);
+					});
+					var hint = picker.closest('section').querySelector('.match-order-hint');
+					if (hint) {
+						hint.style.display = mode === 'match' ? '' : 'none';
+					}
+				}
+
+				var saved = localStorage.getItem(storeKey) || 'name';
+				picker.querySelectorAll('.sort-btn').forEach(function(btn) {
+					btn.classList.toggle('active', btn.dataset.sort === saved);
+				});
+				sortPanels(saved);
+
+				picker.querySelectorAll('.sort-btn').forEach(function(btn) {
+					btn.addEventListener('click', function() {
+						picker.querySelectorAll('.sort-btn').forEach(function(b) {
+							b.classList.remove('active');
+						});
+						btn.classList.add('active');
+						var mode = btn.dataset.sort;
+						localStorage.setItem(storeKey, mode);
+						sortPanels(mode);
+					});
+				});
 			});
 		});
 	</script>

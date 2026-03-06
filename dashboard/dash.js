@@ -150,6 +150,9 @@ document.addEventListener('DOMContentLoaded', function(){
 		});
 	}
 
+	// Resource sorting
+	initSortPickers();
+
 	// Request body visibility on method change
 	document.querySelectorAll(".resource .reqMethod").forEach(function(el) {
 		el.addEventListener('change', function(){
@@ -712,3 +715,63 @@ function expandingFormElements(){
 	});
 }
 expandingFormElements();
+
+function initSortPickers() {
+	document.querySelectorAll('.sort-picker').forEach(function(picker) {
+		var storeKey = picker.dataset.storeKey;
+		var accordion = picker.closest('section').querySelector('#resourcesAccordion');
+		if (!accordion) return;
+
+		// Snapshot original (match) order
+		var panels = Array.prototype.slice.call(accordion.querySelectorAll('.resource-panel'));
+		panels.forEach(function(panel, i) {
+			panel.dataset.sortMatch = i;
+		});
+
+		function sortPanels(mode) {
+			var sorted = panels.slice();
+			if (mode === 'name') {
+				sorted.sort(function(a, b) {
+					return (a.dataset.sortName || '').localeCompare(b.dataset.sortName || '');
+				});
+			} else if (mode === 'uri') {
+				sorted.sort(function(a, b) {
+					return (a.dataset.sortUri || '').localeCompare(b.dataset.sortUri || '');
+				});
+			} else {
+				sorted.sort(function(a, b) {
+					return Number(a.dataset.sortMatch) - Number(b.dataset.sortMatch);
+				});
+			}
+			sorted.forEach(function(panel) {
+				accordion.appendChild(panel);
+			});
+
+			// Show/hide match order hint
+			var hint = picker.closest('section').querySelector('.match-order-hint');
+			if (hint) {
+				hint.style.display = mode === 'match' ? '' : 'none';
+			}
+		}
+
+		// Restore saved sort
+		var saved = localStorage.getItem(storeKey) || 'name';
+		picker.querySelectorAll('.sort-btn').forEach(function(btn) {
+			btn.classList.toggle('active', btn.dataset.sort === saved);
+		});
+		sortPanels(saved);
+
+		// Click handlers
+		picker.querySelectorAll('.sort-btn').forEach(function(btn) {
+			btn.addEventListener('click', function() {
+				picker.querySelectorAll('.sort-btn').forEach(function(b) {
+					b.classList.remove('active');
+				});
+				btn.classList.add('active');
+				var mode = btn.dataset.sort;
+				localStorage.setItem(storeKey, mode);
+				sortPanels(mode);
+			});
+		});
+	});
+}

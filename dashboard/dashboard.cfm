@@ -216,6 +216,11 @@
 			<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; margin-bottom: 1rem;">
 				<h2 style="font-size: 1.25rem; font-weight: 600; margin: 0;">Resources:</h2>
 				<input type="text" id="resourceSearch" placeholder="Filter... (ESC to clear)" autocomplete="off" class="form-input" style="flex: 1; max-width: 400px;" />
+				<div class="sort-picker" data-store-key="taffyDashboardSort">
+					<button type="button" class="sort-btn active" data-sort="name">Name</button>
+					<button type="button" class="sort-btn" data-sort="uri">URI</button>
+					<button type="button" class="sort-btn" data-sort="match">Match Order</button>
+				</div>
 			</div>
 
 			<div id="resourcesAccordion">
@@ -228,21 +233,19 @@
 						<cfif structKeyExists(local.md, "taffy_dashboard_hide") OR structKeyExists(local.md, "taffy:dashboard:hide")>
 							<cfscript>continue;</cfscript>
 						</cfif>
-						<div class="resource-panel">
+						<cfset local.displayName = local.currentResource.beanName />
+						<cfif structKeyExists(local.md, "taffy:dashboard:name")>
+							<cfset local.displayName = local.md['taffy:dashboard:name'] />
+						<cfelseif structKeyExists(local.md, "taffy_dashboard_name")>
+							<cfset local.displayName = local.md['taffy_dashboard_name'] />
+						<cfelseif structKeyExists(local.md, "taffy:docs:name")>
+							<cfset local.displayName = local.md['taffy:docs:name'] />
+						<cfelseif structKeyExists(local.md, "taffy_docs_name")>
+							<cfset local.displayName = local.md['taffy_docs_name'] />
+						</cfif>
+						<div class="resource-panel" data-sort-name="#lCase(local.displayName)#" data-sort-uri="#lCase(local.currentResource.srcUri)#">
 							<div class="resource-header" data-target="#local.resourceHTTPID#">
-								<span class="resource-name">
-									<cfif structKeyExists(local.md, "taffy:dashboard:name")>
-										#local.md['taffy:dashboard:name']#
-									<cfelseif structKeyExists(local.md, "taffy_dashboard_name")>
-										#local.md['taffy_dashboard_name']#
-									<cfelseif structKeyExists(local.md, "taffy:docs:name")>
-										#local.md['taffy:docs:name']#
-									<cfelseif structKeyExists(local.md, "taffy_docs_name")>
-										#local.md['taffy_docs_name']#
-									<cfelse>
-										#local.currentResource.beanName#
-									</cfif>
-								</span>
+								<span class="resource-name">#local.displayName#</span>
 								<span class="resource-meta">
 									<code class="resource-uri">#local.currentResource.srcUri#</code>
 									<cfloop list="GET,POST,PUT,PATCH,DELETE" index="local.verb">
@@ -542,7 +545,7 @@
 				</div>
 			</cfif>
 
-			<div class="alert alert-info mt-4">
+			<div class="alert alert-info mt-4 match-order-hint" style="display: none;">
 				Resources are listed in matching order. From top to bottom, the first URI to match the request is used.
 			</div>
 		</section>
