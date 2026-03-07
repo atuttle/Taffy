@@ -1,7 +1,7 @@
 component implements="taffy.bonus.ILogAdapter" {
 
-	public function init(config, tracker) {
-		if (structKeyExists(arguments, "tracker")) {
+	public function init(config, tracker="") {
+		if (structKeyExists(arguments, "tracker") && isObject(arguments.tracker)) {
 			// used to inject mocking object for testing
 			variables.blhq = arguments.tracker;
 		} else {
