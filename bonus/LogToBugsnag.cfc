@@ -17,7 +17,7 @@ component implements="taffy.bonus.ILogAdapter" {
 	/**
 	 * Initializes this logger
 	 */
-	public function init(config, tracker) hint="I accept a configuration structure to setup and return myself" {
+	public function init(config, tracker="") hint="I accept a configuration structure to setup and return myself" {
 		variables.config = {};
 		structAppend(variables.config, arguments.config, true);
 		return this;
