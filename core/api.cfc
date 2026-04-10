@@ -641,7 +641,7 @@
 		<cfset local.defaultConfig.exposeTaffyHeaders = true />
 		<cfset local.defaultConfig.globalHeaders = structNew() />
 		<cfset local.defaultConfig.mimeTypes = structNew() />
-		<cfset local.defaultConfig.returnExceptionsAsJson = true />
+		<cfset local.defaultConfig.returnExceptionsAsJson = false />
 		<cfset local.defaultConfig.exceptionLogAdapter = "taffy.bonus.LogToDevNull" />
 		<cfset local.defaultConfig.exceptionLogAdapterConfig = StructNew() />
 		<cfset local.defaultConfig.csrfToken = structNew() />
