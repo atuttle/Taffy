@@ -818,8 +818,13 @@
 		<!--- if JSONP is enabled, capture the requested callback name --->
 		<cfif application._taffy.settings.jsonp neq false>
 			<cfif structKeyExists(requestObj.requestArguments, application._taffy.settings.jsonp)>
-				<!--- variables.framework.jsonp contains the callback parameter name --->
-				<cfset requestObj.jsonpCallback = requestObj.requestArguments[application._taffy.settings.jsonp] />
+				<cfset var _cbName = requestObj.requestArguments[application._taffy.settings.jsonp] />
+				<!--- validate callback name to prevent XSS via JSONP injection --->
+				<cfif reFindNoCase("^[a-zA-Z_$][a-zA-Z0-9_$.]*$", _cbName)>
+					<cfset requestObj.jsonpCallback = _cbName />
+				<cfelse>
+					<cfset throwError(400, "Invalid JSONP callback name") />
+				</cfif>
 			</cfif>
 		</cfif>
 
