@@ -48,8 +48,8 @@ component extends="testbox.system.BaseSpec" {
 					expect(settings.showDocsWhenDashboardDisabled).toBeFalse();
 				});
 
-				it("should have returnExceptionsAsJson default of true", function() {
-					expect(settings.returnExceptionsAsJson).toBeTrue();
+				it("should have returnExceptionsAsJson default of false", function() {
+					expect(settings.returnExceptionsAsJson).toBeFalse();
 				});
 
 				it("should have exposeTaffyHeaders default of true", function() {
