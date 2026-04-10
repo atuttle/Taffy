@@ -11,7 +11,7 @@ component extends="testbox.system.BaseSpec" {
 			describe("inheritance", function() {
 
 				it("should extend baseDeserializer", function() {
-					expect(deserializer).toBeInstanceOf("core.baseDeserializer");
+					expect(new tests.helpers.MetadataHelper().extendsClass(deserializer, "baseDeserializer")).toBeTrue();
 				});
 
 				it("should have getFromForm from parent", function() {

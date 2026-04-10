@@ -107,7 +107,7 @@ component extends="testbox.system.BaseSpec" {
 
 				it("should have nativeJsonSerializer extend baseSerializer", function() {
 					var serializer = new core.nativeJsonSerializer();
-					expect(serializer).toBeInstanceOf("core.baseSerializer");
+					expect(new tests.helpers.MetadataHelper().extendsClass(serializer, "baseSerializer")).toBeTrue();
 				});
 
 			});
@@ -120,7 +120,7 @@ component extends="testbox.system.BaseSpec" {
 
 				it("should have nativeJsonDeserializer extend baseDeserializer", function() {
 					var deserializer = new core.nativeJsonDeserializer();
-					expect(deserializer).toBeInstanceOf("core.baseDeserializer");
+					expect(new tests.helpers.MetadataHelper().extendsClass(deserializer, "baseDeserializer")).toBeTrue();
 				});
 
 				it("should support JSON content type via getFromJson", function() {

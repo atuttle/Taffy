@@ -30,7 +30,7 @@ component extends="testbox.system.BaseSpec" {
 
 				it("should return a serializer instance with data", function() {
 					var result = resource.rep({ message: "test" });
-					expect(result).toBeInstanceOf("core.baseSerializer");
+					expect(new tests.helpers.MetadataHelper().extendsClass(result, "baseSerializer")).toBeTrue();
 					expect(result.getData().message).toBe("test");
 				});
 

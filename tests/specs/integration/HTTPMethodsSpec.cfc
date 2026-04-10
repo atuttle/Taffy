@@ -150,7 +150,7 @@ component extends="testbox.system.BaseSpec" {
 
 				it("should extend core.resource", function() {
 					var resource = new tests.resources.MockSimpleResource();
-					expect(resource).toBeInstanceOf("core.resource");
+					expect(new tests.helpers.MetadataHelper().extendsClass(resource, "resource")).toBeTrue();
 				});
 
 				it("should have access to rep() method from parent", function() {
@@ -170,14 +170,14 @@ component extends="testbox.system.BaseSpec" {
 				it("should execute GET and return serializer", function() {
 					var resource = new tests.resources.MockSimpleResource();
 					var result = resource.get();
-					expect(result).toBeInstanceOf("core.baseSerializer");
+					expect(new tests.helpers.MetadataHelper().extendsClass(result, "baseSerializer")).toBeTrue();
 					expect(result.getData().method).toBe("GET");
 				});
 
 				it("should execute POST with arguments", function() {
 					var resource = new tests.resources.MockSimpleResource();
 					var result = resource.post(name = "TestItem");
-					expect(result).toBeInstanceOf("core.baseSerializer");
+					expect(new tests.helpers.MetadataHelper().extendsClass(result, "baseSerializer")).toBeTrue();
 					expect(result.getData().name).toBe("TestItem");
 					expect(result.getStatus()).toBe(201);
 				});

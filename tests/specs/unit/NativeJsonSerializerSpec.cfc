@@ -26,7 +26,7 @@ component extends="testbox.system.BaseSpec" {
 			describe("inheritance", function() {
 
 				it("should extend baseSerializer", function() {
-					expect(serializer).toBeInstanceOf("core.baseSerializer");
+					expect(new tests.helpers.MetadataHelper().extendsClass(serializer, "baseSerializer")).toBeTrue();
 				});
 
 				it("should have all baseSerializer methods", function() {

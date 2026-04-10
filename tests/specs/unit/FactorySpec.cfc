@@ -22,7 +22,7 @@ component extends="testbox.system.BaseSpec" {
 
 				it("should return this for method chaining", function() {
 					var result = factory.init();
-					expect(result).toBeInstanceOf("core.factory");
+					expect(new tests.helpers.MetadataHelper().extendsClass(result, "factory")).toBeTrue();
 				});
 
 			});

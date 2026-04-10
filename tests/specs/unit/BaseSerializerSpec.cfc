@@ -33,7 +33,7 @@ component extends="testbox.system.BaseSpec" {
 
 				it("should return this for method chaining", function() {
 					var result = serializer.setData("test");
-					expect(result).toBeInstanceOf("core.baseSerializer");
+					expect(new tests.helpers.MetadataHelper().extendsClass(result, "baseSerializer")).toBeTrue();
 				});
 
 				it("should set type to textual (1) when setting data", function() {
@@ -82,7 +82,7 @@ component extends="testbox.system.BaseSpec" {
 
 				it("should return this for method chaining", function() {
 					var result = serializer.withStatus(200);
-					expect(result).toBeInstanceOf("core.baseSerializer");
+					expect(new tests.helpers.MetadataHelper().extendsClass(result, "baseSerializer")).toBeTrue();
 				});
 
 				it("should handle all 2xx status codes", function() {
@@ -152,7 +152,7 @@ component extends="testbox.system.BaseSpec" {
 
 				it("should return this for method chaining", function() {
 					var result = serializer.withHeaders({});
-					expect(result).toBeInstanceOf("core.baseSerializer");
+					expect(new tests.helpers.MetadataHelper().extendsClass(result, "baseSerializer")).toBeTrue();
 				});
 
 				it("should return empty struct when no headers set", function() {
@@ -168,7 +168,7 @@ component extends="testbox.system.BaseSpec" {
 				it("should return serializer instance when noDataSends204NoContent is false", function() {
 					serializer.setNoDataSends204NoContent(false);
 					var result = serializer.noData();
-					expect(result).toBeInstanceOf("core.baseSerializer");
+					expect(new tests.helpers.MetadataHelper().extendsClass(result, "baseSerializer")).toBeTrue();
 					expect(result.getStatus()).toBe(200);
 				});
 
@@ -217,7 +217,7 @@ component extends="testbox.system.BaseSpec" {
 
 					it("should return this for method chaining", function() {
 						var result = serializer.setFileName("/path/to/file.pdf");
-						expect(result).toBeInstanceOf("core.baseSerializer");
+						expect(new tests.helpers.MetadataHelper().extendsClass(result, "baseSerializer")).toBeTrue();
 					});
 
 				});
@@ -266,7 +266,7 @@ component extends="testbox.system.BaseSpec" {
 
 					it("should return this for method chaining", function() {
 						var result = serializer.withMime("image/jpeg");
-						expect(result).toBeInstanceOf("core.baseSerializer");
+						expect(new tests.helpers.MetadataHelper().extendsClass(result, "baseSerializer")).toBeTrue();
 					});
 
 				});
@@ -285,7 +285,7 @@ component extends="testbox.system.BaseSpec" {
 
 					it("should return this for method chaining", function() {
 						var result = serializer.andDelete(true);
-						expect(result).toBeInstanceOf("core.baseSerializer");
+						expect(new tests.helpers.MetadataHelper().extendsClass(result, "baseSerializer")).toBeTrue();
 					});
 
 				});
