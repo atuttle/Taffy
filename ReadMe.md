@@ -22,7 +22,7 @@
 ## Currently Supported Versions
 
 - Taffy 4.0.0+
-- Taffy 3.8.x+
+- Taffy 3.7.x+
 
 If you file a bug or ask for support please indicate which version of Taffy you're using. If it's an older release, we usually ask you to upgrade. Officially, we promise to support the current and previous **minor** releases and the last **minor** release of the previous **major** release. To the best of our abilities Taffy follows the versioning guidelines defined in [semver](https://semver.org/).
 
