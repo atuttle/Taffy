@@ -598,6 +598,8 @@ component hint="Your Application.cfc should extend this class" {
 		local.defaultConfig.csrfToken.cookieName = "";
 		local.defaultConfig.csrfToken.headerName = "";
 		local.defaultConfig.allowGoogleFonts = true;
+		// optional keys: description, contact, license, servers
+		local.defaultConfig.openapi = { "enabled": true };
 
 		// status
 		local._taffy.status = {};
@@ -1343,6 +1345,10 @@ component hint="Your Application.cfc should extend this class" {
 	}
 
 	private void function handleDashboardRequest() {
+		if (structKeyExists(url, "openapi") || structKeyExists(url, "swagger")) {
+			writeOpenApiSpec();
+			abort;
+		}
 		if (!application._taffy.settings.disableDashboard) {
 			if (structKeyExists(url, "docs")) {
 				include "#application._taffy.settings.docsPath#";
@@ -1361,6 +1367,22 @@ component hint="Your Application.cfc should extend this class" {
 				throwError(403, "Forbidden");
 			}
 		}
+	}
+
+	private void function writeOpenApiSpec() {
+		var openapiCfg = application._taffy.settings.openapi;
+		if (structKeyExists(openapiCfg, "enabled") && openapiCfg.enabled == false) {
+			throwError(403, "Forbidden");
+		}
+		// cache the serialized spec — it's deterministic from application._taffy and only changes on framework reload,
+		// which replaces application._taffy wholesale (setupFramework), naturally invalidating this
+		if (!structKeyExists(application._taffy, "openapiSpec")) {
+			var generator = createObject("component", "taffy.core.openapi");
+			application._taffy.openapiSpec = serializeJson(generator.generate());
+		}
+		cfcontent(reset=true, type="application/json; charset=utf-8");
+		cfheader(name="Access-Control-Allow-Origin", value="*");
+		writeOutput(application._taffy.openapiSpec);
 	}
 
 	private boolean function isUnhandledPathRequest(targetPath) {
