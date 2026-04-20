@@ -1,72 +1,78 @@
-<cfcomponent extends="taffy.core.api">
-	<cfscript>
+component extends="taffy.core.api" {
+	this.name = "rate_limiting_example";
 
-		this.name = "rate_limiting_example";
+	function onApplicationStart(){
+		application.accessLog = queryNew('apiKey,accessTime','varchar,time');
+		application.accessLimit = 100; //requests
+		application.accessPeriod = 60; //seconds
 
-		function onApplicationStart(){
-			application.accessLog = queryNew('apiKey,accessTime','varchar,time');
-			application.accessLimit = 100; //requests
-			application.accessPeriod = 60; //seconds
+		return super.onApplicationStart();
+	}
 
-			return super.onApplicationStart();
+	function onTaffyRequest(verb, cfc, requestArguments, mimeExt){
+		var usage = 0;
+		//require some api key
+		if (!structKeyExists(requestArguments, "apiKey")){
+			return noData().withStatus(401, "API Key Required");
 		}
 
-		function onTaffyRequest(verb, cfc, requestArguments, mimeExt){
-			var usage = 0;
-
-			//require some api key
-			if (!structKeyExists(requestArguments, "apiKey")){
-				return noData().withStatus(401, "API Key Required");
-			}
-
-			//check usage
-			usage = getAccessRate(requestArguments.apiKey);
-			if (usage lte application.accessLimit){
-				logAccess(requestArguments.apiKey);
-				return true;
-			}else{
-				return noData().withStatus(420, "Enhance your calm");
-			}
-
+		//check usage
+		usage = getAccessRate(requestArguments.apiKey);
+		if (usage lte application.accessLimit){
+			logAccess(requestArguments.apiKey);
 			return true;
+		}else{
+			return noData().withStatus(420, "Enhance your calm");
 		}
-	</cfscript>
 
-	<cffunction name="getAccessRate" access="private" output="false">
-		<cfargument name="apiKey" required="true" />
-		<cfset var local = structNew() />
-		<!--- now get matches for the current api key --->
-		<cfquery name="local.accessLookup" dbtype="query">
+		return true;
+	}
+
+	
+	private function getAccessRate(apiKey){
+		var accessLookup = queryExecute("
 			select accessTime
 			from application.accessLog
-			where apiKey = <cfqueryparam cfsqltype="cf_sql_varchar" value="#arguments.apiKey#" />
-			and accessTime > <cfqueryparam cfsqltype="cf_sql_timestamp" value="#dateAdd("s",(-1 * application.accessPeriod),now())#" />
-		</cfquery>
-		<!--- if access log is getting long, do some cleanup --->
-		<cfif local.accessLookup.recordCount gt application.accessLimit>
-			<cfset pruneAccessLog() />
-		</cfif>
-		<cfreturn local.accessLookup.recordCount />
-	</cffunction>
+			where apiKey = :k
+			and accessTime > :t
+		",
+		{
+			t : dateAdd("s",(-1 * application.accessPeriod),now()),
+			k : arguments.apiKey
+		},
+		{
+			dbtype : "query"
+		});
 
-	<cffunction name="logAccess" access="private" output="true">
-		<cfargument name="apiKey" required="true" type="string" />
-		<cfset var qLog = '' />
-		<cflock timeout="10" type="readonly" name="logging">
-			<cfset queryAddRow(application.accessLog)/>
-			<cfset querySetCell(application.accessLog, "accessTime", now()) />
-			<cfset querySetCell(application.accessLog, "apiKey", arguments.apiKey) />
-		</cflock>
-	</cffunction>
+		if( local.accessLookup.recordCount gt application.accessLimit ){
+			pruneAccessLog();
+		}
+		return local.accessLookup.recordCount;
+	}
 
-	<cffunction name="pruneAccessLog" access="private" output="false">
-		<cflock timeout="10" type="readonly" name="logging">
-			<cfquery name="application.accessLog" dbtype="query">
-				delete
+	private function logAccess(apiKey){
+		lock timeout="10" type="readonly" name="logging"{
+			queryAddRow (application.accessLog);
+			querySetCell(application.accessLog, "accessTime", now());
+			querySetCell(application.accessLog, "apiKey", arguments.apiKey);
+		}
+	}
+
+	private function pruneAccessLog(){
+		lock timeout="10" type="readonly" name="logging"{
+			var rest = queryExecute("
+				select *
 				from application.accessLog
-				where accessTime < <cfqueryparam cfsqltype="cf_sql_timestamp" value="#dateAdd("s",(-1 * application.accessPeriod),now())#" />
-			</cfquery>
-		</cflock>
-	</cffunction>
+				where accessTime > :t
+			",
+			{
+				t : dateAdd("s",(-1 * application.accessPeriod),now())
+			},
+			{
+				dbtype : "query"
+			});
+			application.accessLog = rest;
+		}
+	}
 
-</cfcomponent>
+}
