@@ -177,6 +177,54 @@ _Thanks to Brook Davies for providing the solution!_
 
 Not all HTTP clients will allow you to easily send PUT or DELETE requests (sometimes not at all). The standard method for circumventing this restriction, which Taffy supports, is by sending your request as a POST with the header `X-HTTP-METHOD-OVERRIDE` and setting its value to PUT/DELETE as needed. Taffy will detect this header and treat the request as if it were a PUT/DELETE request.
 
+## OpenAPI / Swagger
+
+**Available in:** Taffy 4.0+
+
+Taffy generates an [OpenAPI 3.1](https://spec.openapis.org/oas/v3.1.0) document describing your API automatically, using the same resource/argument metadata that powers the dashboard and docs. No extra annotations required — just hit:
+
+- `index.cfm?openapi` — returns the spec as `application/json`
+- `index.cfm?swagger` — alias for the same endpoint
+
+The generated document can be dropped into [Swagger UI](https://swagger.io/tools/swagger-ui/), [Stoplight Studio](https://stoplight.io/studio), Postman, [swagger.io Editor](https://editor.swagger.io/), or any other OpenAPI-aware tool.
+
+### What gets generated
+
+| OpenAPI field                              | Source                                                                                                                 |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| `info.title`                               | `variables.framework.docs.APIName`                                                                                     |
+| `info.version`                             | `variables.framework.docs.APIVersion`                                                                                  |
+| `info.description` / `contact` / `license` | `variables.framework.openapi` (optional)                                                                               |
+| `servers[0].url`                           | Auto-derived from `cgi.http_host` + script path (override via `openapi.servers`)                                       |
+| `paths`                                    | Each resource's `taffy:uri`                                                                                            |
+| `operationId`                              | `{beanName}_{verb}`                                                                                                    |
+| `summary` / `tags`                         | `taffy:docs:name` if set, else the bean name                                                                           |
+| `description`                              | Function `hint`                                                                                                        |
+| `parameters` (path)                        | URI tokens — always emitted, even if the resource doesn't declare them as args                                         |
+| `parameters` (query)                       | Non-token args on `GET`/`DELETE`/`HEAD`/`OPTIONS` methods                                                              |
+| `requestBody`                              | Non-token args on `POST`/`PUT`/`PATCH` — emitted under both `application/json` and `application/x-www-form-urlencoded` |
+| Parameter `schema.type` / `format`         | Mapped from the CFML arg `type` (`numeric`, `boolean`, `date`, `uuid`, etc.)                                           |
+| Parameter `description`                    | Argument `hint`                                                                                                        |
+| Parameter `default`                        | Argument `default` (when non-empty)                                                                                    |
+| Response content types                     | MIME types from all registered serializers (via `taffy:mime`)                                                          |
+
+### Hiding things from the spec
+
+The same metadata flags that hide resources from the dashboard also hide them from the OpenAPI spec:
+
+- `taffy:docs:hide` / `taffy_docs_hide` — component, function, or argument
+- `taffy:dashboard:hide` / `taffy_dashboard_hide` — component, function, or argument
+
+Custom `taffy:verb` values (anything outside the standard `get`/`put`/`post`/`delete`/`options`/`head`/`patch`/`trace`) are silently dropped — OpenAPI doesn't accept arbitrary verb names.
+
+### Performance
+
+The spec is generated once on the first request to `?openapi` (or `?swagger`) and cached in `application._taffy`. Subsequent requests serve the cached JSON string directly — no CFC instantiation, no metadata walking, no serialization. The cache is invalidated automatically on framework reload.
+
+### Configuration
+
+See [openapi](#openapi) below for the full config reference.
+
 ## More Guides
 
 Some guides are too broad for this document. For your benefit, they are linked here:
@@ -324,6 +372,27 @@ taffy_docs_hide
 }
 ```
 
+##### Argument Constraint Metadata
+
+You can document value constraints on function arguments using the following metadata attributes. These are **documentation-only** — Taffy does not enforce them at runtime, but they are displayed on the dashboard and generated docs as inline badges next to the argument name.
+
+| Attribute         | Applies to | Description                        |
+| ----------------- | ---------- | ---------------------------------- |
+| `taffy_minlength` | string     | Minimum string length              |
+| `taffy_maxlength` | string     | Maximum string length              |
+| `taffy_min`       | numeric    | Minimum numeric value              |
+| `taffy_max`       | numeric    | Maximum numeric value              |
+| `taffy_pattern`   | string     | Regex pattern the value must match |
+
+```cfscript
+function get(
+	required string changedOnDate = "" taffy_minlength="10" taffy_maxlength="10" taffy_pattern="^\d{4}-\d{2}-\d{2}$",
+	numeric page = 1 taffy_min="1",
+	numeric pageSize = 25 taffy_min="1" taffy_max="100"
+) {
+}
+```
+
 #### In Serializers
 
 Serializers are used to take the data provided by a resource and serialize it into a format usable by the web service consumer. A single Serializer is capable of serializing native data objects (strings, numbers, queries, structures, arrays, etc) into 1 or more formats. Typical formats include JSON, XML, or YAML, but are not limited.
@@ -387,6 +456,7 @@ variables.framework = {
 	disabledDashboardRedirect = "",
 	dashboardHeaders = {},
 	showDocsWhenDashboardDisabled = false,
+	allowGoogleFonts = true,
 	docs = {
 		APIName = "",
 		APIVersion = ""
@@ -413,13 +483,17 @@ variables.framework = {
 
 	beanFactory = "",
 
+	openapi = {
+		enabled = true
+	},
+
 	environments = {}
 };
 ```
 
 #### resourcesCFCPath
 
-**Available in:** Taffy 4.0+<br/>
+**Available in:** Taffy 3.8+<br/>
 **Type:** String<br/>
 **Default:** ""<br/>
 **Description:** By default, Taffy will attempt to load your resource components from either a child folder named `resources` or from a CF mapping named `resources`. You can use this setting to define an explicit path to your resource components using the "dotted" path of your resource folder (e.g. `myapp.api.rest-cfcs`).
@@ -510,6 +584,13 @@ To provide a simulated response, add an additional method to your Resource CFCs 
 **Default:** False<br/>
 **Description:** Whether or not Taffy will display user friendly documentation when the dashboard is disabled.
 
+#### allowGoogleFonts
+
+**Available in:** Taffy 4.0+<br/>
+**Type:** Boolean<br/>
+**Default:** True<br/>
+**Description:** When true, the dashboard and documentation pages load the [Atkinson Hyperlegible](https://fonts.google.com/specimen/Atkinson+Hyperlegible) and [Atkinson Hyperlegible Mono](https://fonts.google.com/specimen/Atkinson+Hyperlegible+Mono) fonts from Google Fonts. Set to false to prevent any external requests to Google, in which case the dashboard falls back to system fonts.
+
 #### docs.APIName
 
 **Available in:** Taffy 3.0+<br/>
@@ -590,7 +671,7 @@ variables.framework.allowCrossDomain =
 
 #### exposeTaffyHeaders
 
-**Available in:** Taffy 4.0+<br/>
+**Available in:** Taffy 3.8+<br/>
 **Type:** Boolean<br/>
 **Default:** true<br/>
 **Description:** Determines if the standard Taffy debug HTTP response headers should be included with each request. The Taffy debug headers are:
@@ -685,6 +766,28 @@ component extends="taffy.core.api"
 	}
 }
 ```
+
+#### openapi
+
+**Available in:** Taffy 4.0+<br/>
+**Type:** Structure<br/>
+**Default:** `{ enabled: true }`<br/>
+**Description:** Controls the OpenAPI 3.1 spec endpoint served at `?openapi` / `?swagger`. Set `enabled` to `false` to disable the endpoint entirely (returns 403). Optional keys `description`, `contact`, and `license` are passed through to the spec's `info` block. `servers` (array of `{ url, description }` objects) overrides the auto-derived server URL.
+
+```cfscript
+variables.framework.openapi = {
+	enabled = true,
+	description = "Public API for the Foo platform.",
+	contact = { name = "API Team", email = "api@example.com" },
+	license = { name = "MIT", url = "https://opensource.org/licenses/MIT" },
+	servers = [
+		{ url = "https://api.example.com", description = "Production" },
+		{ url = "https://staging.api.example.com", description = "Staging" }
+	]
+};
+```
+
+See the [OpenAPI / Swagger](#openapi--swagger) section for details on what gets generated.
 
 #### environments
 
