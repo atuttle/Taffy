@@ -13,7 +13,7 @@
 		}catch(any e){
 			o("<h2>❌ PROBLEM with <code>#comp#</code></h2>");
 			o("<p>We're having trouble locating and verifying <code>taffy.core.api</code>. Click to expand the error below and try to resolve it.
-				If you get stuck, the best place to ask for help is in the <a href=""https://cfml-slack.herokuapp.com/"">CFML Slack</a>,
+				If you get stuck, the best place to ask for help is in the <a href=""https://cfml-slack.net/"">CFML Slack</a>,
 				in the <strong>##taffy</strong> channel.</p>");
 			writeDump(var: e, label: "ERROR for #comp#", expand: false);
 			return false;
