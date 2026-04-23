@@ -129,7 +129,7 @@ older version, the docs that shipped with it still work.
 
 ## Community
 
-- 💬 Join **#taffy** on the [CFML Slack](https://cfml-slack.herokuapp.com/)
+- 💬 Join **#taffy** on the [CFML Slack](https://cfml-slack.net/)
 - 🐛 [Report issues on GitHub](https://github.com/atuttle/Taffy/issues)
 - 🙋 [Contribute](https://github.com/atuttle/Taffy/blob/master/CONTRIBUTING.md)
 - 📜 [Changelog](https://github.com/atuttle/Taffy/releases)
