@@ -14,6 +14,8 @@ Nobody has time to keep every framework and every dependency up to date. Sometim
 
 <!--new_docs_links_here-->
 
+- [v4.0.0](4.0.0.md)
+- [v3.7.1](3.7.1.md)
 - [v3.7.0](3.7.0.md)
 - [v3.6.0](3.6.0.md)
 - [v3.5.0](3.5.0.md)
