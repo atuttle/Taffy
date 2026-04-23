@@ -52,6 +52,7 @@
 				<button class="btn btn-secondary" data-modal-target="config">Config</button>
 				<button class="btn btn-warning" id="reload">Reload API Cache</button>
 				<button class="btn btn-success" id="docs" onclick="window.location.href = '<cfoutput>#CGI.SCRIPT_NAME#</cfoutput>?docs'">Documentation</button>
+				<button class="btn btn-icon has-tooltip" id="openapi" data-tooltip="OpenAPI/Swagger" aria-label="OpenAPI/Swagger" onclick="window.location.href = '<cfoutput>#CGI.SCRIPT_NAME#</cfoutput>?openapi'"><cfinclude template="swagger.svg" /></button>
 			</div>
 		</header>
 

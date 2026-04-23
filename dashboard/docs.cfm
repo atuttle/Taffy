@@ -26,6 +26,9 @@
 				<h1 class="dashboard-title"><cfoutput>#application._taffy.settings.docs.APIName#</cfoutput></h1>
 				<span class="dashboard-version">Version <cfoutput>#application._taffy.settings.docs.APIversion#</cfoutput></span>
 			</div>
+			<div style="display: flex; gap: 0.5rem;">
+				<button class="btn btn-icon has-tooltip" id="openapi" data-tooltip="OpenAPI/Swagger" aria-label="OpenAPI/Swagger" onclick="window.location.href = '<cfoutput>#CGI.SCRIPT_NAME#</cfoutput>?openapi'"><cfinclude template="swagger.svg" /></button>
+			</div>
 		</header>
 
 		<section id="resources">
