@@ -114,7 +114,7 @@ component hint="Your Application.cfc should extend this class" {
 			logger.saveLog(exception);
 
 			// return 500 no matter what
-			cfheader(statuscode=500, statustext="Error");
+			addHeader(statuscode=500, statustext="Error");
 			cfcontent(reset=true);
 
 			if (structKeyExists(exception, "rootCause")) {
@@ -145,7 +145,7 @@ component hint="Your Application.cfc should extend this class" {
 			}
 		} catch (any cfcatch) {
 			cfcontent(reset=true, type="text/plain; charset=utf-8");
-			cfheader(statuscode=500, statustext="Error");
+			addHeader(statuscode=500, statustext="Error");
 			var errorMsg = "An unhandled exception occurred: ";
 			if (isStruct(root) && structKeyExists(root, "message")) {
 				errorMsg &= root.message;
@@ -211,7 +211,7 @@ component hint="Your Application.cfc should extend this class" {
 
 		if (structKeyExists(_taffyRequest.headers, "origin") && (application._taffy.settings.allowCrossDomain == true || len(application._taffy.settings.allowCrossDomain) > 0)) {
 			if (application._taffy.settings.allowCrossDomain == true) {
-				cfheader(name="Access-Control-Allow-Origin", value="*");
+				addHeader(name="Access-Control-Allow-Origin", value="*");
 			} else {
 				// The Access-Control-Allow-Origin header can only have 1 value so we check to see if the Origin header is
 				// in the list of origins specified in the config setting and parrot back the Origin header if so.
@@ -220,17 +220,17 @@ component hint="Your Application.cfc should extend this class" {
 				if (structKeyExists(_taffyRequest.headers, "origin")) {
 					for (local.i = 1; local.i <= arrayLen(local.domains); local.i++) {
 						if (lcase(rereplace(_taffyRequest.headers.origin, "(http|https):\/\/", "", "all")) == lcase(rereplace(local.domains[local.i], "(http|https):\/\/", "", "all"))) {
-							cfheader(name="Access-Control-Allow-Origin", value=_taffyRequest.headers.origin);
-							cfheader(name="Access-Control-Allow-Credentials", value="true");
+							addHeader(name="Access-Control-Allow-Origin", value=_taffyRequest.headers.origin);
+							addHeader(name="Access-Control-Allow-Credentials", value="true");
 							break;
 						}
 					}
 				}
 			}
-			cfheader(name="Access-Control-Allow-Methods", value=local.allowVerbs);
+			addHeader(name="Access-Control-Allow-Methods", value=local.allowVerbs);
 			// Why do we parrot back these headers? See: https://github.com/atuttle/Taffy/issues/144
 			if (!structKeyExists(_taffyRequest.headers, "Access-Control-Request-Headers")) {
-				cfheader(name="Access-Control-Allow-Headers", value="Origin, Authorization, X-CSRF-Token, X-Requested-With, Content-Type, X-HTTP-Method-Override, Accept, Referrer, User-Agent");
+				addHeader(name="Access-Control-Allow-Headers", value="Origin, Authorization, X-CSRF-Token, X-Requested-With, Content-Type, X-HTTP-Method-Override, Accept, Referrer, User-Agent");
 			} else {
 				// parrot back all of the request headers to allow the request to continue (can we improve on this?)
 				local.allowedHeaders = {};
@@ -241,7 +241,7 @@ component hint="Your Application.cfc should extend this class" {
 				for (local.i in listToArray(local.requestedHeaders)) {
 					local.allowedHeaders[local.i] = 1;
 				}
-				cfheader(name="Access-Control-Allow-Headers", value=structKeyList(local.allowedHeaders));
+				addHeader(name="Access-Control-Allow-Headers", value=structKeyList(local.allowedHeaders));
 			}
 		}
 
@@ -346,7 +346,7 @@ component hint="Your Application.cfc should extend this class" {
 					}
 				} else if (!listFind(local.allowVerbs, _taffyRequest.verb)) {
 					// if the verb is not implemented, refuse the request
-					cfheader(name="ALLOW", value=local.allowVerbs);
+					addHeader(name="ALLOW", value=local.allowVerbs);
 					throwError(405, "Method Not Allowed");
 				} else {
 					// create dummy response for cross domain OPTIONS request
@@ -374,13 +374,13 @@ component hint="Your Application.cfc should extend this class" {
 
 		setting enablecfoutputonly=true;
 		cfcontent(reset=true, type="#getReturnMimeAsHeader(_taffyRequest.returnMimeExt)#; charset=utf-8");
-		cfheader(statuscode=_taffyRequest.statusArgs.statusCode, statustext=_taffyRequest.statusArgs.statusText);
+		addHeader(statuscode=_taffyRequest.statusArgs.statusCode, statustext=_taffyRequest.statusArgs.statusText);
 
 		// headers
 		addHeaders(_taffyRequest.resultHeaders);
 
 		// add ALLOW header for current resource, which describes available verbs
-		cfheader(name="ALLOW", value=local.allowVerbs);
+		addHeader(name="ALLOW", value=local.allowVerbs);
 
 		// metrics headers that should always apply
 		addTaffyHeader("X-TIME-IN-PARSE", m.parseTime);
@@ -411,7 +411,7 @@ component hint="Your Application.cfc should extend this class" {
 				}
 			}
 			if (listLen(local.exposeHeaderValue) > 0) {
-				cfheader(name="Access-Control-Expose-Headers", value=local.exposeHeaderValue);
+				addHeader(name="Access-Control-Expose-Headers", value=local.exposeHeaderValue);
 			}
 		}
 
@@ -449,14 +449,14 @@ component hint="Your Application.cfc should extend this class" {
 						_taffyRequest.clientEtag = _taffyRequest.headers["If-None-Match"];
 
 						if (len(_taffyRequest.clientEtag) > 0 && _taffyRequest.clientEtag == _taffyRequest.serverEtag) {
-							cfheader(statuscode=304, statustext="Not Modified");
+							addHeader(statuscode=304, statustext="Not Modified");
 							cfcontent(reset=true, type="#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#; charset=utf-8");
 							return true;
 						} else {
-							cfheader(name="Etag", value=_taffyRequest.serverEtag);
+							addHeader(name="Etag", value=_taffyRequest.serverEtag);
 						}
 					} else {
-						cfheader(name="Etag", value=_taffyRequest.serverEtag);
+						addHeader(name="Etag", value=_taffyRequest.serverEtag);
 					}
 				}
 
@@ -1126,7 +1126,7 @@ component hint="Your Application.cfc should extend this class" {
 	private void function throwError(numeric statusCode = 500, required string msg, struct headers = {}) output="false" hint="message to return to api consumer" {
 		cfcontent(reset=true);
 		addHeaders(arguments.headers);
-		cfheader(statuscode=arguments.statusCode, statustext=arguments.msg);
+		addHeader(statuscode=arguments.statusCode, statustext=arguments.msg);
 		abort;
 	}
 
@@ -1412,7 +1412,7 @@ component hint="Your Application.cfc should extend this class" {
 			application._taffy.openapiSpec = serializeJson(generator.generate());
 		}
 		cfcontent(reset=true, type="application/json; charset=utf-8");
-		cfheader(name="Access-Control-Allow-Origin", value="*");
+		addHeader(name="Access-Control-Allow-Origin", value="*");
 		writeOutput(application._taffy.openapiSpec);
 	}
 
@@ -1493,9 +1493,41 @@ component hint="Your Application.cfc should extend this class" {
 		var h = "";
 		if (!structIsEmpty(arguments.headers)) {
 			for (h in arguments.headers) {
-				cfheader(name=h, value=arguments.headers[h]);
+				addHeader(name=h, value=arguments.headers[h]);
 			}
 		}
+	}
+
+	public void function addHeader(string name = "", string value = "", string statusCode = "", string charset = "", string statusText = "") output="false" hint="Writes a cfheader only if the response buffer has not been flushed yet. Aggregates the cfheader attributes into a single call via attributeCollection, so a statusCode+statusText pair (or any mix of name/value/charset) goes out in one header tag." {
+		if (isFlushed()) {
+			return;
+		}
+		var params = {};
+		var key = "";
+		for (key in ["name", "value", "statusCode", "charset", "statusText"]) {
+			if (structKeyExists(arguments, key) && isSimpleValue(arguments[key]) && len(arguments[key])) {
+				params[key] = arguments[key];
+			}
+		}
+		if (structCount(params)) {
+			cfheader(attributeCollection=params);
+		}
+	}
+
+	private boolean function isFlushed() output="true" hint="Checks if content has been flushed" {
+		if (structkeyexists(request, "isFlushedAlready") && isvalid("boolean", request.isFlushedAlready) && request.isFlushedAlready){
+			return true;
+		}
+		request.HTTPRequestHeaders = (request.keyexists("HTTPRequestHeaders")) ? request.HTTPRequestHeaders : getHttprequestData(false).headers;
+		if (structkeyexists(request.HTTPRequestHeaders, "Expect")){
+			local.response = true;
+		} else if (structkeyexists(server, "lucee")){
+			local.response = getPageContext().getHttpServletResponse().isCommitted();
+		} else {
+			local.response = getPageContext().getResponse().isCommitted() || getPageContext().getFusionContext().getResponse().isOutputAutoFlushed();
+		}
+		request.isFlushedAlready = local.response;
+		return local.response;
 	}
 
 	public struct function getBasicAuthCredentials() output="false" {
@@ -1574,7 +1606,7 @@ component hint="Your Application.cfc should extend this class" {
 
 	function addTaffyHeader(required string name, required string value) {
 		if (application._taffy.settings.exposeTaffyHeaders) {
-			cfheader(name=arguments.name, value=arguments.value);
+			addHeader(name=arguments.name, value=arguments.value);
 		}
 	}
 
