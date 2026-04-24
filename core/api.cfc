@@ -739,8 +739,30 @@ component hint="Your Application.cfc should extend this class" {
 
 		requestObj.body = getRequestBody();
 		requestObj.contentType = cgi.content_type;
+
+		// Body-based content-type inference: fill in contentType when the client didn't send one
+		// but the body is obviously JSON, or when the body is newline-delimited JSON (ndJSON).
+		if (!len(requestObj.contentType) && isSimpleValue(requestObj.body) && isJSON(requestObj.body)) {
+			requestObj.contentType = "application/json";
+		} else if (
+			isSimpleValue(requestObj.body)
+			&& listLen(requestObj.body, chr(10)) > 1
+			&& !isJSON(requestObj.body)
+			&& isJSON("[" & javacast("string", requestObj.body).replace(chr(10), ",") & "]")
+		) {
+			// ndJSON: one JSON value per line. Wrap the lines into a single JSON array before handing off.
+			requestObj.body = "[" & javacast("string", requestObj.body).replace(chr(10), ",") & "]";
+			requestObj.contentType = "application/json";
+		}
+
+		// CSP violation reports arrive with application/csp-report. The payload is JSON, so route it
+		// through the JSON deserializer instead of rejecting an "unsupported" content type.
+		if (requestObj.contentType eq "application/csp-report") {
+			requestObj.contentType = "application/json";
+		}
+
 		if (len(requestObj.body) && requestObj.body != "null") {
-			if (findNoCase("multipart/form-data", requestObj.contentType)) {
+			if (findNoCase("multipart/form-data", requestObj.contentType) || findNoCase("application/x-www-form-urlencoded", requestObj.contentType)) {
 				// do nothing, to support the way lucee handles multipart requests (just avoids the error condition below)
 				requestObj.queryString = cgi.query_string;
 			} else {
