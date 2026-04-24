@@ -1024,6 +1024,15 @@ component hint="Your Application.cfc should extend this class" {
 			// when there is 1 more token value than name, that value (regex capture group) is the format
 			local.mime = local.tokenValues[local.numTokenValues];
 			local.returnData["_taffy_mime"] = local.mime;
+		} else if (
+			structKeyExists(arguments.headers, "Accept")
+			&& findNoCase("text/html", arguments.headers.accept)
+			&& findNoCase("image/", arguments.headers.accept)
+			&& findNoCase("application/signed", arguments.headers.accept)
+		) {
+			// Browser-style Accept header (html + image/* + signed-exchange). Skip content negotiation
+			// and serve the API's configured default mime instead of trying to match text/html.
+			local.returnData["_taffy_mime"] = application._taffy.settings.defaultMime;
 		} else if (structKeyExists(arguments.headers, "Accept")) {
 			local.headerMatch = false;
 			for (tmp in listToArray(arguments.headers.accept)) {
