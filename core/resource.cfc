@@ -63,7 +63,7 @@
 			}
 			local.QueryArray = ArrayNew(1);
 			for (local.RowIndex = 1; local.RowIndex <= arguments.q.RecordCount; local.RowIndex++){
-				local.Row = {};
+				local.Row = [:];
 				local.numCols = ArrayLen( local.Columns );
 				for (local.ColumnIndex = 1; local.ColumnIndex <= local.numCols; local.ColumnIndex++){
 					local.ColumnName = local.Columns[ local.ColumnIndex ];
