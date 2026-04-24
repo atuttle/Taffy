@@ -51,7 +51,7 @@ component hint="base class for taffy REST components" {
 		}
 		local.QueryArray = [];
 		for (local.RowIndex = 1; local.RowIndex <= arguments.q.RecordCount; local.RowIndex++) {
-			local.Row = {};
+			local.Row = [:];
 			local.numCols = arrayLen(local.Columns);
 			for (local.ColumnIndex = 1; local.ColumnIndex <= local.numCols; local.ColumnIndex++) {
 				local.ColumnName = local.Columns[local.ColumnIndex];
