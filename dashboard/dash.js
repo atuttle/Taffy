@@ -148,6 +148,9 @@ document.addEventListener('DOMContentLoaded', function(){
 				filterResources();
 			}
 		});
+		// Fired by <input type="search"> when the user clicks the native clear (X) button
+		// or hits Enter. Re-runs the filter so the cleared field shows the full list.
+		searchInput.addEventListener('search', filterResources);
 	}
 
 	// Resource sorting
@@ -334,11 +337,11 @@ document.addEventListener('DOMContentLoaded', function(){
 				// site can supply; see README.
 				var renderBtn = '';
 				if (resource.__taffyJsonData !== null && typeof window.taffyDump === 'function') {
-					renderBtn = '<span class="dumpBtn label label-default" style="cursor:pointer; margin-right:0.5em;">CLICK TO DUMP</span> ';
+					renderBtn = ' <span class="dumpBtn label label-default" style="cursor:pointer; margin-left:0.5em;">CLICK TO DUMP</span>';
 				}
 
-				response.querySelector('.response-time').innerHTML = renderBtn + 'Request took ' + timeSpent + 'ms';
-				response.querySelector('.response-status').innerHTML = status;
+				response.querySelector('.response-time').innerHTML = 'Request took ' + timeSpent + 'ms';
+				response.querySelector('.response-status').innerHTML = status + renderBtn;
 				response.querySelector('.responseBody').innerHTML = body;
 			});
 
