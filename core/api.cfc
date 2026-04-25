@@ -871,7 +871,7 @@ component hint="Your Application.cfc should extend this class" {
 		local.regexes = {};
 		local.regexes.segment = "([^\/]+)"; // anything but a slash
 		local.regexes.segmentWithOptFormat = "(?:(?:([^\/\.]+)(?:\.)([a-zA-Z0-9]+))\/?|([^\/\.]+))";
-		local.regexes.optFormatWithOptSlash = "((?:\.)[^\.\?\/]+)?\/?" // for ".json[/]" support
+		local.regexes.optFormatWithOptSlash = "((?:\.)[^\.\?\/]+)?\/?"; // for ".json[/]" support
 
 		/*
 			above regex explained:
