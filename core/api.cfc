@@ -605,6 +605,7 @@ component hint="Your Application.cfc should extend this class" {
 		local._taffy.status = {};
 		local._taffy.status.internalBeanFactoryUsed = false;
 		local._taffy.status.externalBeanFactoryUsed = false;
+		local._taffy.status.skippedResources = [];
 		local._taffy.uriMatchOrder = [];
 
 		// allow setting overrides
