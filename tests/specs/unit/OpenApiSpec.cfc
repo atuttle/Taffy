@@ -5,6 +5,9 @@ component extends="testbox.system.BaseSpec" {
 		makePublic(variables.gen, "normalizePathTemplate");
 		makePublic(variables.gen, "cfmlTypeToSchema");
 		makePublic(variables.gen, "buildOperation");
+		makePublic(variables.gen, "deepMergeStructs");
+		makePublic(variables.gen, "mergeParameters");
+		variables.provider = new tests.fixtures.OpenApiProviderFixture();
 	}
 
 	function run() {
@@ -77,6 +80,14 @@ component extends="testbox.system.BaseSpec" {
 				var mkFunc = function(name, parameters = []) {
 					return { name: name, parameters: parameters };
 				};
+				var mkFuncs = function(bean) {
+					var funcs = {};
+					var meta = getMetaData(arguments.bean);
+					for (var i = 1; i <= arrayLen(meta.functions); i++) {
+						funcs[meta.functions[i].name] = meta.functions[i];
+					}
+					return funcs;
+				};
 
 				it("backfills path tokens not declared as function args", function() {
 					var endpoint = mkEndpoint("MyResource", "/items/{id}", ["id"], { get: "get" });
@@ -121,6 +132,204 @@ component extends="testbox.system.BaseSpec" {
 					expect(op.requestBody.content).toHaveKey("application/x-www-form-urlencoded");
 					expect(op.requestBody.content["application/json"].schema.properties).toHaveKey("name");
 					expect(op.requestBody.content["application/json"].schema.required).toBe(["name"]);
+				});
+
+				it("uses provider response defaults instead of assuming a 200 response", function() {
+					var endpoint = mkEndpoint("ItemsResource", "/items", [], { get: "get" });
+					var func = mkFunc("get", []);
+					var op = gen.buildOperation("get", func, endpoint, {}, ["application/json"]);
+
+					expect(op.responses).toHaveKey("default");
+					expect(op.responses.default.description).toBe("Response not documented.");
+					expect(structKeyExists(op.responses, "200")).toBeFalse();
+				});
+
+				it("applies provider exclusions to generated query parameters", function() {
+					var endpoint = mkEndpoint("ItemsResource", "/items", [], { get: "get" });
+					var func = mkFunc("get", [
+						{ name: "limit", type: "numeric", required: false },
+						{ name: "internalContext", type: "struct", required: false }
+					]);
+					var op = gen.buildOperation("get", func, endpoint, {}, ["application/json"], provider);
+
+					expect(arrayLen(op.parameters)).toBe(2);
+					expect(op.parameters[1].name).toBe("limit");
+					expect(op.parameters[2].name).toBe("X-Trace-Id");
+					expect(op.responses.default.description).toBe("Fixture default response.");
+				});
+
+				it("applies provider exclusions to generated request body properties", function() {
+					var endpoint = mkEndpoint("ItemsResource", "/items", [], { post: "post" });
+					var func = mkFunc("post", [
+						{ name: "name", type: "string", required: true },
+						{ name: "internalContext", type: "struct", required: true }
+					]);
+					var op = gen.buildOperation("post", func, endpoint, {}, ["application/json"], provider);
+					var schema = op.requestBody.content["application/json"].schema;
+
+					expect(schema.properties).toHaveKey("name");
+					expect(structKeyExists(schema.properties, "internalContext")).toBeFalse();
+					expect(schema.required).toBe(["name"]);
+				});
+
+				it("merges endpoint docs responses and lets endpoint parameters override globals", function() {
+					var endpoint = mkEndpoint("ItemsResource", "/items", [], { get: "get" });
+					var func = mkFunc("get", []);
+					var bean = new tests.fixtures.OpenApiDocsResourceFixture();
+					var op = gen.buildOperation("get", func, endpoint, {}, ["application/json"], provider, bean, mkFuncs(bean));
+
+					expect(op.responses).toHaveKey("default");
+					expect(op.responses).toHaveKey("404");
+					expect(arrayLen(op.parameters)).toBe(1);
+					expect(op.parameters[1].name).toBe("X-Trace-Id");
+					expect(op.parameters[1].description).toBe("Endpoint trace header.");
+				});
+
+				it("merges endpoint request body examples", function() {
+					var endpoint = mkEndpoint("ItemsResource", "/items", [], { post: "post" });
+					var func = mkFunc("post", [ { name: "name", type: "string", required: true } ]);
+					var bean = new tests.fixtures.OpenApiDocsResourceFixture();
+					var op = gen.buildOperation("post", func, endpoint, {}, ["application/json"], provider, bean, mkFuncs(bean));
+
+					expect(op.requestBody.content["application/json"].schema.properties).toHaveKey("name");
+					expect(op.requestBody.content["application/json"].examples.sample.value.name).toBe("Ada");
+					expect(op.responses).toHaveKey("201");
+				});
+
+				it("discovers docs for custom taffy_verb resource methods by function name", function() {
+					var endpoint = mkEndpoint("ItemsResource", "/items/{id}", ["id"], { patch: "updatePartial" });
+					var func = mkFunc("updatePartial", [ { name: "id", type: "string", required: true } ]);
+					var bean = new tests.fixtures.OpenApiDocsResourceFixture();
+					var op = gen.buildOperation("patch", func, endpoint, {}, ["application/json"], provider, bean, mkFuncs(bean));
+
+					expect(op.responses).toHaveKey("202");
+				});
+
+				it("throws a clear error when endpoint docs do not return a struct", function() {
+					var endpoint = mkEndpoint("ItemsResource", "/items", [], { get: "bad" });
+					var func = mkFunc("bad", []);
+					var bean = new tests.fixtures.OpenApiDocsResourceFixture();
+
+					expect(function() {
+						gen.buildOperation("get", func, endpoint, {}, ["application/json"], provider, bean, mkFuncs(bean));
+					}).toThrow();
+				});
+
+				it("throws a clear error when endpoint docs have required arguments", function() {
+					var endpoint = mkEndpoint("ItemsResource", "/items", [], { get: "required" });
+					var func = mkFunc("required", []);
+					var bean = new tests.fixtures.OpenApiDocsResourceFixture();
+
+					expect(function() {
+						gen.buildOperation("get", func, endpoint, {}, ["application/json"], provider, bean, mkFuncs(bean));
+					}).toThrow();
+				});
+
+			});
+
+			describe("generate", function() {
+
+				it("adds provider components and returns the provider final hook result", function() {
+					var savedTaffy = duplicate(application._taffy);
+					try {
+						application._taffy = {
+							settings: {
+								docs: { APIName: "Fixture", APIVersion: "1.0.0" },
+								openapi: {
+									description: "Fixture API",
+									contact: { email: "api@example.com" },
+									license: { name: "MIT" },
+									servers: [ { url: "https://api.example.com" } ]
+								},
+								mimeExtensions: { json: "application/json" }
+							},
+							endpoints: {},
+							uriMatchOrder: [],
+							openapiProvider: provider
+						};
+
+						var spec = gen.generate();
+
+						expect(spec.info.description).toBe("Fixture API");
+						expect(spec.info.contact.email).toBe("api@example.com");
+						expect(spec.info.license.name).toBe("MIT");
+						expect(spec.servers[1].url).toBe("https://api.example.com");
+						expect(spec.components.schemas).toHaveKey("Fixture");
+						expect(spec["x-fixture-afterGenerate"]).toBeTrue();
+					} finally {
+						application._taffy = savedTaffy;
+					}
+				});
+
+				it("throws a clear error when provider afterGenerate does not return a struct", function() {
+					var savedTaffy = duplicate(application._taffy);
+					try {
+						application._taffy = {
+							settings: {
+								docs: { APIName: "Fixture", APIVersion: "1.0.0" },
+								openapi: {},
+								mimeExtensions: { json: "application/json" }
+							},
+							endpoints: {},
+							uriMatchOrder: [],
+							openapiProvider: new tests.fixtures.BadAfterGenerateProvider()
+						};
+
+						expect(function() {
+							gen.generate();
+						}).toThrow();
+					} finally {
+						application._taffy = savedTaffy;
+					}
+				});
+
+			});
+
+			describe("merge helpers", function() {
+
+				it("deep-merges nested structs and replaces ordinary arrays", function() {
+					var merged = gen.deepMergeStructs(
+						{
+							"responses": {
+								"default": {
+									"description": "Response not documented.",
+									"content": { "application/json": { "schema": {} } }
+								}
+							},
+							"tags": [ "generated" ]
+						},
+						{
+							"responses": {
+								"default": {
+									"description": "Documented default."
+								},
+								"404": { "description": "Not found." }
+							},
+							"tags": [ "endpoint" ]
+						}
+					);
+
+					expect(merged.responses.default.description).toBe("Documented default.");
+					expect(merged.responses.default.content["application/json"].schema).toBe({});
+					expect(merged.responses).toHaveKey("404");
+					expect(merged.tags).toBe([ "endpoint" ]);
+				});
+
+				it("merges parameters by case-insensitive location and name", function() {
+					var merged = gen.mergeParameters(
+						[
+							{ "name": "X-Trace-Id", "in": "header", "description": "global" },
+							{ "name": "limit", "in": "query" }
+						],
+						[
+							{ "name": "x-trace-id", "in": "HEADER", "description": "endpoint" },
+							{ "name": "offset", "in": "query" }
+						]
+					);
+
+					expect(arrayLen(merged)).toBe(3);
+					expect(merged[1].description).toBe("endpoint");
+					expect(merged[3].name).toBe("offset");
 				});
 
 			});

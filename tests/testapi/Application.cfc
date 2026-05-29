@@ -13,7 +13,10 @@ component extends="taffy.core.api" {
 	variables.framework = {
 		disableDashboard: true,
 		disabledDashboardRedirect: "",
-		returnExceptionsAsJson: true
+		returnExceptionsAsJson: true,
+		openapi: {
+			provider: "taffy.tests.testapi.OpenApiTestProvider"
+		}
 	};
 
 	function onApplicationStart() {

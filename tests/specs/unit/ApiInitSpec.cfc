@@ -34,6 +34,45 @@ component extends="testbox.system.BaseSpec" {
 				expect(application._taffy.status.externalBeanFactoryUsed).toBeFalse();
 			});
 
+			it("should initialize the default OpenAPI provider during framework setup", function() {
+				var api = new tests.fixtures.NoResourcesApi();
+				api.onApplicationStart();
+
+				expect(application._taffy.settings.openapi.enabled).toBeTrue();
+				expect(application._taffy.settings.openapi.provider).toBe("taffy.core.openapiProvider");
+				expect(isObject(application._taffy.openapiProvider)).toBeTrue();
+			});
+
+			it("should preserve inline OpenAPI settings while using a custom provider", function() {
+				var api = new tests.fixtures.CustomOpenApiApi();
+				api.onApplicationStart();
+
+				expect(application._taffy.settings.openapi.description).toBe("Fixture API");
+				expect(application._taffy.settings.openapi.contact.email).toBe("api@example.com");
+				expect(application._taffy.settings.openapi.license.name).toBe("MIT");
+				expect(application._taffy.settings.openapi.servers[1].url).toBe("https://api.example.com");
+				expect(application._taffy.settings.openapi.provider).toBe("tests.fixtures.OpenApiInitProvider");
+				expect(application._taffy.openapiProvider.wasInitialized()).toBeTrue();
+			});
+
+			it("should replace the provider instance on framework reload", function() {
+				var api = new tests.fixtures.CustomOpenApiApi();
+				api.onApplicationStart();
+				var firstInstanceId = application._taffy.openapiProvider.getInstanceId();
+
+				api.onApplicationStart();
+				var secondInstanceId = application._taffy.openapiProvider.getInstanceId();
+
+				expect(secondInstanceId).notToBe(firstInstanceId);
+			});
+
+			it("should preserve openapi.enabled=false during framework setup", function() {
+				var api = new tests.fixtures.DisabledOpenApiApi();
+				api.onApplicationStart();
+
+				expect(application._taffy.settings.openapi.enabled).toBeFalse();
+			});
+
 		});
 
 	}

@@ -65,10 +65,64 @@ component extends="testbox.system.BaseSpec" {
 				expect(props).toHaveKey("name");
 			});
 
-			it("includes responses.200 for each operation", function() {
+			it("uses honest default responses for undocumented operations", function() {
 				var spec = deserializeJSON(fetchSpec().fileContent);
-				expect(spec.paths["/echo/{id}"].get).toHaveKey("responses");
-				expect(spec.paths["/echo/{id}"].get.responses).toHaveKey("200");
+				var responses = spec.paths["/echo/{id}"].delete.responses;
+
+				expect(responses).toHaveKey("default");
+				expect(responses.default.description).toBe("Response not documented.");
+				expect(structKeyExists(responses, "200")).toBeFalse();
+			});
+
+			it("merges endpoint OpenAPI docs into the generated operation", function() {
+				var spec = deserializeJSON(fetchSpec().fileContent);
+				var get = spec.paths["/echo/{id}"].get;
+
+				expect(get.summary).toBe("Fetch echo");
+				expect(get.responses).toHaveKey("default");
+				expect(get.responses).toHaveKey("200");
+				expect(get.responses["200"].content["application/json"].schema["$ref"]).toBe("##/components/schemas/Echo");
+			});
+
+			it("adds provider components and runs the final provider hook", function() {
+				var spec = deserializeJSON(fetchSpec().fileContent);
+
+				expect(spec.components.schemas).toHaveKey("Echo");
+				expect(spec["x-provider-afterGenerate"]).toBeTrue();
+			});
+
+			it("applies provider exclusions and global parameters", function() {
+				var spec = deserializeJSON(fetchSpec().fileContent);
+				var getParams = spec.paths["/echo/{id}"].get.parameters;
+				var putSchema = spec.paths["/echo/{id}"].put.requestBody.content["application/json"].schema;
+				var traceCount = 0;
+				var traceDescription = "";
+
+				for (var i = 1; i <= arrayLen(getParams); i++) {
+					expect(getParams[i].name).notToBe("internalContext");
+					if (getParams[i].name == "X-Trace-Id" && getParams[i]["in"] == "header") {
+						traceCount++;
+						traceDescription = getParams[i].description;
+					}
+				}
+
+				expect(traceCount).toBe(1);
+				expect(traceDescription).toBe("Endpoint trace header.");
+				expect(structKeyExists(putSchema.properties, "internalContext")).toBeFalse();
+			});
+
+			it("serves the cached serialized spec without rerunning the provider", function() {
+				var first = deserializeJSON(fetchSpec("openapi&reload=true").fileContent);
+				var second = deserializeJSON(fetchSpec().fileContent);
+
+				expect(second["x-provider-afterGenerate-count"]).toBe(first["x-provider-afterGenerate-count"]);
+			});
+
+			it("reload invalidates the cached spec and creates a new provider instance", function() {
+				var first = deserializeJSON(fetchSpec("openapi&reload=true").fileContent);
+				var second = deserializeJSON(fetchSpec("openapi&reload=true").fileContent);
+
+				expect(second["x-provider-instance-id"]).notToBe(first["x-provider-instance-id"]);
 			});
 
 			it("accepts ?swagger alias", function() {

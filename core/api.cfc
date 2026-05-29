@@ -599,7 +599,7 @@ component hint="Your Application.cfc should extend this class" {
 		local.defaultConfig.csrfToken.headerName = "";
 		local.defaultConfig.allowGoogleFonts = true;
 		// optional keys: description, contact, license, servers
-		local.defaultConfig.openapi = { "enabled": true };
+		local.defaultConfig.openapi = { "enabled": true, "provider": "taffy.core.openapiProvider" };
 
 		// status
 		local._taffy.status = {};
@@ -621,6 +621,21 @@ component hint="Your Application.cfc should extend this class" {
 			if (structKeyExists(variables.framework.environments, local.env) && isStruct(variables.framework.environments[local.env])) {
 				structAppend(local._taffy.settings, variables.framework.environments[local.env]);
 			}
+		}
+
+		if (!structKeyExists(local._taffy.settings, "openapi") || !isStruct(local._taffy.settings.openapi)) {
+			local._taffy.settings.openapi = {};
+		}
+		if (!structKeyExists(local._taffy.settings.openapi, "enabled")) {
+			local._taffy.settings.openapi.enabled = true;
+		}
+		if (!structKeyExists(local._taffy.settings.openapi, "provider") || !len(local._taffy.settings.openapi.provider)) {
+			local._taffy.settings.openapi.provider = "taffy.core.openapiProvider";
+		}
+
+		local._taffy.openapiProvider = createObject("component", local._taffy.settings.openapi.provider);
+		if (structKeyExists(local._taffy.openapiProvider, "init")) {
+			local._taffy.openapiProvider.init();
 		}
 
 		// bean factory definition

@@ -181,7 +181,7 @@ Not all HTTP clients will allow you to easily send PUT or DELETE requests (somet
 
 **Available in:** Taffy 4.0+
 
-Taffy generates an [OpenAPI 3.1](https://spec.openapis.org/oas/v3.1.0) document describing your API automatically, using the same resource/argument metadata that powers the dashboard and docs. No extra annotations required — just hit:
+Taffy generates an [OpenAPI 3.1](https://spec.openapis.org/oas/v3.1.0) document describing your API automatically, using the same resource/argument metadata that powers the dashboard and docs. For richer specs, add a provider CFC or endpoint-specific docs methods. To fetch the spec, hit:
 
 - `index.cfm?openapi` — returns the spec as `application/json`
 - `index.cfm?swagger` — alias for the same endpoint
@@ -206,7 +206,8 @@ The generated document can be dropped into [Swagger UI](https://swagger.io/tools
 | Parameter `schema.type` / `format`         | Mapped from the CFML arg `type` (`numeric`, `boolean`, `date`, `uuid`, etc.)                                           |
 | Parameter `description`                    | Argument `hint`                                                                                                        |
 | Parameter `default`                        | Argument `default` (when non-empty)                                                                                    |
-| Response content types                     | MIME types from all registered serializers (via `taffy:mime`)                                                          |
+| `responses.default`                        | Provider response defaults. The built-in default is `Response not documented.` with known response media types          |
+| `components`                               | `openapi.provider.getComponents()`                                                                                     |
 
 ### Hiding things from the spec
 
@@ -217,9 +218,63 @@ The same metadata flags that hide resources from the dashboard also hide them fr
 
 Custom `taffy:verb` values (anything outside the standard `get`/`put`/`post`/`delete`/`options`/`head`/`patch`/`trace`) are silently dropped — OpenAPI doesn't accept arbitrary verb names.
 
+### Extending the spec
+
+Keep simple root-level values inline:
+
+```cfscript
+variables.framework.openapi = {
+	enabled = true,
+	description = "Public API for the Foo platform.",
+	contact = { name = "API Team", email = "api@example.com" },
+	license = { name = "MIT", url = "https://opensource.org/licenses/MIT" },
+	servers = [
+		{ url = "https://api.example.com", description = "Production" }
+	],
+	provider = "api.docs.OpenApiDocs"
+};
+```
+
+The provider CFC is instantiated once during `setupFramework()`, stored at `application._taffy.openapiProvider`, and rebuilt on framework reload. If the provider has an `init()` method, Taffy calls it with no arguments.
+
+Provider methods:
+
+| Method | Default | Purpose |
+| ------ | ------- | ------- |
+| `getComponents()` | `{}` | Adds root-level OpenAPI `components` |
+| `getGlobalParameters()` | `[]` | Adds reusable operation parameters, such as auth headers |
+| `getExcludeParameters()` | `[]` | Removes generated query/path/body parameters by name |
+| `getResponseDefaults(mediaTypes)` | Undocumented `default` response | Supplies baseline operation responses |
+| `afterGenerate(spec)` | Returns `spec` | Final hook for advanced mutation, including custom parsers |
+
+Endpoint-specific docs live next to the resource method. Name the docs method with the actual function name plus `OpenAPIDocs`:
+
+```cfscript
+function updatePartial(required string id) taffy_verb="PATCH" {
+	return rep({ id = arguments.id });
+}
+
+public struct function updatePartialOpenAPIDocs() {
+	return {
+		responses = {
+			"200" = {
+				description = "Updated item."
+			},
+			"404" = {
+				description = "Item not found."
+			}
+		}
+	};
+}
+```
+
+Docs methods must take no required arguments and return a struct. Merge order is generated operation, excluded parameters, provider response defaults, provider global parameters, then the endpoint docs fragment. Structs deep-merge, ordinary arrays replace, `responses` merge by status code, and `parameters` merge by case-insensitive location and name so endpoint parameters can replace provider globals.
+
+If you need additional behavior, use endpoint docs methods and the provider hooks to augment the generated output. `afterGenerate()` receives the complete spec and can return a modified version before Taffy serializes and caches it.
+
 ### Performance
 
-The spec is generated once on the first request to `?openapi` (or `?swagger`) and cached in `application._taffy`. Subsequent requests serve the cached JSON string directly — no CFC instantiation, no metadata walking, no serialization. The cache is invalidated automatically on framework reload.
+The provider is created during framework setup. The serialized spec is generated once on the first request to `?openapi` (or `?swagger`) and cached at `application._taffy.openapiSpec`. Subsequent requests serve the cached JSON string directly — no provider calls, metadata walking, or serialization. The cache is invalidated automatically on framework reload.
 
 ### Configuration
 
@@ -771,8 +826,8 @@ component extends="taffy.core.api"
 
 **Available in:** Taffy 4.0+<br/>
 **Type:** Structure<br/>
-**Default:** `{ enabled: true }`<br/>
-**Description:** Controls the OpenAPI 3.1 spec endpoint served at `?openapi` / `?swagger`. Set `enabled` to `false` to disable the endpoint entirely (returns 403). Optional keys `description`, `contact`, and `license` are passed through to the spec's `info` block. `servers` (array of `{ url, description }` objects) overrides the auto-derived server URL.
+**Default:** `{ enabled: true, provider: "taffy.core.openapiProvider" }`<br/>
+**Description:** Controls the OpenAPI 3.1 spec endpoint served at `?openapi` / `?swagger`. Set `enabled` to `false` to disable the endpoint entirely (returns 403). Optional keys `description`, `contact`, and `license` are passed through to the spec's `info` block. `servers` (array of `{ url, description }` objects) overrides the auto-derived server URL. `provider` points to the CFC used for components, global parameters, excluded parameters, response defaults, and the final generation hook.
 
 ```cfscript
 variables.framework.openapi = {
@@ -783,7 +838,8 @@ variables.framework.openapi = {
 	servers = [
 		{ url = "https://api.example.com", description = "Production" },
 		{ url = "https://staging.api.example.com", description = "Staging" }
-	]
+	],
+	provider = "api.docs.OpenApiDocs"
 };
 ```
 
@@ -1059,6 +1115,14 @@ return rep(
   })
 );
 ```
+
+#### getBeanFactory()
+
+**Available in:** Taffy 4.1.0+<br/>
+**Use it inside:** anywhere inside a Resource CFC.<br/>
+**Parameters:** _(none)_
+
+Returns Taffy's active bean factory. If your application uses the `/resources` folder, this returns Taffy's internal factory. If your application is configured with an external bean factory, this returns the factory Taffy is using to resolve resources and dependencies.
 
 #### noContent()
 

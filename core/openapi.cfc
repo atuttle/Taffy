@@ -7,6 +7,7 @@ component output="false" hint="Generates an OpenAPI 3.1 document from Taffy runt
 		var endpoints = application._taffy.endpoints;
 		var matchOrder = application._taffy.uriMatchOrder;
 		var openapiCfg = structKeyExists(settings, "openapi") ? settings.openapi : {};
+		var provider = getOpenApiProvider();
 		var mediaTypes = collectResponseMediaTypes();
 
 		var doc = {
@@ -39,7 +40,7 @@ component output="false" hint="Generates an OpenAPI 3.1 document from Taffy runt
 				if (!structKeyExists(funcs, funcName)) continue;
 				var func = funcs[funcName];
 				if (hasAnyKey(func, "taffy_docs_hide,taffy:docs:hide,taffy_dashboard_hide,taffy:dashboard:hide")) continue;
-				pathItem[lcase(verb)] = buildOperation(verb, func, endpoint, beanMeta, mediaTypes);
+				pathItem[lcase(verb)] = buildOperation(verb, func, endpoint, beanMeta, mediaTypes, provider, bean, funcs);
 			}
 
 			if (!structIsEmpty(pathItem)) {
@@ -47,7 +48,20 @@ component output="false" hint="Generates an OpenAPI 3.1 document from Taffy runt
 			}
 		}
 
-		return doc;
+		var components = provider.getComponents();
+		if (isStruct(components) && !structIsEmpty(components)) {
+			doc["components"] = components;
+		}
+
+		var finalDoc = provider.afterGenerate(doc);
+		if (!isStruct(finalDoc)) {
+			throw(
+				message="Invalid OpenAPI provider",
+				detail="The provider afterGenerate() method must return a struct."
+			);
+		}
+
+		return finalDoc;
 	}
 
 	private struct function buildInfo(required struct settings, required struct openapiCfg) {
@@ -112,8 +126,13 @@ component output="false" hint="Generates an OpenAPI 3.1 document from Taffy runt
 		required struct func,
 		required struct endpoint,
 		required struct beanMeta,
-		required array mediaTypes
+		required array mediaTypes,
+		any provider,
+		any bean,
+		struct funcs
 	) {
+		var openapiProvider = structKeyExists(arguments, "provider") ? arguments.provider : getOpenApiProvider();
+		var excludedParameters = buildNameLookup(openapiProvider.getExcludeParameters());
 		var op = {
 			"tags": [ getResourceTag(arguments.beanMeta, arguments.endpoint.beanName) ],
 			"operationId": arguments.endpoint.beanName & "_" & lcase(arguments.verb)
@@ -167,7 +186,13 @@ component output="false" hint="Generates an OpenAPI 3.1 document from Taffy runt
 
 		if (arrayLen(parameters)) op["parameters"] = parameters;
 		if (isBodyVerb && arrayLen(bodyParams)) op["requestBody"] = buildRequestBody(bodyParams);
-		op["responses"] = buildResponses(arguments.mediaTypes);
+		op = applyExcludedParameters(op, excludedParameters);
+		op["responses"] = openapiProvider.getResponseDefaults(arguments.mediaTypes);
+		op = addGlobalParameters(op, openapiProvider.getGlobalParameters());
+
+		if (structKeyExists(arguments, "bean") && structKeyExists(arguments, "funcs")) {
+			op = deepMergeStructs(op, getOperationDocs(arguments.bean, arguments.funcs, arguments.func.name));
+		}
 
 		return op;
 	}
@@ -201,16 +226,6 @@ component output="false" hint="Generates an OpenAPI 3.1 document from Taffy runt
 				"application/x-www-form-urlencoded": { "schema": bodySchema }
 			}
 		};
-	}
-
-	private struct function buildResponses(required array mediaTypes) {
-		var content = {};
-		for (var i = 1; i <= arrayLen(arguments.mediaTypes); i++) {
-			content[arguments.mediaTypes[i]] = {};
-		}
-		var ok = { "description": "Successful response" };
-		if (!structIsEmpty(content)) ok["content"] = content;
-		return { "200": ok, "default": { "description": "Unexpected error" } };
 	}
 
 	private struct function paramSchema(required struct param) {
@@ -254,6 +269,215 @@ component output="false" hint="Generates an OpenAPI 3.1 document from Taffy runt
 		if (structKeyExists(arguments.beanMeta, "taffy:docs:name")) return arguments.beanMeta["taffy:docs:name"];
 		if (structKeyExists(arguments.beanMeta, "taffy_docs_name")) return arguments.beanMeta["taffy_docs_name"];
 		return arguments.beanName;
+	}
+
+	private any function getOpenApiProvider() {
+		if (structKeyExists(application, "_taffy") && structKeyExists(application._taffy, "openapiProvider")) {
+			return application._taffy.openapiProvider;
+		}
+		return createObject("component", "taffy.core.openapiProvider");
+	}
+
+	private struct function buildNameLookup(required array names) {
+		var lookup = {};
+		for (var i = 1; i <= arrayLen(arguments.names); i++) {
+			if (isSimpleValue(arguments.names[i]) && len(arguments.names[i])) {
+				lookup[lcase(arguments.names[i])] = true;
+			}
+		}
+		return lookup;
+	}
+
+	private struct function applyExcludedParameters(required struct op, required struct excludedParameters) {
+		if (structIsEmpty(arguments.excludedParameters)) {
+			return arguments.op;
+		}
+
+		if (structKeyExists(arguments.op, "parameters") && isArray(arguments.op.parameters)) {
+			for (var i = arrayLen(arguments.op.parameters); i >= 1; i--) {
+				if (
+					isStruct(arguments.op.parameters[i])
+					&& structKeyExists(arguments.op.parameters[i], "name")
+					&& structKeyExists(arguments.excludedParameters, lcase(arguments.op.parameters[i].name))
+				) {
+					arrayDeleteAt(arguments.op.parameters, i);
+				}
+			}
+			if (!arrayLen(arguments.op.parameters)) {
+				structDelete(arguments.op, "parameters");
+			}
+		}
+
+		if (structKeyExists(arguments.op, "requestBody") && structKeyExists(arguments.op.requestBody, "content") && isStruct(arguments.op.requestBody.content)) {
+			for (var mediaType in arguments.op.requestBody.content) {
+				if (
+					isStruct(arguments.op.requestBody.content[mediaType])
+					&& structKeyExists(arguments.op.requestBody.content[mediaType], "schema")
+					&& isStruct(arguments.op.requestBody.content[mediaType].schema)
+				) {
+					filterSchemaProperties(arguments.op.requestBody.content[mediaType].schema, arguments.excludedParameters);
+				}
+			}
+			if (requestBodyHasNoProperties(arguments.op.requestBody)) {
+				structDelete(arguments.op, "requestBody");
+			}
+		}
+
+		return arguments.op;
+	}
+
+	private void function filterSchemaProperties(required struct schema, required struct excludedParameters) {
+		if (structKeyExists(arguments.schema, "properties") && isStruct(arguments.schema.properties)) {
+			var propertyNames = listToArray(structKeyList(arguments.schema.properties));
+			for (var i = 1; i <= arrayLen(propertyNames); i++) {
+				var propertyName = propertyNames[i];
+				if (structKeyExists(arguments.excludedParameters, lcase(propertyName))) {
+					structDelete(arguments.schema.properties, propertyName);
+				}
+			}
+		}
+
+		if (structKeyExists(arguments.schema, "required") && isArray(arguments.schema.required)) {
+			for (var r = arrayLen(arguments.schema.required); r >= 1; r--) {
+				if (structKeyExists(arguments.excludedParameters, lcase(arguments.schema.required[r]))) {
+					arrayDeleteAt(arguments.schema.required, r);
+				}
+			}
+			if (!arrayLen(arguments.schema.required)) {
+				structDelete(arguments.schema, "required");
+			}
+		}
+	}
+
+	private boolean function requestBodyHasNoProperties(required struct requestBody) {
+		if (!structKeyExists(arguments.requestBody, "content") || !isStruct(arguments.requestBody.content)) {
+			return true;
+		}
+
+		for (var mediaType in arguments.requestBody.content) {
+			if (
+				isStruct(arguments.requestBody.content[mediaType])
+				&& structKeyExists(arguments.requestBody.content[mediaType], "schema")
+				&& isStruct(arguments.requestBody.content[mediaType].schema)
+				&& structKeyExists(arguments.requestBody.content[mediaType].schema, "properties")
+				&& isStruct(arguments.requestBody.content[mediaType].schema.properties)
+				&& !structIsEmpty(arguments.requestBody.content[mediaType].schema.properties)
+			) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	private struct function addGlobalParameters(required struct op, required array parameters) {
+		if (!arrayLen(arguments.parameters)) {
+			return arguments.op;
+		}
+
+		if (!structKeyExists(arguments.op, "parameters") || !isArray(arguments.op.parameters)) {
+			arguments.op["parameters"] = [];
+		}
+
+		for (var i = 1; i <= arrayLen(arguments.parameters); i++) {
+			if (isStruct(arguments.parameters[i]) && !hasParameter(arguments.op.parameters, arguments.parameters[i])) {
+				arrayAppend(arguments.op.parameters, duplicate(arguments.parameters[i]));
+			}
+		}
+
+		return arguments.op;
+	}
+
+	private boolean function hasParameter(required array parameters, required struct parameter) {
+		var key = parameterKey(arguments.parameter);
+		if (!len(key)) {
+			return false;
+		}
+
+		for (var i = 1; i <= arrayLen(arguments.parameters); i++) {
+			if (isStruct(arguments.parameters[i]) && parameterKey(arguments.parameters[i]) == key) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private struct function getOperationDocs(required any bean, required struct funcs, required string funcName) {
+		var docsMethodName = arguments.funcName & "OpenAPIDocs";
+		if (!structKeyExists(arguments.funcs, docsMethodName)) {
+			return {};
+		}
+
+		var docsMeta = arguments.funcs[docsMethodName];
+		var params = structKeyExists(docsMeta, "parameters") ? docsMeta.parameters : [];
+		for (var i = 1; i <= arrayLen(params); i++) {
+			if (structKeyExists(params[i], "required") && params[i].required) {
+				throw(
+					message="Invalid OpenAPI docs method",
+					detail="The #docsMethodName# method must not declare required arguments."
+				);
+			}
+		}
+
+		var docs = invoke(arguments.bean, docsMethodName);
+		if (!isStruct(docs)) {
+			throw(
+				message="Invalid OpenAPI docs method",
+				detail="The #docsMethodName# method must return a struct."
+			);
+		}
+
+		return docs;
+	}
+
+	private struct function deepMergeStructs(required struct target, required struct source) {
+		for (var key in arguments.source) {
+			if (lcase(key) == "parameters" && isArray(arguments.source[key])) {
+				if (!structKeyExists(arguments.target, key) || !isArray(arguments.target[key])) {
+					arguments.target[key] = [];
+				}
+				arguments.target[key] = mergeParameters(arguments.target[key], arguments.source[key]);
+			} else if (structKeyExists(arguments.target, key) && isStruct(arguments.target[key]) && isStruct(arguments.source[key])) {
+				arguments.target[key] = deepMergeStructs(arguments.target[key], arguments.source[key]);
+			} else {
+				arguments.target[key] = duplicate(arguments.source[key]);
+			}
+		}
+
+		return arguments.target;
+	}
+
+	private array function mergeParameters(required array baseParameters, required array incomingParameters) {
+		var merged = [];
+		var positions = {};
+
+		for (var i = 1; i <= arrayLen(arguments.baseParameters); i++) {
+			arrayAppend(merged, duplicate(arguments.baseParameters[i]));
+			if (isStruct(arguments.baseParameters[i]) && len(parameterKey(arguments.baseParameters[i]))) {
+				positions[parameterKey(arguments.baseParameters[i])] = arrayLen(merged);
+			}
+		}
+
+		for (var p = 1; p <= arrayLen(arguments.incomingParameters); p++) {
+			if (isStruct(arguments.incomingParameters[p]) && len(parameterKey(arguments.incomingParameters[p])) && structKeyExists(positions, parameterKey(arguments.incomingParameters[p]))) {
+				merged[positions[parameterKey(arguments.incomingParameters[p])]] = duplicate(arguments.incomingParameters[p]);
+			} else {
+				arrayAppend(merged, duplicate(arguments.incomingParameters[p]));
+				if (isStruct(arguments.incomingParameters[p]) && len(parameterKey(arguments.incomingParameters[p]))) {
+					positions[parameterKey(arguments.incomingParameters[p])] = arrayLen(merged);
+				}
+			}
+		}
+
+		return merged;
+	}
+
+	private string function parameterKey(required struct parameter) {
+		if (!structKeyExists(arguments.parameter, "in") || !structKeyExists(arguments.parameter, "name")) {
+			return "";
+		}
+		return lcase(arguments.parameter["in"]) & "|" & lcase(arguments.parameter.name);
 	}
 
 	private string function normalizePathTemplate(required string uri, required array tokens)
