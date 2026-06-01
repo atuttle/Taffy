@@ -2,6 +2,11 @@ component output="false" hint="Generates an OpenAPI 3.1 document from Taffy runt
 
 	public struct function generate()
 		hint="Returns an OpenAPI 3.1 struct describing all registered resources." {
+		return generateWithSourceMap().spec;
+	}
+
+	public struct function generateWithSourceMap()
+		hint="Returns the generated OpenAPI 3.1 struct with an internal Taffy source map." {
 
 		var settings = application._taffy.settings;
 		var endpoints = application._taffy.endpoints;
@@ -9,6 +14,9 @@ component output="false" hint="Generates an OpenAPI 3.1 document from Taffy runt
 		var openapiCfg = structKeyExists(settings, "openapi") ? settings.openapi : {};
 		var provider = getOpenApiProvider();
 		var mediaTypes = collectResponseMediaTypes();
+		var sourceMap = {};
+		var globalTags = [];
+		var globalTagLookup = {};
 
 		var doc = {
 			"openapi": "3.1.0",
@@ -33,6 +41,7 @@ component output="false" hint="Generates an OpenAPI 3.1 document from Taffy runt
 			var funcs = collectFunctions(beanMeta);
 			var pathItem = {};
 			var validVerbs = "get,put,post,delete,options,head,patch,trace";
+			var pathTemplate = normalizePathTemplate(endpoint.srcUri, endpoint.tokens);
 
 			for (var verb in endpoint.methods) {
 				if (!listFindNoCase(validVerbs, verb)) continue;
@@ -40,12 +49,19 @@ component output="false" hint="Generates an OpenAPI 3.1 document from Taffy runt
 				if (!structKeyExists(funcs, funcName)) continue;
 				var func = funcs[funcName];
 				if (hasAnyKey(func, "taffy_docs_hide,taffy:docs:hide,taffy_dashboard_hide,taffy:dashboard:hide")) continue;
-				pathItem[lcase(verb)] = buildOperation(verb, func, endpoint, beanMeta, mediaTypes, provider, bean, funcs);
+				var verbName = lcase(verb);
+				pathItem[verbName] = buildOperation(verb, func, endpoint, beanMeta, mediaTypes, provider, bean, funcs);
+				collectOperationTags(pathItem[verbName], globalTags, globalTagLookup);
+				sourceMap["/paths/" & pointerSegment(pathTemplate) & "/" & pointerSegment(verbName)] = buildSourceMapEntry(endpoint, func, verb, pathTemplate);
 			}
 
 			if (!structIsEmpty(pathItem)) {
-				doc.paths[normalizePathTemplate(endpoint.srcUri, endpoint.tokens)] = pathItem;
+				doc.paths[pathTemplate] = pathItem;
 			}
+		}
+
+		if (arrayLen(globalTags)) {
+			doc["tags"] = globalTags;
 		}
 
 		var components = provider.getComponents();
@@ -61,16 +77,23 @@ component output="false" hint="Generates an OpenAPI 3.1 document from Taffy runt
 			);
 		}
 
-		return finalDoc;
+		return {
+			spec = finalDoc,
+			sourceMap = sourceMap
+		};
 	}
 
 	private struct function buildInfo(required struct settings, required struct openapiCfg) {
 		var info = {
 			"title": arguments.settings.docs.APIName,
-			"version": arguments.settings.docs.APIVersion
+			"version": arguments.settings.docs.APIVersion,
+			"description": arguments.settings.docs.APIName & " OpenAPI specification.",
+			"contact": {
+				"name": arguments.settings.docs.APIName
+			}
 		};
-		if (structKeyExists(arguments.openapiCfg, "description")) info["description"] = arguments.openapiCfg.description;
-		if (structKeyExists(arguments.openapiCfg, "contact")) info["contact"] = arguments.openapiCfg.contact;
+		if (structKeyExists(arguments.openapiCfg, "description") && len(trim(arguments.openapiCfg.description))) info["description"] = arguments.openapiCfg.description;
+		if (structKeyExists(arguments.openapiCfg, "contact") && isStruct(arguments.openapiCfg.contact)) info["contact"] = arguments.openapiCfg.contact;
 		if (structKeyExists(arguments.openapiCfg, "license")) info["license"] = arguments.openapiCfg.license;
 		return info;
 	}
@@ -193,6 +216,13 @@ component output="false" hint="Generates an OpenAPI 3.1 document from Taffy runt
 		if (structKeyExists(arguments, "bean") && structKeyExists(arguments, "funcs")) {
 			op = deepMergeStructs(op, getOperationDocs(arguments.bean, arguments.funcs, arguments.func.name));
 		}
+		if (
+			!structKeyExists(op, "description")
+			|| !isSimpleValue(op.description)
+			|| !len(trim(op.description))
+		) {
+			op["description"] = structKeyExists(op, "summary") ? op.summary : op.operationId;
+		}
 
 		return op;
 	}
@@ -231,9 +261,28 @@ component output="false" hint="Generates an OpenAPI 3.1 document from Taffy runt
 	private struct function paramSchema(required struct param) {
 		var schema = cfmlTypeToSchema(structKeyExists(arguments.param, "type") ? arguments.param.type : "");
 		if (structKeyExists(arguments.param, "default") && len(arguments.param.default)) {
-			schema["default"] = arguments.param.default;
+			schema["default"] = coerceSchemaDefault(arguments.param.default, schema);
 		}
 		return schema;
+	}
+
+	private any function coerceSchemaDefault(required any defaultValue, required struct schema) {
+		if (!isSimpleValue(arguments.defaultValue) || !structKeyExists(arguments.schema, "type")) {
+			return arguments.defaultValue;
+		}
+
+		var schemaType = lcase(arguments.schema.type);
+		var value = arguments.defaultValue;
+		if (schemaType == "boolean") {
+			return listFindNoCase("true,yes,1", trim(value)) > 0;
+		}
+		if (schemaType == "integer" && isNumeric(value)) {
+			return int(value);
+		}
+		if (schemaType == "number" && isNumeric(value)) {
+			return val(value);
+		}
+		return value;
 	}
 
 	private struct function cfmlTypeToSchema(required string type) {
@@ -388,6 +437,22 @@ component output="false" hint="Generates an OpenAPI 3.1 document from Taffy runt
 		return arguments.op;
 	}
 
+	private void function collectOperationTags(required struct operation, required array globalTags, required struct globalTagLookup) {
+		if (!structKeyExists(arguments.operation, "tags") || !isArray(arguments.operation.tags)) {
+			return;
+		}
+
+		for (var i = 1; i <= arrayLen(arguments.operation.tags); i++) {
+			var tagName = arguments.operation.tags[i];
+			if (isSimpleValue(tagName) && len(tagName) && !structKeyExists(arguments.globalTagLookup, tagName)) {
+				arguments.globalTagLookup[tagName] = true;
+				arrayAppend(arguments.globalTags, {
+					"name": tagName
+				});
+			}
+		}
+	}
+
 	private boolean function hasParameter(required array parameters, required struct parameter) {
 		var key = parameterKey(arguments.parameter);
 		if (!len(key)) {
@@ -428,7 +493,187 @@ component output="false" hint="Generates an OpenAPI 3.1 document from Taffy runt
 			);
 		}
 
-		return docs;
+		return normalizeOpenApiDocKeys(docs);
+	}
+
+	private any function normalizeOpenApiDocKeys(required any value, string context = "") {
+		if (isArray(arguments.value)) {
+			var normalizedArray = [];
+			for (var i = 1; i <= arrayLen(arguments.value); i++) {
+				arrayAppend(normalizedArray, normalizeOpenApiDocKeys(arguments.value[i], getOpenApiArrayItemContext(arguments.context)));
+			}
+			return normalizedArray;
+		}
+
+		if (!isStruct(arguments.value)) {
+			return arguments.value;
+		}
+
+		var normalizedStruct = {};
+		var preserveMapKeys = shouldPreserveOpenApiMapKeys(arguments.context);
+		for (var key in arguments.value) {
+			var normalizedKey = preserveMapKeys ? normalizeOpenApiMapKey(key, arguments.context) : normalizeOpenApiKeywordKey(key);
+			normalizedStruct[normalizedKey] = normalizeOpenApiDocKeys(
+				arguments.value[key],
+				getOpenApiChildContext(arguments.context, normalizedKey)
+			);
+		}
+
+		return normalizedStruct;
+	}
+
+	private string function getOpenApiArrayItemContext(required string context) {
+		var contextName = lcase(arguments.context);
+		if (listFindNoCase("allOf,anyOf,oneOf,prefixItems", contextName)) {
+			return "schema";
+		}
+		if (contextName == "parameters") {
+			return "parameter";
+		}
+		if (contextName == "servers") {
+			return "server";
+		}
+		if (contextName == "tags") {
+			return "tag";
+		}
+		return arguments.context;
+	}
+
+	private boolean function shouldPreserveOpenApiMapKeys(required string context) {
+		return listFindNoCase(
+			"responses,content,properties,patternProperties,headers,examples,links,callbacks,schemas,parameters,requestBodies,securitySchemes",
+			arguments.context
+		) > 0;
+	}
+
+	private string function normalizeOpenApiMapKey(required string key, required string context) {
+		if (lcase(arguments.context) == "responses" && lcase(arguments.key) == "default") {
+			return "default";
+		}
+		return arguments.key;
+	}
+
+	private string function getOpenApiChildContext(required string context, required string key) {
+		var contextName = lcase(arguments.context);
+		var keyName = lcase(arguments.key);
+		if (listFindNoCase("responses,content,properties,patternProperties,schemas,headers,examples,links,callbacks,securitySchemes,parameters,requestBodies", keyName)) {
+			return keyName;
+		}
+		if (listFindNoCase("properties,patternProperties,schemas", contextName)) {
+			return "schema";
+		}
+		if (contextName == "responses") {
+			return "response";
+		}
+		if (contextName == "content") {
+			return "mediaType";
+		}
+		if (contextName == "parameters") {
+			return "parameter";
+		}
+		if (contextName == "headers") {
+			return "header";
+		}
+		if (contextName == "examples") {
+			return "example";
+		}
+		if (contextName == "links") {
+			return "link";
+		}
+		if (contextName == "requestbodies") {
+			return "requestBody";
+		}
+		if (contextName == "securityschemes") {
+			return "securityScheme";
+		}
+		if (listFindNoCase("schema,items,additionalProperties,contains,unevaluatedProperties,not,if,then,else,propertyNames", keyName)) {
+			return "schema";
+		}
+		if (listFindNoCase("allOf,anyOf,oneOf,prefixItems", keyName)) {
+			return keyName;
+		}
+		return keyName;
+	}
+
+	private string function normalizeOpenApiKeywordKey(required string key) {
+		switch (lcase(arguments.key)) {
+			case "$ref": return "$ref";
+			case "additionalproperties": return "additionalProperties";
+			case "allowemptyvalue": return "allowEmptyValue";
+			case "allowreserved": return "allowReserved";
+			case "allof": return "allOf";
+			case "anyof": return "anyOf";
+			case "callbacks": return "callbacks";
+			case "components": return "components";
+			case "contact": return "contact";
+			case "contains": return "contains";
+			case "content": return "content";
+			case "default": return "default";
+			case "deprecated": return "deprecated";
+			case "description": return "description";
+			case "discriminator": return "discriminator";
+			case "else": return "else";
+			case "encoding": return "encoding";
+			case "enum": return "enum";
+			case "example": return "example";
+			case "examples": return "examples";
+			case "exclusivemaximum": return "exclusiveMaximum";
+			case "exclusiveminimum": return "exclusiveMinimum";
+			case "explode": return "explode";
+			case "externaldocs": return "externalDocs";
+			case "format": return "format";
+			case "headers": return "headers";
+			case "if": return "if";
+			case "in": return "in";
+			case "info": return "info";
+			case "items": return "items";
+			case "license": return "license";
+			case "links": return "links";
+			case "maxitems": return "maxItems";
+			case "maxlength": return "maxLength";
+			case "maximum": return "maximum";
+			case "mediatype": return "mediaType";
+			case "minitems": return "minItems";
+			case "minlength": return "minLength";
+			case "minimum": return "minimum";
+			case "multipleof": return "multipleOf";
+			case "name": return "name";
+			case "not": return "not";
+			case "nullable": return "nullable";
+			case "oneof": return "oneOf";
+			case "openapi": return "openapi";
+			case "operationid": return "operationId";
+			case "parameters": return "parameters";
+			case "paths": return "paths";
+			case "pattern": return "pattern";
+			case "patternproperties": return "patternProperties";
+			case "prefixitems": return "prefixItems";
+			case "properties": return "properties";
+			case "propertynames": return "propertyNames";
+			case "readonly": return "readOnly";
+			case "requestbodies": return "requestBodies";
+			case "requestbody": return "requestBody";
+			case "required": return "required";
+			case "responses": return "responses";
+			case "schema": return "schema";
+			case "schemas": return "schemas";
+			case "security": return "security";
+			case "securityschemes": return "securitySchemes";
+			case "servers": return "servers";
+			case "style": return "style";
+			case "summary": return "summary";
+			case "tags": return "tags";
+			case "then": return "then";
+			case "title": return "title";
+			case "type": return "type";
+			case "unevaluatedproperties": return "unevaluatedProperties";
+			case "uniqueitems": return "uniqueItems";
+			case "url": return "url";
+			case "version": return "version";
+			case "writeonly": return "writeOnly";
+			case "xml": return "xml";
+		}
+		return arguments.key;
 	}
 
 	private struct function deepMergeStructs(required struct target, required struct source) {
@@ -478,6 +723,47 @@ component output="false" hint="Generates an OpenAPI 3.1 document from Taffy runt
 			return "";
 		}
 		return lcase(arguments.parameter["in"]) & "|" & lcase(arguments.parameter.name);
+	}
+
+	private struct function buildSourceMapEntry(required struct endpoint, required struct func, required string verb, required string pathTemplate) {
+		var entry = {
+			resource = arguments.endpoint.beanName,
+			method = arguments.func.name,
+			docsMethod = arguments.func.name & "OpenAPIDocs",
+			operation = ucase(arguments.verb) & " " & arguments.pathTemplate
+		};
+		var undeclaredPathTokens = getUndeclaredPathTokens(arguments.endpoint, arguments.func);
+		if (arrayLen(undeclaredPathTokens)) {
+			entry.undeclaredPathTokens = undeclaredPathTokens;
+		}
+
+		return entry;
+	}
+
+	private array function getUndeclaredPathTokens(required struct endpoint, required struct func) {
+		var declared = {};
+		var params = structKeyExists(arguments.func, "parameters") ? arguments.func.parameters : [];
+		for (var p = 1; p <= arrayLen(params); p++) {
+			if (structKeyExists(params[p], "name") && isSimpleValue(params[p].name)) {
+				declared[lcase(params[p].name)] = true;
+			}
+		}
+
+		var undeclared = [];
+		for (var t = 1; t <= arrayLen(arguments.endpoint.tokens); t++) {
+			var token = arguments.endpoint.tokens[t];
+			if (!structKeyExists(declared, lcase(token))) {
+				arrayAppend(undeclared, token);
+			}
+		}
+
+		return undeclared;
+	}
+
+	private string function pointerSegment(required string value) {
+		var out = replace(arguments.value, "~", "~0", "all");
+		out = replace(out, "/", "~1", "all");
+		return out;
 	}
 
 	private string function normalizePathTemplate(required string uri, required array tokens)

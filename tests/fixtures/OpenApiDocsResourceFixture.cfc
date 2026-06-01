@@ -1,5 +1,9 @@
 component output="false" {
 
+	public struct function get() {
+		return {};
+	}
+
 	public struct function getOpenAPIDocs() {
 		return {
 			"parameters": [

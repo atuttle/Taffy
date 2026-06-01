@@ -7,6 +7,10 @@ component hint="base class for taffy REST components" {
 	variables.encode = {};
 	variables.encode.string = forceString;
 
+	public function getBeanFactory() output="false" {
+		return application._taffy.factory;
+	}
+
 	public function representationOf(required data) output="false" hint="returns an object capable of serializing the data in a variety of formats" {
 		return getRepInstance().setData(arguments.data);
 	}

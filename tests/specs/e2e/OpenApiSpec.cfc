@@ -5,12 +5,50 @@ component extends="testbox.system.BaseSpec" {
 		var host = cgi.server_name;
 		if (!len(host) || host == "") host = "localhost";
 		variables.baseURL = "http://#host#:#port#/tests/testapi/index.cfm";
+		variables.lintDisabledURL = "http://#host#:#port#/tests/lintdisabledapi/index.cfm";
+		variables.openapiDisabledURL = "http://#host#:#port#/tests/openapidisabledapi/index.cfm";
 	}
 
 	private struct function fetchSpec(string param = "openapi") {
 		var result = {};
 		cfhttp(url="#variables.baseURL#?#arguments.param#", method="GET", result="result", timeout=10, charset="utf-8");
 		return result;
+	}
+
+	private struct function fetchUrl(required string url, required string param) {
+		var result = {};
+		cfhttp(url="#arguments.url#?#arguments.param#", method="GET", result="result", timeout=10, charset="utf-8");
+		return result;
+	}
+
+	private struct function apiRequest(required string uri) {
+		var result = {};
+		cfhttp(url="#variables.baseURL#?endpoint=#arguments.uri#", method="GET", result="result", timeout=10, charset="utf-8") {
+			cfhttpparam(type="header", name="Accept", value="application/json");
+		}
+		result.data = {};
+		if (structKeyExists(result, "fileContent") && isJSON(result.fileContent)) {
+			result.data = deserializeJSON(result.fileContent);
+		}
+		return result;
+	}
+
+	private boolean function hasIssue(required struct lint, required string code) {
+		for (var i = 1; i <= arrayLen(arguments.lint.issues); i++) {
+			if (arguments.lint.issues[i].code == arguments.code) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private struct function issueByCode(required struct lint, required string code) {
+		for (var i = 1; i <= arrayLen(arguments.lint.issues); i++) {
+			if (arguments.lint.issues[i].code == arguments.code) {
+				return arguments.lint.issues[i];
+			}
+		}
+		return {};
 	}
 
 	function run() {
@@ -129,6 +167,111 @@ component extends="testbox.system.BaseSpec" {
 				var res = fetchSpec("swagger");
 				expect(res.status_code).toBe(200);
 				expect(deserializeJSON(res.fileContent).openapi).toBe("3.1.0");
+			});
+
+		});
+
+		describe("OpenAPI lint endpoint", function() {
+
+			it("returns JSON diagnostics from ?openapiLint", function() {
+				var res = fetchSpec("openapiLint&reload=true");
+
+				expect(res.status_code).toBe(200);
+				expect(isJSON(res.fileContent)).toBeTrue("Expected JSON, got: " & left(res.fileContent, 300));
+
+				var lint = deserializeJSON(res.fileContent);
+				expect(lint).toHaveKey("valid");
+				expect(lint).toHaveKey("summary");
+				expect(lint).toHaveKey("issues");
+			});
+
+			it("accepts ?swaggerLint alias", function() {
+				var res = fetchSpec("swaggerLint");
+				var lint = deserializeJSON(res.fileContent);
+
+				expect(res.status_code).toBe(200);
+				expect(lint).toHaveKey("valid");
+				expect(lint).toHaveKey("summary");
+				expect(lint).toHaveKey("issues");
+			});
+
+			it("returns 403 when linting is disabled by default", function() {
+				var res = fetchUrl(variables.lintDisabledURL, "openapiLint&reload=true");
+
+				expect(res.status_code).toBe(403);
+			});
+
+			it("returns 403 when OpenAPI is disabled", function() {
+				var res = fetchUrl(variables.openapiDisabledURL, "openapiLint&reload=true");
+
+				expect(res.status_code).toBe(403);
+			});
+
+			it("reports expected warnings and infos for the test API", function() {
+				var lint = deserializeJSON(fetchSpec("openapiLint&reload=true").fileContent);
+
+				expect(lint.summary.warnings).toBeGT(0);
+				expect(lint.summary.info).toBeGT(0);
+				expect(hasIssue(lint, "operation.responses.onlyDefault")).toBeTrue();
+				expect(hasIssue(lint, "response.default.undocumented")).toBeTrue();
+			});
+
+			it("does not report schema-missing warnings for documented response schemas", function() {
+				var lint = deserializeJSON(fetchSpec("openapiLint&reload=true").fileContent);
+				var foundMissingEchoSchema = false;
+
+				for (var i = 1; i <= arrayLen(lint.issues); i++) {
+					if (
+						lint.issues[i].code == "response.content.schema.missing"
+						&& find("/paths/~1echo~1{id}/get/responses/200/", lint.issues[i].path)
+					) {
+						foundMissingEchoSchema = true;
+						break;
+					}
+				}
+
+				expect(foundMissingEchoSchema).toBeFalse();
+			});
+
+			it("reports broken fixture refs", function() {
+				var lint = deserializeJSON(fetchSpec("openapiLint&reload=true").fileContent);
+
+				expect(hasIssue(lint, "schema.ref.broken")).toBeTrue();
+				expect(lint.valid).toBeFalse();
+			});
+
+			it("does not invoke real resource responder methods", function() {
+				fetchSpec("openapiLint&reload=true");
+				var state = apiRequest("/openapi-lint-state");
+
+				expect(state.status_code).toBe(200);
+				expect(state.data.brokenResourceInvoked).toBe(0);
+			});
+
+			it("reuses a cached spec when linting", function() {
+				var first = deserializeJSON(fetchSpec("openapi&reload=true").fileContent);
+				fetchSpec("openapiLint");
+				var second = deserializeJSON(fetchSpec("openapi").fileContent);
+
+				expect(second["x-provider-afterGenerate-count"]).toBe(first["x-provider-afterGenerate-count"]);
+			});
+
+			it("populates the cached spec when linting first", function() {
+				var before = deserializeJSON(fetchSpec("openapi&reload=true").fileContent);
+				fetchSpec("openapiLint&reload=true");
+				var after = deserializeJSON(fetchSpec("openapi").fileContent);
+
+				expect(after["x-provider-afterGenerate-count"]).toBe(before["x-provider-afterGenerate-count"] + 1);
+			});
+
+			it("adds friendly source-map locations to operation issues", function() {
+				var lint = deserializeJSON(fetchSpec("openapiLint&reload=true").fileContent);
+				var issue = issueByCode(lint, "response.default.undocumented");
+
+				expect(structIsEmpty(issue)).toBeFalse();
+				expect(issue).toHaveKey("location");
+				expect(issue.location).toHaveKey("operation");
+				expect(issue.location).toHaveKey("target");
 			});
 
 		});

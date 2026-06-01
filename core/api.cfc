@@ -599,7 +599,7 @@ component hint="Your Application.cfc should extend this class" {
 		local.defaultConfig.csrfToken.headerName = "";
 		local.defaultConfig.allowGoogleFonts = true;
 		// optional keys: description, contact, license, servers
-		local.defaultConfig.openapi = { "enabled": true, "provider": "taffy.core.openapiProvider" };
+		local.defaultConfig.openapi = { "enabled": true, "lintEnabled": false, "provider": "taffy.core.openapiProvider" };
 
 		// status
 		local._taffy.status = {};
@@ -628,6 +628,9 @@ component hint="Your Application.cfc should extend this class" {
 		}
 		if (!structKeyExists(local._taffy.settings.openapi, "enabled")) {
 			local._taffy.settings.openapi.enabled = true;
+		}
+		if (!structKeyExists(local._taffy.settings.openapi, "lintEnabled")) {
+			local._taffy.settings.openapi.lintEnabled = false;
 		}
 		if (!structKeyExists(local._taffy.settings.openapi, "provider") || !len(local._taffy.settings.openapi.provider)) {
 			local._taffy.settings.openapi.provider = "taffy.core.openapiProvider";
@@ -1361,6 +1364,10 @@ component hint="Your Application.cfc should extend this class" {
 	}
 
 	private void function handleDashboardRequest() {
+		if (structKeyExists(url, "openapiLint") || structKeyExists(url, "swaggerLint")) {
+			writeOpenApiLint();
+			abort;
+		}
 		if (structKeyExists(url, "openapi") || structKeyExists(url, "swagger")) {
 			writeOpenApiSpec();
 			abort;
@@ -1390,15 +1397,55 @@ component hint="Your Application.cfc should extend this class" {
 		if (structKeyExists(openapiCfg, "enabled") && openapiCfg.enabled == false) {
 			throwError(403, "Forbidden");
 		}
-		// cache the serialized spec — it's deterministic from application._taffy and only changes on framework reload,
-		// which replaces application._taffy wholesale (setupFramework), naturally invalidating this
-		if (!structKeyExists(application._taffy, "openapiSpec")) {
-			var generator = createObject("component", "taffy.core.openapi");
-			application._taffy.openapiSpec = serializeJson(generator.generate());
-		}
+		getOpenApiSpecContext();
 		cfcontent(reset=true, type="application/json; charset=utf-8");
 		cfheader(name="Access-Control-Allow-Origin", value="*");
 		writeOutput(application._taffy.openapiSpec);
+	}
+
+	private void function writeOpenApiLint() {
+		var openapiCfg = application._taffy.settings.openapi;
+		if (
+			(structKeyExists(openapiCfg, "enabled") && openapiCfg.enabled == false)
+			|| !structKeyExists(openapiCfg, "lintEnabled")
+			|| openapiCfg.lintEnabled == false
+		) {
+			throwError(403, "Forbidden");
+		}
+
+		var specContext = getOpenApiSpecContext();
+		var linter = createObject("component", "taffy.core.openapiLinter");
+		var context = {
+			endpoints = application._taffy.endpoints,
+			uriMatchOrder = application._taffy.uriMatchOrder,
+			settings = application._taffy.settings,
+			contentTypes = application._taffy.contentTypes,
+			sourceMap = specContext.sourceMap,
+			spec = specContext.spec
+		};
+
+		cfcontent(reset=true, type="application/json; charset=utf-8");
+		cfheader(name="Access-Control-Allow-Origin", value="*");
+		writeOutput(serializeJson(linter.lint(specContext.spec, context)));
+	}
+
+	private struct function getOpenApiSpecContext() {
+		if (!structKeyExists(application._taffy, "openapiSpec")) {
+			var generator = createObject("component", "taffy.core.openapi");
+			var generated = generator.generateWithSourceMap();
+			application._taffy.openapiSpec = serializeJson(generated.spec);
+			application._taffy.openapiSourceMap = generated.sourceMap;
+
+			return {
+				spec = generated.spec,
+				sourceMap = generated.sourceMap
+			};
+		}
+
+		return {
+			spec = deserializeJson(application._taffy.openapiSpec),
+			sourceMap = structKeyExists(application._taffy, "openapiSourceMap") ? application._taffy.openapiSourceMap : {}
+		};
 	}
 
 	private boolean function isUnhandledPathRequest(targetPath) {

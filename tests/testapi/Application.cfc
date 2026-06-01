@@ -15,11 +15,13 @@ component extends="taffy.core.api" {
 		disabledDashboardRedirect: "",
 		returnExceptionsAsJson: true,
 		openapi: {
+			lintEnabled: true,
 			provider: "taffy.tests.testapi.OpenApiTestProvider"
 		}
 	};
 
 	function onApplicationStart() {
+		application.openApiBrokenResourceInvoked = 0;
 		return super.onApplicationStart();
 	}
 

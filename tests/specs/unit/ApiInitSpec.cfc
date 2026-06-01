@@ -39,6 +39,7 @@ component extends="testbox.system.BaseSpec" {
 				api.onApplicationStart();
 
 				expect(application._taffy.settings.openapi.enabled).toBeTrue();
+				expect(application._taffy.settings.openapi.lintEnabled).toBeFalse();
 				expect(application._taffy.settings.openapi.provider).toBe("taffy.core.openapiProvider");
 				expect(isObject(application._taffy.openapiProvider)).toBeTrue();
 			});

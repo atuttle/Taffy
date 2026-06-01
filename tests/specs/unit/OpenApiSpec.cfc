@@ -7,6 +7,7 @@ component extends="testbox.system.BaseSpec" {
 		makePublic(variables.gen, "buildOperation");
 		makePublic(variables.gen, "deepMergeStructs");
 		makePublic(variables.gen, "mergeParameters");
+		makePublic(variables.gen, "normalizeOpenApiDocKeys");
 		variables.provider = new tests.fixtures.OpenApiProviderFixture();
 	}
 
@@ -134,6 +135,20 @@ component extends="testbox.system.BaseSpec" {
 					expect(op.requestBody.content["application/json"].schema.required).toBe(["name"]);
 				});
 
+				it("coerces generated schema defaults to matching primitive types", function() {
+					var endpoint = mkEndpoint("ItemsResource", "/items", [], { get: "get" });
+					var func = mkFunc("get", [
+						{ name: "active", type: "boolean", required: false, default: "true" },
+						{ name: "limit", type: "integer", required: false, default: "10" },
+						{ name: "score", type: "numeric", required: false, default: "2.5" }
+					]);
+					var op = gen.buildOperation("get", func, endpoint, {}, ["application/json"]);
+
+					expect(op.parameters[1].schema.default).toBeTrue();
+					expect(op.parameters[2].schema.default).toBe(10);
+					expect(op.parameters[3].schema.default).toBe(2.5);
+				});
+
 				it("uses provider response defaults instead of assuming a 200 response", function() {
 					var endpoint = mkEndpoint("ItemsResource", "/items", [], { get: "get" });
 					var func = mkFunc("get", []);
@@ -156,6 +171,14 @@ component extends="testbox.system.BaseSpec" {
 					expect(op.parameters[1].name).toBe("limit");
 					expect(op.parameters[2].name).toBe("X-Trace-Id");
 					expect(op.responses.default.description).toBe("Fixture default response.");
+				});
+
+				it("fills operation descriptions when neither metadata nor endpoint docs provide one", function() {
+					var endpoint = mkEndpoint("ItemsResource", "/items", [], { get: "get" });
+					var func = mkFunc("get", []);
+					var op = gen.buildOperation("get", func, endpoint, {}, ["application/json"]);
+
+					expect(op.description).toBe(op.operationId);
 				});
 
 				it("applies provider exclusions to generated request body properties", function() {
@@ -196,6 +219,42 @@ component extends="testbox.system.BaseSpec" {
 					expect(op.responses).toHaveKey("201");
 				});
 
+				it("normalizes endpoint docs OpenAPI keyword casing and preserves map keys", function() {
+					var normalized = gen.normalizeOpenApiDocKeys({
+						"operationid": "customOperation",
+						"requestbody": {
+							"content": {
+								"application/json": {
+									"schema": {
+										"type": "object",
+										"additionalproperties": { "type": "string" },
+										"properties": {
+											"CamelCaseProperty": {
+												"readonly": true,
+												"writeonly": false
+											}
+										}
+									}
+								}
+							}
+						},
+						"responses": {
+							"DEFAULT": { "description": "Fallback." },
+							"200": { "description": "OK." }
+						}
+					});
+
+					expect(normalized).toHaveKey("operationId");
+					expect(normalized).toHaveKey("requestBody");
+					expect(normalized.requestBody.content).toHaveKey("application/json");
+					expect(normalized.requestBody.content["application/json"].schema).toHaveKey("additionalProperties");
+					expect(normalized.requestBody.content["application/json"].schema.properties).toHaveKey("CamelCaseProperty");
+					expect(normalized.requestBody.content["application/json"].schema.properties["CamelCaseProperty"]).toHaveKey("readOnly");
+					expect(normalized.requestBody.content["application/json"].schema.properties["CamelCaseProperty"]).toHaveKey("writeOnly");
+					expect(normalized.responses).toHaveKey("default");
+					expect(normalized.responses).toHaveKey("200");
+				});
+
 				it("discovers docs for custom taffy_verb resource methods by function name", function() {
 					var endpoint = mkEndpoint("ItemsResource", "/items/{id}", ["id"], { patch: "updatePartial" });
 					var func = mkFunc("updatePartial", [ { name: "id", type: "string", required: true } ]);
@@ -229,6 +288,29 @@ component extends="testbox.system.BaseSpec" {
 
 			describe("generate", function() {
 
+				it("adds default info description and contact when not configured", function() {
+					var savedTaffy = duplicate(application._taffy);
+					try {
+						application._taffy = {
+							settings: {
+								docs: { APIName: "Fixture", APIVersion: "1.0.0" },
+								openapi: {},
+								mimeExtensions: { json: "application/json" }
+							},
+							endpoints: {},
+							uriMatchOrder: [],
+							openapiProvider: new core.openapiProvider()
+						};
+
+						var spec = gen.generate();
+
+						expect(spec.info.description).toBe("Fixture OpenAPI specification.");
+						expect(spec.info.contact.name).toBe("Fixture");
+					} finally {
+						application._taffy = savedTaffy;
+					}
+				});
+
 				it("adds provider components and returns the provider final hook result", function() {
 					var savedTaffy = duplicate(application._taffy);
 					try {
@@ -256,6 +338,46 @@ component extends="testbox.system.BaseSpec" {
 						expect(spec.servers[1].url).toBe("https://api.example.com");
 						expect(spec.components.schemas).toHaveKey("Fixture");
 						expect(spec["x-fixture-afterGenerate"]).toBeTrue();
+					} finally {
+						application._taffy = savedTaffy;
+					}
+				});
+
+				it("returns source map entries with generated operations", function() {
+					var savedTaffy = duplicate(application._taffy);
+					try {
+						application._taffy = {
+							settings: {
+								docs: { APIName: "Fixture", APIVersion: "1.0.0" },
+								openapi: {},
+								mimeExtensions: { json: "application/json" }
+							},
+							endpoints: {
+								"^/items/([^/]+)$": {
+									beanName: "tests.fixtures.OpenApiDocsResourceFixture",
+									srcUri: "/items/{id}",
+									tokens: [ "id" ],
+									methods: { get: "get" }
+								}
+							},
+							uriMatchOrder: [ "^/items/([^/]+)$" ],
+							factory: {
+								getBean: function(beanName) {
+									return new tests.fixtures.OpenApiDocsResourceFixture();
+								}
+							},
+							openapiProvider: provider
+						};
+
+						var generated = gen.generateWithSourceMap();
+
+						expect(generated).toHaveKey("spec");
+						expect(generated).toHaveKey("sourceMap");
+						expect(generated.spec).toHaveKey("tags");
+						expect(generated.spec.tags[1].name).toBe("tests.fixtures.OpenApiDocsResourceFixture");
+						expect(generated.sourceMap).toHaveKey("/paths/~1items~1{id}/get");
+						expect(generated.sourceMap["/paths/~1items~1{id}/get"].docsMethod).toBe("getOpenAPIDocs");
+						expect(generated.sourceMap["/paths/~1items~1{id}/get"].operation).toBe("GET /items/{id}");
 					} finally {
 						application._taffy = savedTaffy;
 					}

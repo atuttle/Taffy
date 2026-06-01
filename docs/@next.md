@@ -181,33 +181,44 @@ Not all HTTP clients will allow you to easily send PUT or DELETE requests (somet
 
 **Available in:** Taffy 4.0+
 
-Taffy generates an [OpenAPI 3.1](https://spec.openapis.org/oas/v3.1.0) document describing your API automatically, using the same resource/argument metadata that powers the dashboard and docs. For richer specs, add a provider CFC or endpoint-specific docs methods. To fetch the spec, hit:
+Taffy generates an [OpenAPI 3.1][OAS 3.1] document, shaped as an [OpenAPI Object], describing your API automatically using the same resource/argument metadata that powers the dashboard and docs. For richer specs, add a provider CFC or endpoint-specific docs methods. To fetch the spec, hit:
 
 - `index.cfm?openapi` — returns the spec as `application/json`
 - `index.cfm?swagger` — alias for the same endpoint
 
 The generated document can be dropped into [Swagger UI](https://swagger.io/tools/swagger-ui/), [Stoplight Studio](https://stoplight.io/studio), Postman, [swagger.io Editor](https://editor.swagger.io/), or any other OpenAPI-aware tool.
 
+Taffy can also return focused diagnostics for the generated spec:
+
+- `index.cfm?openapiLint`
+- `index.cfm?swaggerLint`
+
+The lint endpoints are disabled by default. Enable them explicitly with `variables.framework.openapi.lintEnabled = true`. They return `application/json; charset=utf-8`, use HTTP 200 when diagnostics exist, and return 403 when OpenAPI or linting is disabled.
+
+The linter is not a full OpenAPI validator. It checks the generated document for common Taffy documentation gaps: missing request/response [schemas][Schema Object], missing request content, broken local [`$ref`][Reference Object] values, unsupported [media types][Media Type Object], missing path [parameters][Parameter Object], auto-documented URI tokens, duplicate parameters, invalid/unused/suspicious component schemas, and ambiguous schema shapes.
+
 ### What gets generated
 
-| OpenAPI field                              | Source                                                                                                                 |
-| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| `info.title`                               | `variables.framework.docs.APIName`                                                                                     |
-| `info.version`                             | `variables.framework.docs.APIVersion`                                                                                  |
-| `info.description` / `contact` / `license` | `variables.framework.openapi` (optional)                                                                               |
-| `servers[0].url`                           | Auto-derived from `cgi.http_host` + script path (override via `openapi.servers`)                                       |
-| `paths`                                    | Each resource's `taffy:uri`                                                                                            |
-| `operationId`                              | `{beanName}_{verb}`                                                                                                    |
-| `summary` / `tags`                         | `taffy:docs:name` if set, else the bean name                                                                           |
-| `description`                              | Function `hint`                                                                                                        |
-| `parameters` (path)                        | URI tokens — always emitted, even if the resource doesn't declare them as args                                         |
-| `parameters` (query)                       | Non-token args on `GET`/`DELETE`/`HEAD`/`OPTIONS` methods                                                              |
-| `requestBody`                              | Non-token args on `POST`/`PUT`/`PATCH` — emitted under both `application/json` and `application/x-www-form-urlencoded` |
-| Parameter `schema.type` / `format`         | Mapped from the CFML arg `type` (`numeric`, `boolean`, `date`, `uuid`, etc.)                                           |
-| Parameter `description`                    | Argument `hint`                                                                                                        |
-| Parameter `default`                        | Argument `default` (when non-empty)                                                                                    |
-| `responses.default`                        | Provider response defaults. The built-in default is `Response not documented.` with known response media types          |
-| `components`                               | `openapi.provider.getComponents()`                                                                                     |
+| OpenAPI field | Source |
+| ------------- | ------ |
+| [`info`][Info Object]`.title` | `variables.framework.docs.APIName` |
+| [`info`][Info Object]`.version` | `variables.framework.docs.APIVersion` |
+| [`info`][Info Object]`.description` / [`contact`][Contact Object] | Generated from `variables.framework.docs.APIName` by default; override via `variables.framework.openapi` |
+| [`info`][Info Object]`.license` | `variables.framework.openapi.license` (optional) |
+| [`servers`][Server Object]`[0].url` | Auto-derived from `cgi.http_host` + script path (override via `openapi.servers`) |
+| [`paths`][Paths Object] | Each resource's `taffy:uri` |
+| Root [`tags`][Tag Object] | Unique operation tags from resources |
+| [`operationId`][Operation Object] | `{beanName}_{verb}` |
+| [`summary`][Operation Object] / [`tags`][Operation Object] | `taffy:docs:name` if set, else the bean name |
+| [`description`][Operation Object] | Function `hint`; falls back to `summary` or `operationId` |
+| [`parameters`][Parameter Object] (path) | [URI tokens][Path Templating] — always emitted, even if the resource doesn't declare them as args |
+| [`parameters`][Parameter Object] (query) | Non-token args on `GET`/`DELETE`/`HEAD`/`OPTIONS` methods |
+| [`requestBody`][Request Body Object] | Non-token args on `POST`/`PUT`/`PATCH` — emitted under both `application/json` and `application/x-www-form-urlencoded` |
+| Parameter [`schema`][Schema Object]`.type` / `format` | Mapped from the CFML arg `type` (`numeric`, `boolean`, `date`, `uuid`, etc.) |
+| Parameter [`description`][Parameter Object] | Argument `hint` |
+| Parameter [`default`][Parameter Object] | Argument `default` (when non-empty), coerced for boolean/integer/number schemas when possible |
+| [`responses`][Responses Object]`.default` | Provider response defaults. The built-in default is `Response not documented.` with known response media types |
+| [`components`][Components Object] | `openapi.provider.getComponents()` |
 
 ### Hiding things from the spec
 
@@ -216,7 +227,7 @@ The same metadata flags that hide resources from the dashboard also hide them fr
 - `taffy:docs:hide` / `taffy_docs_hide` — component, function, or argument
 - `taffy:dashboard:hide` / `taffy_dashboard_hide` — component, function, or argument
 
-Custom `taffy:verb` values (anything outside the standard `get`/`put`/`post`/`delete`/`options`/`head`/`patch`/`trace`) are silently dropped — OpenAPI doesn't accept arbitrary verb names.
+Custom `taffy:verb` values (anything outside the standard `get`/`put`/`post`/`delete`/`options`/`head`/`patch`/`trace`) are silently dropped — the OpenAPI [Path Item Object] doesn't accept arbitrary verb names.
 
 ### Extending the spec
 
@@ -241,44 +252,259 @@ Provider methods:
 
 | Method | Default | Purpose |
 | ------ | ------- | ------- |
-| `getComponents()` | `{}` | Adds root-level OpenAPI `components` |
-| `getGlobalParameters()` | `[]` | Adds reusable operation parameters, such as auth headers |
+| `getComponents()` | `{}` | Adds root-level OpenAPI [`components`][Components Object] |
+| `getGlobalParameters()` | `[]` | Adds reusable operation [parameters][Parameter Object], such as auth headers |
 | `getExcludeParameters()` | `[]` | Removes generated query/path/body parameters by name |
-| `getResponseDefaults(mediaTypes)` | Undocumented `default` response | Supplies baseline operation responses |
-| `afterGenerate(spec)` | Returns `spec` | Final hook for advanced mutation, including custom parsers |
+| `getResponseDefaults(mediaTypes)` | Undocumented `default` response | Supplies baseline operation [responses][Responses Object] |
+| `afterGenerate(spec)` | Returns `spec` | Final hook for advanced mutation of the generated [OpenAPI Object], including custom parsers |
+| `schemaRef(name)` | `{ "$ref": "#/components/schemas/{name}" }` | Builds a component schema [Reference Object] |
+| `jsonContent(schema)` | JSON content object | Wraps a [Schema Object] in `application/json` [Media Type Object] content |
+| `jsonResponses(statusCode, description, schema)` | Status-code response fragment | Builds a JSON [Response Object] fragment |
+| `jsonRequestBody(schema, isRequired=false)` | Request body object | Builds a JSON [Request Body Object] fragment |
 
-Endpoint-specific docs live next to the resource method. Name the docs method with the actual function name plus `OpenAPIDocs`:
+Endpoint-specific docs live next to the resource method. Name the docs method with the actual function name plus `OpenAPIDocs`.
+
+The docs method returns an [OpenAPI Operation Object][Operation Object] fragment, not a full OpenAPI document and not a [`paths`][Paths Object] object. Taffy merges that fragment into the generated operation for the resource method. Use normal OpenAPI field names such as `summary`, `description`, `operationId`, `tags`, [`parameters`][Parameter Object], [`requestBody`][Request Body Object], [`responses`][Responses Object], and [`security`][Security Requirement Object].
+
+Taffy normalizes OpenAPI keyword casing in endpoint docs fragments (`requestbody` becomes `requestBody`, `readonly` becomes `readOnly`, etc.) while preserving map keys such as property names, media types, and response status codes.
+
+When you add `content`, each media type such as `application/json` maps to a [Media Type Object]. Nested `schema` values use the [Schema Object], and named `examples` use the [Example Object].
+
+Docs methods must take no required arguments and return a struct. Merge order is generated operation, excluded parameters, provider response defaults, provider global parameters, then the endpoint docs fragment. Structs deep-merge, ordinary arrays replace, `responses` merge by status code, and `parameters` merge by case-insensitive location and name so endpoint parameters can replace provider globals.
+
+For a `GET` method, document path/query/header [parameters][Parameter Object] and [responses][Responses Object]:
 
 ```cfscript
-function updatePartial(required string id) taffy_verb="PATCH" {
+function get(required string id, numeric includeAttendees = 0) {
 	return rep({ id = arguments.id });
 }
 
-public struct function updatePartialOpenAPIDocs() {
+public struct function getOpenAPIDocs() {
 	return {
+		summary = "Fetch an event",
+		description = "Returns one event by id.",
+		parameters = [
+			{
+				name = "includeAttendees",
+				in = "query",
+				required = false,
+				description = "Set to 1 to include attendee records.",
+				schema = {
+					type = "integer",
+					enum = [ 0, 1 ]
+				}
+			},
+			{
+				name = "X-Trace-Id",
+				in = "header",
+				required = false,
+				description = "Optional request trace id.",
+				schema = { type = "string" }
+			}
+		],
 		responses = {
 			"200" = {
-				description = "Updated item."
+				description = "Event response.",
+				content = {
+					"application/json" = {
+						schema = { "$ref" = "##/components/schemas/Event" }
+					}
+				}
 			},
 			"404" = {
-				description = "Item not found."
+				description = "Event not found."
 			}
 		}
 	};
 }
 ```
 
-Docs methods must take no required arguments and return a struct. Merge order is generated operation, excluded parameters, provider response defaults, provider global parameters, then the endpoint docs fragment. Structs deep-merge, ordinary arrays replace, `responses` merge by status code, and `parameters` merge by case-insensitive location and name so endpoint parameters can replace provider globals.
+For `POST`, `PUT`, or `PATCH`, add a [request body][Request Body Object] when the generated body needs [examples][Example Object], required flags, media types, or a richer schema:
+
+```cfscript
+function post(required string name, string description = "") {
+	return rep({ name = arguments.name })
+		.withStatus(201);
+}
+
+public struct function postOpenAPIDocs() {
+	return {
+		summary = "Create an event",
+		requestBody = {
+			required = true,
+			content = {
+				"application/json" = {
+					schema = {
+						type = "object",
+						required = [ "name" ],
+						properties = {
+							name = {
+								type = "string",
+								minLength = 1
+							},
+							description = {
+								type = "string"
+							}
+						}
+					},
+					examples = {
+						sample = {
+							value = {
+								name = "Launch meeting",
+								description = "Kickoff for the launch."
+							}
+						}
+					}
+				}
+			}
+		},
+		responses = {
+			"201" = {
+				description = "Event created.",
+				content = {
+					"application/json" = {
+						schema = { "$ref" = "##/components/schemas/Event" }
+					}
+				}
+			},
+			"400" = {
+				description = "Invalid event payload."
+			}
+		}
+	};
+}
+```
+
+In CFML, local [`$ref`][Reference Object] values need `##` so the serialized OpenAPI document contains `#/components/schemas/Event`. Component schemas come from your provider's `getComponents()` method and use the [OpenAPI Schema Object][Schema Object]:
+
+```cfscript
+component extends="taffy.core.openapiProvider" output="false" {
+
+	public struct function getComponents() {
+		return {
+			schemas = {
+				Event = {
+					type = "object",
+					required = [ "id", "name" ],
+					properties = {
+						id = { type = "string" },
+						name = { type = "string" },
+						description = { type = "string" }
+					}
+				}
+			}
+		};
+	}
+
+}
+```
+
+Provider helper methods can reduce boilerplate when building provider fragments:
+
+```cfscript
+public struct function getResponseDefaults(required array mediaTypes) {
+	return jsonResponses(
+		statusCode = "500",
+		description = "Unexpected error.",
+		schema = schemaRef("Error")
+	);
+}
+```
 
 If you need additional behavior, use endpoint docs methods and the provider hooks to augment the generated output. `afterGenerate()` receives the complete spec and can return a modified version before Taffy serializes and caches it.
 
+### Lint Diagnostics
+
+Enable linting only where you are comfortable exposing resource names, docs method names, schema names, and documentation gaps:
+
+```cfscript
+variables.framework.openapi = {
+	enabled = true,
+	lintEnabled = true
+};
+```
+
+Lint responses have this shape:
+
+```json
+{
+  "valid": false,
+  "summary": {
+    "errors": 1,
+    "warnings": 4,
+    "info": 2
+  },
+  "issues": [
+    {
+      "severity": "warning",
+      "code": "response.content.schema.missing",
+      "path": "/paths/~1events/get/responses/200/content/application~1json/schema",
+      "location": {
+        "resource": "events",
+        "method": "get",
+        "docsMethod": "getOpenAPIDocs",
+        "operation": "GET /events",
+        "target": "response 200 application/json"
+      },
+      "message": "Response 200 declares application/json content without a schema.",
+      "suggestion": "Add a schema or $ref in the endpoint docs method."
+    }
+  ]
+}
+```
+
+`valid` is `true` when there are no `error` issues. Severity meanings:
+
+| Severity | Meaning |
+| -------- | ------- |
+| `error` | Structurally wrong or likely to break OpenAPI tooling |
+| `warning` | Serializable but incomplete or probably not what you intended |
+| `info` | Helpful note, not a correctness problem |
+
+Common fixes:
+
+| Issue | Fix |
+| ----- | --- |
+| Missing response or request schemas | Add a [`schema`][Schema Object] or [`$ref`][Reference Object] in the endpoint docs method |
+| `Response not documented.` defaults | Add endpoint-specific [responses][Responses Object] or override provider response defaults |
+| Broken local [`$ref`][Reference Object] | Add the missing component schema or update the ref path |
+| Unsupported content type | Use a serializer/deserializer [media type][Media Type Object] configured for the API |
+| Required property missing from `properties` | Add the property schema or remove it from `required` |
+| Ambiguous schema shape | Add `type`, [`$ref`][Reference Object], `enum`, or composition keywords |
+| Auto-documented URI token | Declare the URI token as a handler argument, or move the handler to a resource URI that matches what it uses |
+| Suspicious or unused component schema | Rename for clean [`$ref`][Reference Object] usage, or remove unused schemas that are not intentionally published |
+
+The linter inspects the same final spec served by `?openapi`, including provider components, endpoint docs method merges, and `afterGenerate()` changes. Lint results are not cached, but the generated OpenAPI spec cache is reused.
+
 ### Performance
 
-The provider is created during framework setup. The serialized spec is generated once on the first request to `?openapi` (or `?swagger`) and cached at `application._taffy.openapiSpec`. Subsequent requests serve the cached JSON string directly — no provider calls, metadata walking, or serialization. The cache is invalidated automatically on framework reload.
+The provider is created during framework setup. The serialized spec is generated once on the first request to `?openapi`, `?swagger`, `?openapiLint`, or `?swaggerLint` and cached at `application._taffy.openapiSpec`. Subsequent spec requests serve the cached JSON string directly — no provider calls, metadata walking, or serialization. The cache is invalidated automatically on framework reload.
 
 ### Configuration
 
 See [openapi](#openapi) below for the full config reference.
+
+[OAS 3.1]: https://spec.openapis.org/oas/v3.1.0.html
+[OpenAPI Object]: https://spec.openapis.org/oas/v3.1.0.html#openapi-object
+[Info Object]: https://spec.openapis.org/oas/v3.1.0.html#info-object
+[Contact Object]: https://spec.openapis.org/oas/v3.1.0.html#contact-object
+[License Object]: https://spec.openapis.org/oas/v3.1.0.html#license-object
+[Server Object]: https://spec.openapis.org/oas/v3.1.0.html#server-object
+[Components Object]: https://spec.openapis.org/oas/v3.1.0.html#components-object
+[Paths Object]: https://spec.openapis.org/oas/v3.1.0.html#paths-object
+[Path Item Object]: https://spec.openapis.org/oas/v3.1.0.html#path-item-object
+[Operation Object]: https://spec.openapis.org/oas/v3.1.0.html#operation-object
+[Tag Object]: https://spec.openapis.org/oas/v3.1.0.html#tag-object
+[Parameter Object]: https://spec.openapis.org/oas/v3.1.0.html#parameter-object
+[Request Body Object]: https://spec.openapis.org/oas/v3.1.0.html#request-body-object
+[Media Type Object]: https://spec.openapis.org/oas/v3.1.0.html#media-type-object
+[Responses Object]: https://spec.openapis.org/oas/v3.1.0.html#responses-object
+[Response Object]: https://spec.openapis.org/oas/v3.1.0.html#response-object
+[Example Object]: https://spec.openapis.org/oas/v3.1.0.html#example-object
+[Reference Object]: https://spec.openapis.org/oas/v3.1.0.html#reference-object
+[Schema Object]: https://spec.openapis.org/oas/v3.1.0.html#schema-object
+[Security Requirement Object]: https://spec.openapis.org/oas/v3.1.0.html#security-requirement-object
+[Path Templating]: https://spec.openapis.org/oas/v3.1.0.html#path-templating
 
 ## More Guides
 
@@ -539,7 +765,8 @@ variables.framework = {
 	beanFactory = "",
 
 	openapi = {
-		enabled = true
+		enabled = true,
+		lintEnabled = false
 	},
 
 	environments = {}
@@ -826,12 +1053,13 @@ component extends="taffy.core.api"
 
 **Available in:** Taffy 4.0+<br/>
 **Type:** Structure<br/>
-**Default:** `{ enabled: true, provider: "taffy.core.openapiProvider" }`<br/>
-**Description:** Controls the OpenAPI 3.1 spec endpoint served at `?openapi` / `?swagger`. Set `enabled` to `false` to disable the endpoint entirely (returns 403). Optional keys `description`, `contact`, and `license` are passed through to the spec's `info` block. `servers` (array of `{ url, description }` objects) overrides the auto-derived server URL. `provider` points to the CFC used for components, global parameters, excluded parameters, response defaults, and the final generation hook.
+**Default:** `{ enabled: true, lintEnabled: false, provider: "taffy.core.openapiProvider" }`<br/>
+**Description:** Controls the [OpenAPI 3.1][OAS 3.1] spec endpoint served at `?openapi` / `?swagger` and the lint endpoints served at `?openapiLint` / `?swaggerLint`. Set `enabled` to `false` to disable all OpenAPI endpoints entirely (returns 403). Set `lintEnabled` to `true` to expose diagnostics. Optional keys `description` and [`contact`][Contact Object] override generated defaults in the spec's [`info`][Info Object] block; [`license`][License Object] is passed through when provided. [`servers`][Server Object] (array of `{ url, description }` objects) overrides the auto-derived server URL. `provider` points to the CFC used for [components][Components Object], global [parameters][Parameter Object], excluded parameters, response defaults, and the final generation hook.
 
 ```cfscript
 variables.framework.openapi = {
 	enabled = true,
+	lintEnabled = false,
 	description = "Public API for the Foo platform.",
 	contact = { name = "API Team", email = "api@example.com" },
 	license = { name = "MIT", url = "https://opensource.org/licenses/MIT" },

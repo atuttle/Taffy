@@ -42,6 +42,34 @@ component extends="testbox.system.BaseSpec" {
 				expect(structKeyExists(responses.default, "content")).toBeFalse();
 			});
 
+			it("builds component schema refs", function() {
+				expect(provider.schemaRef("Event")).toBe({ "$ref": "##/components/schemas/Event" });
+			});
+
+			it("builds JSON content objects", function() {
+				var schema = { "type": "object" };
+				var content = provider.jsonContent(schema);
+
+				expect(content["application/json"].schema).toBe(schema);
+			});
+
+			it("builds JSON response fragments", function() {
+				var schema = { "type": "object" };
+				var responses = provider.jsonResponses("200", "OK", schema);
+
+				expect(responses).toHaveKey("200");
+				expect(responses["200"].description).toBe("OK");
+				expect(responses["200"].content["application/json"].schema).toBe(schema);
+			});
+
+			it("builds JSON request bodies", function() {
+				var schema = { "type": "object" };
+				var requestBody = provider.jsonRequestBody(schema, true);
+
+				expect(requestBody.required).toBeTrue();
+				expect(requestBody.content["application/json"].schema).toBe(schema);
+			});
+
 		});
 
 	}
