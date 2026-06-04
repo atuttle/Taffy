@@ -64,6 +64,14 @@ component extends="testbox.system.BaseSpec" {
 
 			});
 
+			describe("schemaRef()", function() {
+
+				it("should build OpenAPI component schema refs", function() {
+					expect(resource.schemaRef("Artist")).toBe({ "$ref": "##/components/schemas/Artist" });
+				});
+
+			});
+
 			describe("encode.string()", function() {
 
 				it("should add control character prefix to force string serialization", function() {

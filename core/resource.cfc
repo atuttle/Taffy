@@ -19,6 +19,10 @@ component hint="base class for taffy REST components" {
 		return representationOf(arguments.data);
 	}
 
+	public struct function schemaRef(required string name) {
+		return { "$ref": "##/components/schemas/" & arguments.name };
+	}
+
 	private function noData() output="false" hint="use this function to return only headers to the consumer, no data" {
 		return getRepInstance().noData();
 	}

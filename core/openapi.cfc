@@ -167,6 +167,13 @@ component output="false" hint="Generates an OpenAPI 3.1 document from Taffy runt
 			op["summary"] = arguments.beanMeta["taffy_docs_name"];
 		}
 		if (structKeyExists(arguments.func, "hint")) op["description"] = arguments.func.hint;
+		if (
+			isEndpointDeprecated(arguments.endpoint)
+			|| isTaffyDeprecated(arguments.beanMeta)
+			|| isTaffyDeprecated(arguments.func)
+		) {
+			op["deprecated"] = true;
+		}
 
 		var tokenLookup = {};
 		for (var t = 1; t <= arrayLen(arguments.endpoint.tokens); t++) {
@@ -315,9 +322,63 @@ component output="false" hint="Generates an OpenAPI 3.1 document from Taffy runt
 	}
 
 	private string function getResourceTag(required struct beanMeta, required string beanName) {
-		if (structKeyExists(arguments.beanMeta, "taffy:docs:name")) return arguments.beanMeta["taffy:docs:name"];
-		if (structKeyExists(arguments.beanMeta, "taffy_docs_name")) return arguments.beanMeta["taffy_docs_name"];
+		var openapiTag = getTrimmedMetaValue(arguments.beanMeta, "openapi:tag,openapi_tag");
+		if (len(openapiTag)) return openapiTag;
+		var taffyDocsName = getTrimmedMetaValue(arguments.beanMeta, "taffy:docs:name,taffy_docs_name");
+		if (len(taffyDocsName)) return taffyDocsName;
 		return arguments.beanName;
+	}
+
+	private string function getTrimmedMetaValue(required struct metadata, required string keyList) {
+		for (var i = 1; i <= listLen(arguments.keyList); i++) {
+			var keyName = listGetAt(arguments.keyList, i);
+			if (
+				structKeyExists(arguments.metadata, keyName)
+				&& isSimpleValue(arguments.metadata[keyName])
+				&& len(trim(arguments.metadata[keyName]))
+			) {
+				return trim(arguments.metadata[keyName]);
+			}
+		}
+		return "";
+	}
+
+	private boolean function isEndpointDeprecated(required struct endpoint) {
+		return (
+			structKeyExists(arguments.endpoint, "deprecated")
+			&& isSimpleValue(arguments.endpoint.deprecated)
+			&& openApiMetadataBooleanIsTrue(arguments.endpoint.deprecated)
+		);
+	}
+
+	private boolean function isTaffyDeprecated(required struct metadata) {
+		return hasTrueMetadataKey(arguments.metadata, "taffy_deprecated,taffy:deprecated");
+	}
+
+	private boolean function hasTrueMetadataKey(required struct metadata, required string keyList) {
+		var keyName = "";
+		for (keyName in listToArray(arguments.keyList)) {
+			if (
+				structKeyExists(arguments.metadata, keyName)
+				&& isSimpleValue(arguments.metadata[keyName])
+				&& openApiMetadataBooleanIsTrue(arguments.metadata[keyName])
+			) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean function openApiMetadataBooleanIsTrue(required any value) {
+		if (!isSimpleValue(arguments.value)) {
+			return false;
+		}
+
+		var normalizedValue = lcase(trim(arguments.value));
+		if (listFind("true,1,yes", normalizedValue)) {
+			return true;
+		}
+		return false;
 	}
 
 	private any function getOpenApiProvider() {
@@ -683,6 +744,8 @@ component output="false" hint="Generates an OpenAPI 3.1 document from Taffy runt
 					arguments.target[key] = [];
 				}
 				arguments.target[key] = mergeParameters(arguments.target[key], arguments.source[key]);
+			} else if (isStruct(arguments.source[key]) && structKeyExists(arguments.source[key], "$ref")) {
+				arguments.target[key] = duplicate(arguments.source[key]);
 			} else if (structKeyExists(arguments.target, key) && isStruct(arguments.target[key]) && isStruct(arguments.source[key])) {
 				arguments.target[key] = deepMergeStructs(arguments.target[key], arguments.source[key]);
 			} else {

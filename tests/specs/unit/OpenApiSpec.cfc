@@ -181,6 +181,24 @@ component extends="testbox.system.BaseSpec" {
 					expect(op.description).toBe(op.operationId);
 				});
 
+				it("marks operations deprecated for accepted true metadata values", function() {
+					var endpoint = mkEndpoint("ItemsResource", "/items", [], { get: "get" });
+					var func = mkFunc("get", []);
+					var op = gen.buildOperation("get", func, endpoint, { "taffy_deprecated": "yes" }, ["application/json"]);
+
+					expect(op.deprecated).toBeTrue();
+				});
+
+				it("does not treat on as deprecated metadata", function() {
+					var endpoint = mkEndpoint("ItemsResource", "/items", [], { get: "get" });
+					endpoint.deprecated = "on";
+					var func = mkFunc("get", []);
+					func["taffy_deprecated"] = "on";
+					var op = gen.buildOperation("get", func, endpoint, { "taffy_deprecated": "on" }, ["application/json"]);
+
+					expect(structKeyExists(op, "deprecated")).toBeFalse();
+				});
+
 				it("applies provider exclusions to generated request body properties", function() {
 					var endpoint = mkEndpoint("ItemsResource", "/items", [], { post: "post" });
 					var func = mkFunc("post", [
