@@ -46,6 +46,10 @@ component extends="testbox.system.BaseSpec" {
 				expect(provider.schemaRef("Event")).toBe({ "$ref": "##/components/schemas/Event" });
 			});
 
+			it("adds descriptions to component schema refs", function() {
+				expect(provider.schemaRef("Event", "Event payload.")).toBe({ "$ref": "##/components/schemas/Event", "description": "Event payload." });
+			});
+
 			it("builds JSON content objects", function() {
 				var schema = { "type": "object" };
 				var content = provider.jsonContent(schema);

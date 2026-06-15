@@ -70,6 +70,10 @@ component extends="testbox.system.BaseSpec" {
 					expect(resource.schemaRef("Artist")).toBe({ "$ref": "##/components/schemas/Artist" });
 				});
 
+				it("should add descriptions to OpenAPI component schema refs", function() {
+					expect(resource.schemaRef("Artist", "Artist payload.")).toBe({ "$ref": "##/components/schemas/Artist", "description": "Artist payload." });
+				});
+
 			});
 
 			describe("encode.string()", function() {

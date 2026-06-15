@@ -266,7 +266,7 @@ Provider helper methods:
 
 | Method | Returns | Purpose |
 | ------ | ------- | ------- |
-| `schemaRef(name)` | `{ "$ref": "#/components/schemas/{name}" }` | Builds a component schema [Reference Object] |
+| `schemaRef(name, description="")` | `{ "$ref": "#/components/schemas/{name}" }` | Builds a component schema [Reference Object], optionally with a field-level description |
 | `jsonContent(schema)` | JSON content object | Wraps a [Schema Object] in `application/json` [Media Type Object] content |
 | `jsonResponses(statusCode, description, schema)` | Status-code response fragment | Builds a JSON [Response Object] fragment |
 | `jsonRequestBody(schema, isRequired=false)` | Request body object | Builds a JSON [Request Body Object] fragment |
@@ -275,7 +275,7 @@ Endpoint-specific docs live next to the resource method. Name the docs method wi
 
 The docs method returns an [OpenAPI Operation Object][Operation Object] fragment, not a full OpenAPI document and not a [`paths`][Paths Object] object. Taffy merges that fragment into the generated operation for the resource method. Use normal OpenAPI field names such as `summary`, `description`, `operationId`, `tags`, [`parameters`][Parameter Object], [`requestBody`][Request Body Object], [`responses`][Responses Object], and [`security`][Security Requirement Object].
 
-Inside resource docs methods, use `schemaRef("Artist")` to reference provider component schemas without hand-writing the local `$ref` struct. Resources do not include the `jsonContent`/etc helpers, those are provider-only.
+Inside resource docs methods, use `schemaRef("Artist")` to reference provider component schemas without hand-writing the local `$ref` struct, or `schemaRef("Timestamp", "Created timestamp.")` when the field needs its own description. Resources do not include the `jsonContent`/etc helpers, those are provider-only.
 
 Taffy normalizes OpenAPI keyword casing in endpoint docs fragments (`requestbody` becomes `requestBody`, `readonly` becomes `readOnly`, etc.) while preserving map keys such as property names, media types, and response status codes.
 
@@ -1493,8 +1493,9 @@ This method is an alias to **representationOf** for those of us tired of typing 
 **Parameters:**
 
 - **name (string)** - Component schema name, usually like `timestamp` or `Artist`.
+- **description (string, optional)** - Field-level description to include alongside the `$ref`.
 
-Returns an OpenAPI `$ref` struct pointing to `#/components/schemas/{name}`. Useful for referencing component schemas defined in your custom OpenAPI provider.
+Returns an OpenAPI `$ref` struct pointing to `#/components/schemas/{name}`. When `description` is supplied, it is included on the returned Reference Object. Useful for referencing component schemas defined in your custom OpenAPI provider.
 
 ```cfscript
 function getOpenAPIDocs() {
@@ -1504,7 +1505,7 @@ function getOpenAPIDocs() {
 				description = "Successful response",
 				content = {
 					"application/json" = {
-						schema = schemaRef("Artist")
+						schema = schemaRef("Artist", "Artist payload.")
 					}
 				}
 			}

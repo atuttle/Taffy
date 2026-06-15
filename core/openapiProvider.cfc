@@ -26,8 +26,12 @@ component output="false" {
 		return { "default": undocumented };
 	}
 
-	public struct function schemaRef(required string name) {
-		return { "$ref": "##/components/schemas/" & arguments.name };
+	public struct function schemaRef(required string name, string description = "") {
+		var schema = { "$ref": "##/components/schemas/" & arguments.name };
+		if ( len( trim( arguments.description ) ) ) {
+			schema["description"] = arguments.description;
+		}
+		return schema;
 	}
 
 	public struct function jsonContent(required struct schema) {
