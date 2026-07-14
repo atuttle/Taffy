@@ -58,7 +58,7 @@ component implements="taffy.bonus.ILogAdapter" {
 		payload["events"][1]["metaData"]["request"]["requestUrl"] = cgi.request_url;
 
 		// Send log to Bugsnag
-		cfhttp(url="https://notify.bugsnag.com", method="post") {
+		cfhttp(url="https://notify.bugsnag.com", method="post", timeout="15") {
 			cfhttpparam(type="header", name="Content-Type", value="application/json");
 			cfhttpparam(type="body", value=serializeJSON(payload));
 		}
