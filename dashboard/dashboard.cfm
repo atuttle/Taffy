@@ -216,7 +216,7 @@
 		<section id="resources">
 			<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; margin-bottom: 1rem;">
 				<h2 style="font-size: 1.25rem; font-weight: 600; margin: 0;">Resources:</h2>
-				<input type="text" id="resourceSearch" placeholder="Filter... (ESC to clear)" autocomplete="off" class="form-input" style="flex: 1; max-width: 400px;" />
+				<input type="search" id="resourceSearch" placeholder="Filter... (ESC to clear)" autocomplete="off" class="form-input" style="flex: 1; max-width: 400px;" />
 				<div class="sort-picker" data-store-key="taffyDashboardSort">
 					<button type="button" class="sort-btn active" data-sort="name">Name</button>
 					<button type="button" class="sort-btn" data-sort="uri">URI</button>
@@ -555,6 +555,9 @@
 
 	<script type="text/javascript">
 		<cfinclude template="highlight.min.js" />
+		<cfinclude template="cfDump.min.js" />
+		// adapter so dash.js can call window.taffyDump(data) without knowing about cfDump
+		window.taffyDump = function(data){ cfDump(data, true, true, true); };
 		<cfinclude template="dash.js" />
 	</script>
 </body>

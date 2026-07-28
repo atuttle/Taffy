@@ -148,6 +148,9 @@ document.addEventListener('DOMContentLoaded', function(){
 				filterResources();
 			}
 		});
+		// Fired by <input type="search"> when the user clicks the native clear (X) button
+		// or hits Enter. Re-runs the filter so the cleared field shows the full list.
+		searchInput.addEventListener('search', filterResources);
 	}
 
 	// Resource sorting
@@ -287,9 +290,18 @@ document.addEventListener('DOMContentLoaded', function(){
 				reset.style.display = '';
 				headers = parseHeaders(headers);
 
+				// cache parsed JSON on the resource element so the DUMP button can read it back.
+				// reset on every request so a non-JSON response clears any previous payload.
+				resource.__taffyJsonData = null;
+
 				if (headers['content-type'] && (headers['content-type'].indexOf('application/json') > -1 || headers['content-type'].indexOf('text/json') > -1 || headers['content-type'].indexOf('application/vnd.api+json') > -1)){
 					//indentation!
 					if (body.length){
+						try {
+							resource.__taffyJsonData = JSON.parse(body);
+						} catch (e) {
+							resource.__taffyJsonData = null;
+						}
 						body = JSON.stringify(JSON.parse(body), null, 3);
 						// only do syntax highlighting if hljs is defined
 						if (typeof hljs === 'undefined') {
@@ -320,12 +332,33 @@ document.addEventListener('DOMContentLoaded', function(){
 					headerRow.insertAdjacentHTML('beforeend', '<div><strong>' + sortable[h] + ':</strong> ' + headers[sortable[h]] + '</div>');
 				}
 
+				// optional DUMP button. Only renders when a JSON response was parsed AND a dump handler
+				// is registered on window.taffyDump. The handler is a separate drop-in script that the
+				// site can supply; see README.
+				var renderBtn = '';
+				if (resource.__taffyJsonData !== null && typeof window.taffyDump === 'function') {
+					renderBtn = ' <span class="dumpBtn label label-default" style="cursor:pointer; margin-left:0.5em;">CLICK TO DUMP</span>';
+				}
+
 				response.querySelector('.response-time').innerHTML = 'Request took ' + timeSpent + 'ms';
-				response.querySelector('.response-status').innerHTML = status;
+				response.querySelector('.response-status').innerHTML = status + renderBtn;
 				response.querySelector('.responseBody').innerHTML = body;
 			});
 
 		});
+	});
+
+	// Delegated click handler for the DUMP button. The button is rendered on demand inside
+	// .response-time after each request, so the handler has to attach to the document root.
+	document.body.addEventListener('click', function(e){
+		var target = e.target;
+		if (!target || !target.classList || !target.classList.contains('dumpBtn')) return;
+		var resource = target.closest('.resource');
+		if (!resource || resource.__taffyJsonData === null || typeof window.taffyDump !== 'function') {
+			alert('Unable to dump API response');
+			return;
+		}
+		window.taffyDump(resource.__taffyJsonData);
 	});
 
 	document.querySelectorAll(".resetRequest").forEach(function(el) {

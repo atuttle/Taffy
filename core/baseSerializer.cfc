@@ -183,6 +183,17 @@ component output="false" hint="a helper class to represent easily serializable d
 		return variables.miscHeaders;
 	}
 
+	public function noCache() output="false" hint="adds Pragma/Cache-Control/Last-Modified/Expires headers to discourage browser and proxy caching of the response. Chainable; merges with any headers already set via withHeaders()." {
+		var nowUtc = dateConvert("local2Utc", now());
+		var lastModified = dateFormat(nowUtc, "ddd, d mmm yyyy") & " " & timeFormat(nowUtc, "HH:mm:ss") & " GMT";
+		// merge into miscHeaders so existing user headers (set via withHeaders) survive
+		variables.miscHeaders["Pragma"] = "no-cache";
+		variables.miscHeaders["Cache-Control"] = "no-cache, no-store, must-revalidate";
+		variables.miscHeaders["Last-Modified"] = lastModified;
+		variables.miscHeaders["Expires"] = "Mon, 26 Jul 1997 05:00:00 GMT";
+		return this;
+	}
+
 	public function andDelete(required boolean doDeleteFile) output="false" hint="used to delete the streamed file" {
 		variables.deleteFile = arguments.doDeleteFile;
 		return this;

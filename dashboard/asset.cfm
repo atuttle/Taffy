@@ -19,6 +19,14 @@
 		<cfcontent type="image/gif" file="#expandPath('./loading.gif')#" reset="true" /><cfabort />
 	</cfcase>
 
+	<cfcase value="cfDump.min.js">
+		<cfcontent type="text/javascript" file="#expandPath('./cfDump.min.js')#" reset="true" /><cfabort />
+	</cfcase>
+
+	<cfcase value="cfDump.min.js.map">
+		<cfcontent type="application/json" file="#expandPath('./cfDump.min.js.map')#" reset="true" /><cfabort />
+	</cfcase>
+
 	<cfdefaultcase>
 		<cfheader statuscode="404" statustext="Not Found" />
 		<cfcontent reset="true" /><cfabort />
