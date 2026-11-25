@@ -31,7 +31,7 @@ component output="false" hint="a helper class to decode input data" {
 	private void function throwError(numeric statusCode=500, required string msg, struct headers={}) output="false" {
 		cfcontent(reset="true");
 		addHeaders(arguments.headers);
-		cfheader(statuscode=arguments.statusCode, statustext=arguments.msg);
+		cfheader(statuscode=arguments.statusCode);
 		abort;
 	}
 

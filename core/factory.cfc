@@ -2,7 +2,15 @@ component output="false" {
 
 	// bean cache
 	this.beans = {};
+	// bean paths (createObject on first getBean)
+	this.paths = {};
 	this.transients = {};
+	// parsed cfc metadata cache (no createObject at load)
+	this.metaCache = {};
+	// absolute paths to cfc files (for re-parse)
+	this.filePaths = {};
+	// beans that declare taffy:uri
+	this.resourceNames = {};
 
 	public function init(externalBeanFactory) {
 		if (structKeyExists(arguments, "externalBeanFactory")) {
@@ -20,11 +28,17 @@ component output="false" {
 		return structKeyExists(this.transients, arguments.beanName);
 	}
 
+	public function pathExists(beanName) {
+		return structKeyExists(this.paths, arguments.beanName);
+	}
+
 	public function getBean(beanName) {
 		var b = 0;
 		var meta = 0;
-		if (beanExists(arguments.beanName, false, false)) {
+		if (structKeyExists(this.beans, arguments.beanName)) {
 			return this.beans[arguments.beanName];
+		} else if (pathExists(arguments.beanName)) {
+			return loadBeanFromPath(arguments.beanName);
 		} else if (transientExists(arguments.beanName)) {
 			b = createObject('component', this.transients[arguments.beanName]);
 			meta = getMetadata(b);
@@ -37,9 +51,37 @@ component output="false" {
 		}
 	}
 
+	// metadata without createObject when possible (Lucee getComponentMetadata runs CFC bodies)
+	public function getBeanMetaData(beanName) {
+		if (structKeyExists(this.metaCache, arguments.beanName)) {
+			return this.metaCache[arguments.beanName];
+		}
+		if (structKeyExists(this.beans, arguments.beanName)) {
+			return getMetadata(this.beans[arguments.beanName]);
+		}
+		if (structKeyExists(this.filePaths, arguments.beanName)) {
+			return parseCfcMetaData(this.filePaths[arguments.beanName]);
+		}
+		if (pathExists(arguments.beanName)) {
+			return parseCfcMetaData(expandPath("/" & replace(this.paths[arguments.beanName], ".", "/", "all") & ".cfc"));
+		}
+		if (transientExists(arguments.beanName)) {
+			return getComponentMetadata(this.transients[arguments.beanName]);
+		}
+		if (externalBeanExists(arguments.beanName)) {
+			return getMetadata(this.externalBeanFactory.getBean(arguments.beanName));
+		}
+		throwError(message="Bean name '#arguments.beanName#' not found.", type="Taffy.Factory.BeanNotFound");
+	}
+
 	public function getBeanList() {
 		var combined = structKeyList(this.beans);
+		var pathKeys = structKeyList(this.paths);
 		var trans = structKeyList(this.transients);
+		if (len(combined) and len(pathKeys)) {
+			combined = combined & ",";
+		}
+		combined = combined & pathKeys;
 		if (len(combined) and len(trans)) {
 			combined = combined & ",";
 		}
@@ -47,13 +89,27 @@ component output="false" {
 		return combined;
 	}
 
+	public function getResourceBeanList() {
+		return structKeyList(this.resourceNames);
+	}
+
 	public function beanExists(required beanName, includeTransients=true, includeExternal=false) output="false" {
-		return structKeyExists(this.beans, arguments.beanName) or (arguments.includeTransients and transientExists(arguments.beanName)) or
+		return structKeyExists(this.beans, arguments.beanName) or pathExists(arguments.beanName) or
+			(arguments.includeTransients and transientExists(arguments.beanName)) or
 			(arguments.includeExternal and externalBeanExists(arguments.beanName));
 	}
 
 	private boolean function externalBeanExists(required beanName) output="false" {
 		return structKeyExists(this, "externalBeanFactory") and this.externalBeanFactory.containsBean(arguments.beanName);
+	}
+
+	private function loadBeanFromPath(required string beanName) {
+		var beanPath = this.paths[arguments.beanName];
+		var objBean = createObject("component", beanPath);
+		structDelete(this.paths, arguments.beanName);
+		this.beans[arguments.beanName] = objBean;
+		_recurse_ResolveDependencies(objBean, getMetadata(objBean));
+		return objBean;
 	}
 
 	public void function loadBeansFromPath(
@@ -64,9 +120,14 @@ component output="false" {
 		taffyRef={}
 	) output="false" {
 		var local = {};
-		// cache all of the beans
+		// cache bean paths (createObject on first getBean)
 		if (isFullReload) {
 			this.beans = {};
+			this.paths = {};
+			this.transients = {};
+			this.metaCache = {};
+			this.filePaths = {};
+			this.resourceNames = {};
 			arguments.taffyRef.status.skippedResources = []; // empty out the array on factory reloads
 			arguments.taffyRef.beanList = "";
 		}
@@ -79,12 +140,18 @@ component output="false" {
 		for (var row in local.beanQuery) {
 			local.beanName = filePathToBeanName(row.directory, row.name, arguments.resourcesBasePath);
 			local.beanPath = filePathToBeanPath(row.directory, row.name, arguments.resourcesPath, arguments.resourcesBasePath);
+			local.absFile = row.directory & "/" & row.name;
 			try {
-				local.objBean = createObject("component", local.beanPath);
-				if (isSerializerInstance(local.objBean)) {
+				local.meta = parseCfcMetaData(local.absFile);
+				this.metaCache[local.beanName] = local.meta;
+				this.filePaths[local.beanName] = local.absFile;
+				if (isSerializerMetadata(local.meta)) {
 					this.transients[local.beanName] = local.beanPath;
 				} else {
-					this.beans[local.beanName] = local.objBean;
+					this.paths[local.beanName] = local.beanPath;
+					if (metadataHasTaffyUri(local.meta)) {
+						this.resourceNames[local.beanName] = true;
+					}
 				}
 			} catch (any e) {
 				// skip cfc's with errors, but save info about them for display in the dashboard
@@ -94,12 +161,98 @@ component output="false" {
 				arrayAppend(arguments.taffyRef.status.skippedResources, local.err);
 			}
 		}
-		// resolve dependencies
-		for (local.b in this.beans) {
-			local.bean = this.beans[local.b];
-			local.beanMeta = getMetadata(local.bean);
-			_recurse_ResolveDependencies(local.bean, local.beanMeta);
+	}
+
+	// parse CFC source for uri/verb/serializer hints without running the component
+	// (Lucee getComponentMetadata executes the CFC body). Supports script and tag syntax.
+	private struct function parseCfcMetaData(required string absPath) {
+		var src = fileRead(arguments.absPath);
+		var meta = {
+			name: listLast(replace(arguments.absPath, "\", "/", "all"), "/"),
+			functions: []
+		};
+		var seen = {};
+		// chr(60) avoids the CFML parser treating a literal tag opener as a real tag
+		var cffn = chr(60) & "cffunction";
+		meta.name = replaceNoCase(meta.name, ".cfc", "");
+
+		var uriFind = reFindNoCase('taffy[_:]uri\s*=\s*["'']([^"'']+)["'']', src, 1, true);
+		if (isStruct(uriFind) && structKeyExists(uriFind, "pos") && arrayLen(uriFind.pos) >= 2 && uriFind.pos[2] > 0) {
+			meta["taffy:uri"] = mid(src, uriFind.pos[2], uriFind.len[2]);
 		}
+
+		var aopFind = reFindNoCase('taffy[_:]aopbean\s*=\s*["'']([^"'']+)["'']', src, 1, true);
+		if (isStruct(aopFind) && structKeyExists(aopFind, "pos") && arrayLen(aopFind.pos) >= 2 && aopFind.pos[2] > 0) {
+			meta["taffy:aopbean"] = mid(src, aopFind.pos[2], aopFind.len[2]);
+		}
+
+		if (reFindNoCase('extends\s*=\s*["''][^"'']*baseSerializer', src)
+			or reFindNoCase('extends\s*=\s*["'']taffy\.core\.baseSerializer["'']', src)
+			or reFindNoCase('function\s+getAs\w+\s*\([^\)]*\)[^{\n]*taffy[_:]mime\s*=', src)
+			or reFindNoCase(cffn & '\b[^>]*\bname\s*=\s*["'']getAs[^"'']*["''][^>]*taffy[_:]mime\s*=', src)
+			or reFindNoCase(cffn & '\b[^>]*taffy[_:]mime\s*=[^>]*\bname\s*=\s*["'']getAs', src)) {
+			meta.extends = { name: "taffy.core.baseSerializer" };
+		}
+
+		var verbNames = ["get", "post", "put", "patch", "delete", "head", "options"];
+		for (var verb in verbNames) {
+			if (
+				reFindNoCase("function\s+#verb#\s*\(", src)
+				or reFindNoCase(cffn & '\b[^>]*\bname\s*=\s*["'']#verb#["'']', src)
+			) {
+				arrayAppend(meta.functions, { name: verb });
+				seen[lcase(verb)] = true;
+			}
+		}
+
+		// function foo taffy:verb="bar"
+		var attrFind = reFindNoCase('function\s+(\w+)[^{\n]*taffy[_:]verb\s*=\s*["'']([^"'']+)["'']', src, 1, true);
+		while (isStruct(attrFind) && structKeyExists(attrFind, "pos") && arrayLen(attrFind.pos) >= 3 && attrFind.pos[1] > 0) {
+			var scriptName = mid(src, attrFind.pos[2], attrFind.len[2]);
+			if (!structKeyExists(seen, lcase(scriptName) & ":" & lcase(mid(src, attrFind.pos[3], attrFind.len[3])))) {
+				arrayAppend(meta.functions, {
+					name: scriptName,
+					"taffy:verb": mid(src, attrFind.pos[3], attrFind.len[3])
+				});
+				seen[lcase(scriptName) & ":" & lcase(mid(src, attrFind.pos[3], attrFind.len[3]))] = true;
+			}
+			var nextPos = attrFind.pos[1] + attrFind.len[1];
+			if (nextPos >= len(src)) break;
+			attrFind = reFindNoCase('function\s+(\w+)[^{\n]*taffy[_:]verb\s*=\s*["'']([^"'']+)["'']', src, nextPos, true);
+		}
+
+		// tag syntax: name/taffy:verb attrs in any order
+		var tagFind = reFindNoCase(cffn & '\b([^>]*)>', src, 1, true);
+		while (isStruct(tagFind) && structKeyExists(tagFind, "pos") && arrayLen(tagFind.pos) >= 2 && tagFind.pos[1] > 0) {
+			var attrs = mid(src, tagFind.pos[2], tagFind.len[2]);
+			var nameFind = reFindNoCase('\bname\s*=\s*["'']([^"'']+)["'']', attrs, 1, true);
+			var verbFind = reFindNoCase('taffy[_:]verb\s*=\s*["'']([^"'']+)["'']', attrs, 1, true);
+			if (
+				isStruct(nameFind) && structKeyExists(nameFind, "pos") && arrayLen(nameFind.pos) >= 2 && nameFind.pos[2] > 0
+				&& isStruct(verbFind) && structKeyExists(verbFind, "pos") && arrayLen(verbFind.pos) >= 2 && verbFind.pos[2] > 0
+			) {
+				var tagName = mid(attrs, nameFind.pos[2], nameFind.len[2]);
+				var tagVerb = mid(attrs, verbFind.pos[2], verbFind.len[2]);
+				var tagKey = lcase(tagName) & ":" & lcase(tagVerb);
+				if (!structKeyExists(seen, tagKey)) {
+					arrayAppend(meta.functions, {
+						name: tagName,
+						"taffy:verb": tagVerb
+					});
+					seen[tagKey] = true;
+				}
+			}
+			var tagNext = tagFind.pos[1] + tagFind.len[1];
+			if (tagNext >= len(src)) break;
+			tagFind = reFindNoCase(cffn & '\b([^>]*)>', src, tagNext, true);
+		}
+
+		return meta;
+	}
+
+	private boolean function metadataHasTaffyUri(required struct meta) {
+		return (structKeyExists(arguments.meta, "taffy_uri") && len(arguments.meta.taffy_uri))
+			or (structKeyExists(arguments.meta, "taffy:uri") && len(arguments.meta["taffy:uri"]));
 	}
 
 	private function filePathToBeanPath(path, filename, resourcesPath, resourcesBasePath) {
@@ -172,17 +325,16 @@ component output="false" {
 	}
 
 	/**
-	 * Walks the inheritance chain to check if obj extends baseSerializer.
+	 * Walks the inheritance chain to check if metadata extends baseSerializer.
 	 * Replaces isInstanceOf() which fails on Lucee when extends resolves
 	 * to a relative path instead of a mapping-prefixed path.
 	 */
-	private boolean function isSerializerInstance(required any obj) output="false" {
-		if (!isObject(arguments.obj)) return false;
-		var meta = getMetadata(arguments.obj);
-		while (structKeyExists(meta, "name")) {
-			if (listLast(meta.name, ".") == "baseSerializer") return true;
-			if (!structKeyExists(meta, "extends")) break;
-			meta = meta.extends;
+	private boolean function isSerializerMetadata(required struct meta) output="false" {
+		var walk = arguments.meta;
+		while (structKeyExists(walk, "name")) {
+			if (listLast(walk.name, ".") == "baseSerializer") return true;
+			if (!structKeyExists(walk, "extends")) break;
+			walk = walk.extends;
 		}
 		return false;
 	}

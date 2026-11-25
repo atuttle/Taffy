@@ -15,13 +15,20 @@ box run-script start:all
 box run-script start:lucee5
 box run-script start:lucee6
 box run-script start:lucee7
+box run-script start:adobe2021
+box run-script start:adobe2023
+box run-script start:adobe2025
 
 ### Run tests
 
 box run-script test:all
+box run-script test:serial
 box run-script test:lucee5
 box run-script test:lucee6
 box run-script test:lucee7
+box run-script test:adobe2021
+box run-script test:adobe2023
+box run-script test:adobe2025
 
 ### Stop servers
 
@@ -29,6 +36,9 @@ box run-script stop:all
 box run-script stop:lucee5
 box run-script stop:lucee6
 box run-script stop:lucee7
+box run-script stop:adobe2021
+box run-script stop:adobe2023
+box run-script stop:adobe2025
 
 ## Documentation References
 

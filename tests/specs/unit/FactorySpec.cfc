@@ -6,6 +6,7 @@ component extends="testbox.system.BaseSpec" {
 
 			beforeEach(function() {
 				variables.factory = new core.factory();
+				variables.parseDir = expandPath("/tests/resources/factoryParse");
 			});
 
 			describe("init()", function() {
@@ -13,6 +14,11 @@ component extends="testbox.system.BaseSpec" {
 				it("should initialize with empty bean cache", function() {
 					expect(factory.beans).toBeStruct();
 					expect(structIsEmpty(factory.beans)).toBeTrue();
+				});
+
+				it("should initialize with empty path cache", function() {
+					expect(factory.paths).toBeStruct();
+					expect(structIsEmpty(factory.paths)).toBeTrue();
 				});
 
 				it("should initialize with empty transients cache", function() {
@@ -100,6 +106,12 @@ component extends="testbox.system.BaseSpec" {
 					expect(listFindNoCase(list, "transient1")).toBeGT(0);
 				});
 
+				it("should include paths in the list", function() {
+					factory.paths["pathBean1"] = "some.path.PathBean";
+					var list = factory.getBeanList();
+					expect(listFindNoCase(list, "pathBean1")).toBeGT(0);
+				});
+
 			});
 
 			describe("loadBeansFromPath()", function() {
@@ -111,8 +123,12 @@ component extends="testbox.system.BaseSpec" {
 					}).notToThrow();
 				});
 
-				it("should clear beans on full reload", function() {
+				it("should clear beans and paths on full reload", function() {
 					factory.beans["existingBean"] = {};
+					factory.paths["pathBean"] = "some.path";
+					factory.filePaths["pathBean"] = "/tmp/path.cfc";
+					factory.metaCache["pathBean"] = {};
+					factory.resourceNames["pathBean"] = true;
 					var taffyRef = {
 						status: { skippedResources: [] },
 						beanList: ""
@@ -124,8 +140,123 @@ component extends="testbox.system.BaseSpec" {
 						isFullReload = true,
 						taffyRef = taffyRef
 					);
-					// After reload with non-existent path, beans should be cleared
+					// After reload with non-existent path, beans and paths should be cleared
 					expect(structIsEmpty(factory.beans)).toBeTrue();
+					expect(structIsEmpty(factory.paths)).toBeTrue();
+					expect(structIsEmpty(factory.filePaths)).toBeTrue();
+					expect(structIsEmpty(factory.metaCache)).toBeTrue();
+					expect(structIsEmpty(factory.resourceNames)).toBeTrue();
+				});
+
+			});
+
+			describe("pathExists() / beanExists() for paths", function() {
+
+				it("beanExists should find beans that only exist as paths", function() {
+					factory.paths["pathBean"] = "tests.resources.MockSimpleResource";
+					expect(factory.beanExists("pathBean")).toBeTrue();
+					expect(factory.pathExists("pathBean")).toBeTrue();
+				});
+
+			});
+
+			describe("deferred load and source metadata parse", function() {
+
+				beforeEach(function() {
+					var taffyRef = {
+						status: { skippedResources: [] },
+						beanList: ""
+					};
+					factory.loadBeansFromPath(
+						beanPath = parseDir,
+						resourcesPath = "tests.resources.factoryParse",
+						resourcesBasePath = parseDir,
+						isFullReload = true,
+						taffyRef = taffyRef
+					);
+					variables.taffyRef = taffyRef;
+				});
+
+				it("should not createObject resources at load time", function() {
+					expect(structIsEmpty(factory.beans)).toBeTrue();
+					expect(factory.pathExists("TagCollection")).toBeTrue();
+					expect(factory.pathExists("ScriptMember")).toBeTrue();
+					expect(factory.pathExists("HelperNoUri")).toBeTrue();
+				});
+
+				it("getResourceBeanList should include only beans with taffy uri", function() {
+					var resources = factory.getResourceBeanList();
+					expect(listFindNoCase(resources, "TagCollection")).toBeGT(0);
+					expect(listFindNoCase(resources, "ScriptMember")).toBeGT(0);
+					expect(listFindNoCase(resources, "TagVerbOverride")).toBeGT(0);
+					expect(listFindNoCase(resources, "HelperNoUri")).toBe(0);
+					expect(listFindNoCase(resources, "TagSerializer")).toBe(0);
+				});
+
+				it("should parse tag-syntax HTTP verbs", function() {
+					var meta = factory.getBeanMetaData("TagCollection");
+					expect(meta["taffy:uri"]).toBe("/factory-parse/artists");
+					var names = "";
+					for (var f in meta.functions) {
+						names = listAppend(names, f.name);
+					}
+					expect(listFindNoCase(names, "get")).toBeGT(0);
+					expect(listFindNoCase(names, "post")).toBeGT(0);
+				});
+
+				it("should parse script-syntax HTTP verbs", function() {
+					var meta = factory.getBeanMetaData("ScriptMember");
+					expect(meta["taffy:uri"]).toBe("/factory-parse/artist/{id}");
+					var names = "";
+					for (var f in meta.functions) {
+						names = listAppend(names, f.name);
+					}
+					expect(listFindNoCase(names, "get")).toBeGT(0);
+					expect(listFindNoCase(names, "put")).toBeGT(0);
+					expect(listFindNoCase(names, "delete")).toBeGT(0);
+				});
+
+				it("should parse tag taffy:verb / taffy_verb overrides", function() {
+					var meta = factory.getBeanMetaData("TagVerbOverride");
+					var patchName = "";
+					var optionsName = "";
+					for (var f in meta.functions) {
+						if (structKeyExists(f, "taffy:verb") && uCase(f["taffy:verb"]) == "PATCH") {
+							patchName = f.name;
+						}
+						if (structKeyExists(f, "taffy:verb") && uCase(f["taffy:verb"]) == "OPTIONS") {
+							optionsName = f.name;
+						}
+					}
+					expect(patchName).toBe("updatePartial");
+					expect(optionsName).toBe("handleOptions");
+				});
+
+				it("should classify serializers as transients including getAs+mime without direct baseSerializer extends", function() {
+					expect(factory.transientExists("TagSerializer")).toBeTrue();
+					expect(factory.transientExists("IndirectSerializer")).toBeTrue();
+					expect(factory.transientExists("LocalSerializerBase")).toBeTrue();
+					expect(factory.pathExists("TagSerializer")).toBeFalse();
+				});
+
+				it("getBeanMetaData should use cached parse without createObject", function() {
+					expect(structIsEmpty(factory.beans)).toBeTrue();
+					var meta = factory.getBeanMetaData("TagCollection");
+					expect(meta["taffy:uri"]).toBe("/factory-parse/artists");
+					expect(structIsEmpty(factory.beans)).toBeTrue();
+				});
+
+				it("should parse a real examples tag resource for verbs", function() {
+					makePublic(factory, "parseCfcMetaData");
+					var exampleFile = expandPath("/taffy/examples/api_twoFormats/resources/artistCollection.cfc");
+					var meta = factory.parseCfcMetaData(exampleFile);
+					expect(meta["taffy:uri"]).toBe("/artists");
+					var names = "";
+					for (var f in meta.functions) {
+						names = listAppend(names, f.name);
+					}
+					expect(listFindNoCase(names, "get")).toBeGT(0);
+					expect(listFindNoCase(names, "post")).toBeGT(0);
 				});
 
 			});

@@ -1,0 +1,12 @@
+{
+    "name": "taffy-adobe2023",
+    "web": {
+        "http": {
+            "port": 8502
+        }
+    },
+    "app": {
+        "cfengine": "adobe@2023"
+    },
+    "openBrowser": false
+}

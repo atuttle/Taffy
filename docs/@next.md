@@ -130,6 +130,12 @@ This is because Tomcat doesn't support the use of _two_ wildcards in its mapping
 
 In the xml above you can see that I only have 1 wildcard, but to compensate I've specified the entire path to index.cfm, so that only 1 is needed. If you need to have multiple API's, you'll need a mapping for each index.cfm, and specify the full path of each. (Note that I used `/api/index.cfm` because it matched my example of a 404 for `/api/index.cfm/myResource`... yours should match the location of your index.cfm)
 
+## Adobe ColdFusion Idiosyncrasies
+
+### Custom HTTP Status Messages
+
+Adobe ColdFusion 2025 removed the `statusText` attribute from `cfheader`, so Taffy sends the status code only. The `statusText` argument on [.withStatus()](#withstatus) is still accepted for compatibility. Put any custom message in the response body if clients need it.
+
 ## Lucee Idiosyncrasies
 
 ### Custom HTTP Status Messages
@@ -1229,7 +1235,7 @@ return streamFile("kittens/cuteness.pdf").withMime("application/pdf");
 **Parameters:**
 
 - **statusCode (numeric)** - the [HTTP Status Code](http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html) to return to the consumer.
-- **statusText (string)** - the Status Text to include with the HTTP Status Code. The "OK" part of "200 OK"; the "Not Found" part of "404 Not Found".
+- **statusText (string)** - the Status Text to include with the HTTP Status Code. The "OK" part of "200 OK"; the "Not Found" part of "404 Not Found". (As of Adobe ColdFusion 2025, Taffy no longer writes this via `cfheader`; put a custom message in the response body if clients need it.)
 
 This special method _**requires**_ the use of either **noData** or **representationOf**. It sets the HTTP Status Code of the return. Additional use of **withHeaders** optional.
 
