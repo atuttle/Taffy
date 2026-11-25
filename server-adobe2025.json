@@ -1,0 +1,12 @@
+{
+    "name": "taffy-adobe2025",
+    "web": {
+        "http": {
+            "port": 8503
+        }
+    },
+    "app": {
+        "cfengine": "adobe@2025"
+    },
+    "openBrowser": false
+}

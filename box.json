@@ -66,17 +66,27 @@
 		"verbose": true
 	},
 	"scripts": {
-		"start:all": "server start serverConfigFile=server-lucee5.json && server start serverConfigFile=server-lucee6.json && server start serverConfigFile=server-lucee7.json",
+		"start:all": "server start serverConfigFile=server-lucee5.json && server start serverConfigFile=server-lucee6.json && server start serverConfigFile=server-lucee7.json && server start serverConfigFile=server-adobe2021.json && server start serverConfigFile=server-adobe2023.json && server start serverConfigFile=server-adobe2025.json",
 		"start:lucee5": "server start serverConfigFile=server-lucee5.json",
 		"start:lucee6": "server start serverConfigFile=server-lucee6.json",
 		"start:lucee7": "server start serverConfigFile=server-lucee7.json",
+		"start:adobe2021": "server start serverConfigFile=server-adobe2021.json",
+		"start:adobe2023": "server start serverConfigFile=server-adobe2023.json",
+		"start:adobe2025": "server start serverConfigFile=server-adobe2025.json",
 		"stop:lucee5": "server stop name=taffy-lucee5",
 		"stop:lucee6": "server stop name=taffy-lucee6",
 		"stop:lucee7": "server stop name=taffy-lucee7",
+		"stop:adobe2021": "server stop name=taffy-adobe2021",
+		"stop:adobe2023": "server stop name=taffy-adobe2023",
+		"stop:adobe2025": "server stop name=taffy-adobe2025",
 		"stop:all": "server stop --all",
-		"test:all": "testbox run runner=http://localhost:8085/tests/runner.cfm && testbox run runner=http://localhost:8086/tests/runner.cfm && testbox run runner=http://localhost:8087/tests/runner.cfm",
+		"test:all": "testbox run runner=http://localhost:8085/tests/runner.cfm && testbox run runner=http://localhost:8086/tests/runner.cfm && testbox run runner=http://localhost:8087/tests/runner.cfm && testbox run runner=http://localhost:8501/tests/runner.cfm && testbox run runner=http://localhost:8502/tests/runner.cfm && testbox run runner=http://localhost:8503/tests/runner.cfm",
+		"test:serial": "server start serverConfigFile=server-lucee5.json && testbox run runner=http://localhost:8085/tests/runner.cfm && server stop name=taffy-lucee5 && server start serverConfigFile=server-lucee6.json && testbox run runner=http://localhost:8086/tests/runner.cfm && server stop name=taffy-lucee6 && server start serverConfigFile=server-lucee7.json && testbox run runner=http://localhost:8087/tests/runner.cfm && server stop name=taffy-lucee7 && server start serverConfigFile=server-adobe2021.json && testbox run runner=http://localhost:8501/tests/runner.cfm && server stop name=taffy-adobe2021 && server start serverConfigFile=server-adobe2023.json && testbox run runner=http://localhost:8502/tests/runner.cfm && server stop name=taffy-adobe2023 && server start serverConfigFile=server-adobe2025.json && testbox run runner=http://localhost:8503/tests/runner.cfm && server stop name=taffy-adobe2025",
 		"test:lucee5": "testbox run runner=http://localhost:8085/tests/runner.cfm",
 		"test:lucee6": "testbox run runner=http://localhost:8086/tests/runner.cfm",
-		"test:lucee7": "testbox run runner=http://localhost:8087/tests/runner.cfm"
+		"test:lucee7": "testbox run runner=http://localhost:8087/tests/runner.cfm",
+		"test:adobe2021": "testbox run runner=http://localhost:8501/tests/runner.cfm",
+		"test:adobe2023": "testbox run runner=http://localhost:8502/tests/runner.cfm",
+		"test:adobe2025": "testbox run runner=http://localhost:8503/tests/runner.cfm"
 	}
 }

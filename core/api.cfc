@@ -114,7 +114,7 @@ component hint="Your Application.cfc should extend this class" {
 			logger.saveLog(exception);
 
 			// return 500 no matter what
-			cfheader(statuscode=500, statustext="Error");
+			cfheader(statuscode=500);
 			cfcontent(reset=true);
 
 			if (structKeyExists(exception, "rootCause")) {
@@ -145,7 +145,7 @@ component hint="Your Application.cfc should extend this class" {
 			}
 		} catch (any cfcatch) {
 			cfcontent(reset=true, type="text/plain; charset=utf-8");
-			cfheader(statuscode=500, statustext="Error");
+			cfheader(statuscode=500);
 			var errorMsg = "An unhandled exception occurred: ";
 			if (isStruct(root) && structKeyExists(root, "message")) {
 				errorMsg &= root.message;
@@ -374,7 +374,8 @@ component hint="Your Application.cfc should extend this class" {
 
 		setting enablecfoutputonly=true;
 		cfcontent(reset=true, type="#getReturnMimeAsHeader(_taffyRequest.returnMimeExt)#; charset=utf-8");
-		cfheader(statuscode=_taffyRequest.statusArgs.statusCode, statustext=_taffyRequest.statusArgs.statusText);
+		// Adobe CF2025 removed statusText from cfheader
+		cfheader(statuscode=_taffyRequest.statusArgs.statusCode);
 
 		// headers
 		addHeaders(_taffyRequest.resultHeaders);
@@ -449,7 +450,7 @@ component hint="Your Application.cfc should extend this class" {
 						_taffyRequest.clientEtag = _taffyRequest.headers["If-None-Match"];
 
 						if (len(_taffyRequest.clientEtag) > 0 && _taffyRequest.clientEtag == _taffyRequest.serverEtag) {
-							cfheader(statuscode=304, statustext="Not Modified");
+							cfheader(statuscode=304);
 							cfcontent(reset=true, type="#application._taffy.settings.mimeExtensions[_taffyRequest.returnMimeExt]#; charset=utf-8");
 							return true;
 						} else {
@@ -652,7 +653,9 @@ component hint="Your Application.cfc should extend this class" {
 			}
 			local._taffy.factory.loadBeansFromPath(local.resourcePath, guessResourcesCFCPath(local._taffy.settings.resourcesCFCPath), local.resourcePath, true, local._taffy);
 			local._taffy.beanList = local._taffy.factory.getBeanList();
-			local._taffy.endpoints = cacheBeanMetaData(local._taffy.factory, local._taffy.beanList, local._taffy);
+			// only URI resources need endpoint metadata; helpers stay available via the factory for DI
+			local.resourceBeanList = local._taffy.factory.getResourceBeanList();
+			local._taffy.endpoints = cacheBeanMetaData(local._taffy.factory, local.resourceBeanList, local._taffy);
 			local._taffy.status.internalBeanFactoryUsed = true;
 		} else if (local._taffy.status.externalBeanFactoryUsed) {
 			// only using external factory, so create a pointer to it
@@ -1096,7 +1099,7 @@ component hint="Your Application.cfc should extend this class" {
 	private void function throwError(numeric statusCode = 500, required string msg, struct headers = {}) output="false" hint="message to return to api consumer" {
 		cfcontent(reset=true);
 		addHeaders(arguments.headers);
-		cfheader(statuscode=arguments.statusCode, statustext=arguments.msg);
+		cfheader(statuscode=arguments.statusCode);
 		abort;
 	}
 
@@ -1141,7 +1144,11 @@ component hint="Your Application.cfc should extend this class" {
 		local.endpoints = {};
 		for (local.beanName in listToArray(arguments.beanList)) {
 			// get the cfc metadata that defines the uri for that cfc
-			local.cfcMetadata = getMetaData(arguments.factory.getBean(local.beanName));
+			try {
+				local.cfcMetadata = arguments.factory.getBeanMetaData(local.beanName);
+			} catch (any metaErr) {
+				local.cfcMetadata = getMetaData(arguments.factory.getBean(local.beanName));
+			}
 			local.uriAttr = "";
 			if (structKeyExists(local.cfcMetadata, "taffy_uri")) {
 				local.uriAttr = local.cfcMetadata["taffy_uri"];
@@ -1224,10 +1231,11 @@ component hint="Your Application.cfc should extend this class" {
 			local.beanInfo = arguments.bf.getBeanInfo().beanInfo;
 			local.beanList = "";
 			for (local.beanName in local.beanInfo) {
+				local.info = local.beanInfo[local.beanName];
 				if (
-					structKeyExists(local.beanInfo[local.beanName], "name")
-					&& local.beanName != local.beanInfo[local.beanName].name
-					&& isInstanceOf(arguments.bf.getBean(local.beanName), "taffy.core.resource")
+					structKeyExists(local.info, "name")
+					&& local.beanName != local.info.name
+					&& isDi1ResourceBean(local.info, arguments.bf, local.beanName)
 				) {
 					local.beanList = listAppend(local.beanList, local.beanName);
 				}
@@ -1235,6 +1243,38 @@ component hint="Your Application.cfc should extend this class" {
 			return local.beanList;
 		}
 		return "";
+	}
+
+	private boolean function isDi1ResourceBean(required struct info, required any bf, required string beanName) output="false" {
+		var local = {};
+		if (structKeyExists(arguments.info, "class") && isSimpleValue(arguments.info.class) && len(arguments.info.class)) {
+			try {
+				local.meta = getComponentMetadata(arguments.info.class);
+				return metaExtendsResource(local.meta);
+			} catch (any ignore) {
+				// fall through to getBean
+			}
+		}
+		try {
+			return isInstanceOf(arguments.bf.getBean(arguments.beanName), "taffy.core.resource");
+		} catch (any ignore) {
+			return false;
+		}
+	}
+
+	private boolean function metaExtendsResource(required struct meta) output="false" {
+		var walk = arguments.meta;
+		while (structKeyExists(walk, "name")) {
+			if (walk.name == "taffy.core.resource" || (listLast(walk.name, ".") == "resource" && walk.name contains "taffy")) {
+				return true;
+			}
+			if (structKeyExists(walk, "fullname") && walk.fullname contains "taffy.core.resource") {
+				return true;
+			}
+			if (!structKeyExists(walk, "extends")) break;
+			walk = walk.extends;
+		}
+		return false;
 	}
 
 	private string function getBeanListFromColdSpring(required bf) output="false" {

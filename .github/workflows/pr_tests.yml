@@ -17,10 +17,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cfengine:
-          - lucee@5
-          - lucee@6
-          - lucee@7
+        include:
+          - cfengine: lucee@5
+            java: "11"
+          - cfengine: lucee@6
+            java: "11"
+          - cfengine: lucee@7
+            java: "11"
+          - cfengine: adobe@2021
+            java: "11"
+          - cfengine: adobe@2023
+            java: "11"
+          - cfengine: adobe@2025
+            java: "17"
 
     steps:
       - name: Checkout Repository
@@ -30,7 +39,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: "temurin"
-          java-version: "11"
+          java-version: ${{ matrix.java }}
 
       - name: Setup CommandBox
         uses: Ortus-Solutions/setup-commandbox@v2.0.1
